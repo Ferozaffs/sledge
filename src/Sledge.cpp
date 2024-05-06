@@ -1,13 +1,13 @@
 #include "Sledge.h"
-#include "Player.h"
+#include "Avatar.h"
 
 using namespace Gameplay;
 
-Sledge::Sledge(const Player* player) 
-	: Weapon(player)
+Sledge::Sledge(const Avatar* avatar)
+	: Weapon(avatar)
 {
-	m_speed = 3.0f;
-	m_torque = 5000.0f;
+	m_speed = 5.0f;
+	m_torque = 10000.0f;
 
 	static const b2Vec2 shaftSize(5.0f, 0.25f);
 	static const b2Vec2 headSize(0.75f, 2.0f);
@@ -16,11 +16,11 @@ Sledge::Sledge(const Player* player)
 	constexpr float headDensity = 0.1f;
 	constexpr float headFriction = 0.5f;
 
-	auto world = player->GetBody()->GetWorld();
+	auto world = avatar->GetBody()->GetWorld();
 
 	b2BodyDef bodyDef;
 	bodyDef.type = b2_dynamicBody;
-	bodyDef.position = player->GetPosition();
+	bodyDef.position = avatar->GetPosition();
 	bodyDef.position.x += shaftSize.x;
 	bodyDef.fixedRotation = false;
 	m_shaft = world->CreateBody(&bodyDef);

@@ -1,4 +1,4 @@
-#include "Renderer.h"
+#include "Debugger.h"
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
@@ -107,7 +107,45 @@ namespace Debug {
         printf("[OpenGL %s] - SEVERITY: %s, SOURCE: %s, ID: %d: %s\n", types[type], severities[severity], sources[source], id, message);
     }
 
-    Renderer::Renderer() {
+    float Debugger::DbgSledgeInput = 0.0f;
+    float Debugger::DbgJumpInput = 0.0f;
+    float Debugger::DbgMoveInput = 0.0f;
+    void key_callback(GLFWwindow* /*window*/, int key, int /*scancode*/ , int action, int /*mods*/) {
+        if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+            Debugger::DbgSledgeInput += 1.0f;
+        }
+        if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+            Debugger::DbgSledgeInput += -1.0f;
+        }
+        if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
+            Debugger::DbgSledgeInput -= 1.0f;
+        }
+        if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
+            Debugger::DbgSledgeInput -= -1.0f;
+        }
+
+        if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+            Debugger::DbgJumpInput += 1.0f;
+        }
+        if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
+            Debugger::DbgJumpInput -= 1.0f;
+        }
+
+        if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+            Debugger::DbgMoveInput += 1.0f;
+        }
+        if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+            Debugger::DbgMoveInput += -1.0f;
+        }
+        if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+            Debugger::DbgMoveInput -= 1.0f;
+        }
+        if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+            Debugger::DbgMoveInput -= -1.0f;
+        }
+    }
+
+    Debugger::Debugger() {
         glfwSetErrorCallback(ErrorCallback);
 
         if (!glfwInit())
@@ -124,7 +162,7 @@ namespace Debug {
             exit(EXIT_FAILURE);
         }
 
-        glfwSetKeyCallback(m_window, nullptr);
+        glfwSetKeyCallback(m_window, key_callback);
 
         glfwMakeContextCurrent(m_window);
         gladLoadGL(glfwGetProcAddress);
@@ -139,14 +177,14 @@ namespace Debug {
         CreateBoxVertices();
     }
     
-    Renderer::~Renderer() {
+    Debugger::~Debugger() {
         glfwDestroyWindow(m_window);
 
         glfwTerminate();
         exit(EXIT_SUCCESS);
     }
 
-    void Renderer::AddShape(const mat4x4& pose, ShapeType type)
+    void Debugger::AddShape(const mat4x4& pose, ShapeType type)
     {
         std::array<float, 16> clonedPose;
         memcpy(&clonedPose, &pose, sizeof(float) * 16);
@@ -154,7 +192,12 @@ namespace Debug {
         m_shapes[type].push_back(clonedPose);
     }
 
-    void Renderer::UpdateShapes()
+    void Debugger::Update(const float& /*deltaTime*/)
+    {
+    
+    }
+
+    void Debugger::UpdateShapes()
     {  
         if (m_shapes[ShapeType::Box].size() > 0) {
             glBindBuffer(GL_ARRAY_BUFFER, m_boxInstances);
@@ -172,7 +215,7 @@ namespace Debug {
 
     }
 
-    void Renderer::Render() {
+    void Debugger::Render() {
         UpdateShapes();
 
         int width, height;
@@ -184,7 +227,7 @@ namespace Debug {
         glClearColor(0.4f, 0.4f, 0.4f, 0.0f);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        const float cameraZoom = 50.0f;
+        const float cameraZoom = 100.0f;
 
         mat4x4 v, p, vp;
         mat4x4_identity(v);
@@ -209,7 +252,7 @@ namespace Debug {
 
         m_shapes.clear();
     }
-    void Renderer::CreateDefaultProgram() {
+    void Debugger::CreateDefaultProgram() {
         const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertex_shader, 1, &vertexShaderSource, NULL);
         glCompileShader(vertex_shader);
@@ -257,7 +300,7 @@ namespace Debug {
         m_colorUniform = glGetUniformLocation(m_defaultProgram, "uColor");
     }
 
-    void Renderer::CreateTriangleVertices() {
+    void Debugger::CreateTriangleVertices() {
         GLuint vertex_buffer;
         glGenBuffers(1, &vertex_buffer);
         glGenBuffers(1, &m_triangleInstances);
@@ -291,7 +334,7 @@ namespace Debug {
         glBindVertexArray(0);
     }
 
-    void Renderer::CreateBoxVertices() {
+    void Debugger::CreateBoxVertices() {
         GLuint vertex_buffer;
         glGenBuffers(1, &vertex_buffer);
         glGenBuffers(1, &m_boxInstances);

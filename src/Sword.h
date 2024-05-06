@@ -6,12 +6,12 @@ class b2Joint;
 
 namespace Gameplay
 {
-	class Player;
+	class Avatar;
 
 	class Sword : public Weapon
 	{
 	public:
-		Sword(const Player* player);
+		Sword(const Avatar* player);
 		virtual ~Sword();
 
 	private:

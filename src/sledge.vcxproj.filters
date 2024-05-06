@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Debugger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="B2Manager.cpp" />
-    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Avatar.cpp" />
     <ClCompile Include="Weapon.cpp">
       <Filter>Weapons</Filter>
     </ClCompile>
@@ -14,11 +14,12 @@
     <ClCompile Include="Sword.cpp">
       <Filter>Weapons</Filter>
     </ClCompile>
+    <ClCompile Include="LevelLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Debugger.h" />
     <ClInclude Include="B2Manager.h" />
-    <ClInclude Include="Player.h" />
+    <ClInclude Include="Avatar.h" />
     <ClInclude Include="Weapon.h">
       <Filter>Weapons</Filter>
     </ClInclude>
@@ -31,6 +32,7 @@
     <ClInclude Include="Sword.h">
       <Filter>Weapons</Filter>
     </ClInclude>
+    <ClInclude Include="LevelLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Weapons">

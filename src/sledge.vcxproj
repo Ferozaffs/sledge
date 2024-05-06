@@ -20,8 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="B2Manager.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Avatar.cpp" />
+    <ClCompile Include="Debugger.cpp" />
+    <ClCompile Include="LevelLoader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Sledge.cpp" />
     <ClCompile Include="Sword.cpp" />
@@ -29,8 +30,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="B2Manager.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Avatar.h" />
+    <ClInclude Include="Debugger.h" />
+    <ClInclude Include="LevelLoader.h" />
     <ClInclude Include="Sledge.h" />
     <ClInclude Include="Sword.h" />
     <ClInclude Include="Weapon.h" />

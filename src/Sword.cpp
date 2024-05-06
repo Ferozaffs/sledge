@@ -1,13 +1,13 @@
 #include "Sword.h"
-#include "Player.h"
+#include "Avatar.h"
 
 using namespace Gameplay;
 
-Sword::Sword(const Player* player)
-	: Weapon(player)
+Sword::Sword(const Avatar* avatar)
+	: Weapon(avatar)
 {
-	m_speed = 6.0f;
-	m_torque = 10000.0f;
+	m_speed = 10.0f;
+	m_torque = 20000.0f;
 
 	static const b2Vec2 shaftSize(5.0f, 0.25f);
 	static const b2Vec2 hiltSize(0.25f, 1.0f);
@@ -16,11 +16,11 @@ Sword::Sword(const Player* player)
 	constexpr float hiltDensity = 0.1f;
 	constexpr float hiltFriction = 0.5f;
 
-	auto world = player->GetBody()->GetWorld();
+	auto world = avatar->GetBody()->GetWorld();
 
 	b2BodyDef bodyDef;
 	bodyDef.type = b2_dynamicBody;
-	bodyDef.position = player->GetPosition();
+	bodyDef.position = avatar->GetPosition();
 	bodyDef.position.x += shaftSize.x;
 	bodyDef.fixedRotation = false;
 	m_shaft = world->CreateBody(&bodyDef);

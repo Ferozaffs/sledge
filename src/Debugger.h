@@ -8,7 +8,7 @@ struct GLFWwindow;
 
 namespace Debug
 {
-	class Renderer
+	class Debugger
 	{
 	public:
 		enum class ShapeType
@@ -17,11 +17,16 @@ namespace Debug
 			Triangle,
 		};
 
-		Renderer();
-		~Renderer();
+		Debugger();
+		~Debugger();
 
 		void AddShape(const mat4x4& pose, ShapeType type);
+		void Update(const float& deltaTime);
 		void Render();
+
+		static float DbgSledgeInput;
+		static float DbgJumpInput;
+		static float DbgMoveInput;
 
 	private:
 		void UpdateShapes();

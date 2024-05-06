@@ -1,5 +1,5 @@
 #include "B2Manager.h"
-#include "Renderer.h"
+#include "Debugger.h"
 
 #include <box2d/box2d.h>
 #include <linmath.h>
@@ -10,16 +10,16 @@ constexpr float timeStep = 1.0f / 60.0f;
 constexpr int32 velocityIterations = 6;
 constexpr int32 positionIterations = 2;
 
-static Debug::Renderer::ShapeType GetRenderType(b2Shape::Type type)
+static Debug::Debugger::ShapeType GetRenderType(b2Shape::Type type)
 {
 	switch (type)
 	{
 	case b2Shape::e_circle:
-		return Debug::Renderer::ShapeType::Box;
+		return Debug::Debugger::ShapeType::Box;
 	case b2Shape::e_polygon:
-		return Debug::Renderer::ShapeType::Box;
+		return Debug::Debugger::ShapeType::Box;
 	default:
-		return Debug::Renderer::ShapeType::Box;
+		return Debug::Debugger::ShapeType::Box;
 	}
 }
 
@@ -73,7 +73,7 @@ std::shared_ptr<b2World> Physics::B2Manager::GetWorld()
 	return m_world;
 }
 
-void B2Manager::DbgRender(Debug::Renderer* renderer)
+void B2Manager::DbgRender(Debug::Debugger* debugger)
 {
 	for (auto b = m_world->GetBodyList(); b; b = b->GetNext())
 	{
@@ -99,7 +99,7 @@ void B2Manager::DbgRender(Debug::Renderer* renderer)
 			mat4x4_rotate_Z(pose, pose, transform.q.GetAngle());
 			mat4x4_scale_aniso(pose, pose, max.x-min.x, max.y-min.y, 1.0f);
 
-			renderer->AddShape(pose, GetRenderType(f->GetType()));
+			debugger->AddShape(pose, GetRenderType(f->GetType()));
 		}
 	}
 }

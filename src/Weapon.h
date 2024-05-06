@@ -3,12 +3,12 @@ class b2Body;
 
 namespace Gameplay
 {
-	class Player; 
+	class Avatar;
 	
 	class Weapon
 	{
 	public:
-		Weapon(const Player* player);
+		Weapon(const Avatar* avatar);
 		virtual ~Weapon();
 
 		virtual void Update(const float& /*deltaTime*/) {}
@@ -16,7 +16,7 @@ namespace Gameplay
 		b2Body* GetShaft() const;
 		const float& GetSpeed() const;
 		const float& GetTorque() const;
-		const Player* GetPlayer() const;
+		const Avatar* GetAvatar() const;
 
 	protected:
 		b2Body* m_shaft;
@@ -24,7 +24,7 @@ namespace Gameplay
 		float m_torque;
 
 	private:
-		const Player* m_player;
+		const Avatar* m_avatar;
 	};
 
 }

@@ -8,15 +8,15 @@ namespace Gameplay
 {
 	class Weapon;
 
-	class Player
+	class Avatar
 	{
 	public:
-		Player(const std::shared_ptr<b2World>& world, const b2Vec2& spawnPos);
-		~Player();
+		Avatar(const std::shared_ptr<b2World>& world, const b2Vec2& spawnPos);
+		~Avatar();
 
 		void AssignWeapon(WeaponType type);
 
-		void Update(const float& deltaTime);
+		void Update(const float& deltaTime, const float& debugSledgeInput, const float& debugJumpInput, const float& debugMoveInput);
 
 		b2Body* GetBody() const;
 		const b2Vec2& GetPosition() const;

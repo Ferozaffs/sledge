@@ -4,7 +4,7 @@
 class b2World;
 namespace Debug
 {
-	class Renderer;
+	class Debugger;
 }
 
 namespace Physics
@@ -19,7 +19,7 @@ namespace Physics
 
 		std::shared_ptr<b2World> GetWorld();
 
-		void DbgRender(Debug::Renderer* renderer);
+		void DbgRender(Debug::Debugger* debugger);
 
 	private:
 		std::shared_ptr<b2World> m_world;

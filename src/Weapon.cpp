@@ -1,13 +1,13 @@
 #include "Weapon.h"
-#include "Player.h"
 
+#include <box2d/box2d.h>
 #include <assert.h>
 
 using namespace Gameplay;
 
-Weapon::Weapon(const Player* player)
+Weapon::Weapon(const Avatar* avatar)
 	: m_shaft(nullptr)
-	, m_player(player)
+	, m_avatar(avatar)
 	, m_speed(3.0f)
 	, m_torque(5000.0f)
 {
@@ -39,7 +39,7 @@ b2Body* Gameplay::Weapon::GetShaft() const
 	return m_shaft;
 }
 
-const Player* Gameplay::Weapon::GetPlayer() const
+const Avatar* Gameplay::Weapon::GetAvatar() const
 {
-	return m_player;
+	return m_avatar;
 }
