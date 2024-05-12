@@ -81,15 +81,20 @@ void Avatar::Update(const float& /*deltaTime*/, const float& debugSledgeInput, c
 			break;
 		}
 	}
-
+	
+	//Air control movement
+	auto movement = 500.0f * std::max(0.0f, (1.0f - abs(m_body->GetLinearVelocity().x * 0.05f)));
 	if (abs(m_body->GetLinearVelocity().y) < 10.0f && hasContact == true)
 	{
 		if (debugJumpInput > 0.0f) {
 			m_body->ApplyLinearImpulse(b2Vec2(0.0f, 300.0f), m_body->GetTransform().p, true);
 		}	
-		auto movement = 3000.0f * std::max(0.0f, (1.0f - abs(m_body->GetLinearVelocity().x * 0.05f)));
-		m_body->ApplyForce(b2Vec2(movement * debugMoveInput, 0.0f), m_body->GetTransform().p, true);
+		
+		//Ground control movement
+		movement = 3000.0f * std::max(0.0f, (1.0f - abs(m_body->GetLinearVelocity().x * 0.05f)));
 	}
+
+	m_body->ApplyForce(b2Vec2(movement * debugMoveInput, 0.0f), m_body->GetTransform().p, true);
 
 }
 
