@@ -30,6 +30,8 @@ void Update(const float& deltaTime)
 
     playerManager->Update(deltaTime);
     b2Manager->Update(deltaTime);
+
+    connectionManager->Update(deltaTime);
 }
 
 void Render() 
@@ -56,7 +58,7 @@ int main(int argc, char* argv[])
     b2Manager = std::make_unique<Physics::B2Manager>();
     levelLoader = std::make_unique<Gameplay::LevelLoader>(b2Manager->GetWorld());
     playerManager = std::make_unique<Gameplay::PlayerManager>(b2Manager->GetWorld());
-    connectionManager = std::make_unique<Network::ConnectionManager>(playerManager.get());
+    connectionManager = std::make_unique<Network::ConnectionManager>(playerManager.get(), levelLoader.get());
 
     levelLoader->LoadLevel("data/levels/testlevel.bmp");
 

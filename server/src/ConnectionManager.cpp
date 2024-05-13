@@ -1,5 +1,7 @@
 #include "ConnectionManager.h"
 #include "PlayerManager.h"
+#include "LevelLoader.h"
+#include "LevelAsset.h"
 
 #pragma warning(push)
 #pragma warning(disable: 4267)
@@ -7,11 +9,18 @@
 #include <websocketpp/server.hpp>
 #pragma warning(pop)
 
+#include <nlohmann/json.hpp>
+
 #include <string>
 #include <functional>
 #include <map>
+#include <Windows.h>
 
 using namespace Network;
+using namespace Gameplay;
+
+using json = nlohmann::json;
+using namespace nlohmann::literals;
 
 typedef websocketpp::server<websocketpp::config::asio> server;
 typedef websocketpp::connection<websocketpp::config::asio> connection;
@@ -24,20 +33,36 @@ typedef server::message_ptr message_ptr;
 
 std::unique_ptr<Impl> ConnectionManager::m_impl = nullptr;
 
+std::string guidToString(const GUID& guid) {
+	wchar_t guidWStr[39]; // GUIDs are 38 characters plus null terminator
+	StringFromGUID2(guid, guidWStr, 39);
+	std::wstring wideStr(guidWStr);
+	return std::string(wideStr.begin(), wideStr.end());
+}
+
 class Network::Impl{
 public:
 	server endpoint;
 	std::map<std::shared_ptr<connection>, std::shared_ptr<Gameplay::Player>> connections;
 	
-	Impl(Gameplay::PlayerManager* playerMgr)
-		: playerManager(playerMgr)
+	Impl()
 	{
 		thread = std::thread(&websocketThread, this);
 	}
 
+	void Send(const std::shared_ptr<Gameplay::Player>& player, std::string message)
+	{
+		for (const auto& connection : connections)
+		{
+			if (player == connection.second)
+			{
+				endpoint.send(connection.first, message.c_str(), websocketpp::frame::opcode::text);
+			}
+		}
+	}
+
 private:
 	std::thread thread;
-	Gameplay::PlayerManager* playerManager;
 
 	static void websocketThread(Impl* impl)
 	{
@@ -58,31 +83,93 @@ private:
 	static void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 		std::string message = msg->get_payload();
 		if (message == "conreq") {
-			s->send(hdl, "Pending connection", websocketpp::frame::opcode::text);
+			s->send(hdl, ConnectionManager::CreateStatusMessage("Pending connection"), websocketpp::frame::opcode::text);
 
 			ConnectionManager::m_impl->CompleteConnection(s->get_con_from_hdl(hdl));
 		}
 		else {
-			s->send(hdl, "Unknown request", websocketpp::frame::opcode::text);
+			s->send(hdl, ConnectionManager::CreateErrorMessage("Unknown request"), websocketpp::frame::opcode::text);
 		}
 	}
 	
 	void CompleteConnection(const std::shared_ptr<connection>& handle)
 	{
-		auto player = playerManager->CreatePlayer();
-		connections.insert({ handle, player });
+		connections.insert({ handle, nullptr });
 	
-		endpoint.send(handle, "Connection established", websocketpp::frame::opcode::text);
+		endpoint.send(handle, ConnectionManager::CreateStatusMessage("Connection established"), websocketpp::frame::opcode::text);
 	}
 
 };
 
 
-ConnectionManager::ConnectionManager(Gameplay::PlayerManager* playerManager)
+ConnectionManager::ConnectionManager(PlayerManager* playerManager, Gameplay::LevelLoader* levelLoader)
+	: m_playerManager(playerManager)
+	, m_levelLoader(levelLoader)
 {
-	m_impl = std::make_unique<Impl>(playerManager);
+	m_impl = std::make_unique<Impl>();
 }
 
 ConnectionManager::~ConnectionManager()
 {
+}
+
+void ConnectionManager::Update(float deltaTime)
+{
+	for (auto& connection : m_impl->connections)
+	{
+		if (connection.second == nullptr)
+		{
+			auto player = m_playerManager->CreatePlayer();
+			connection.second = player;
+
+			SendLevelAssets(player, m_levelLoader->GetLevelAssets());
+		}
+	}
+}
+
+void ConnectionManager::SendLevelAssets(const std::shared_ptr<Player>& player, std::vector<std::shared_ptr<LevelAsset>> assets)
+{
+	json j = {
+		{"type", "addData"}
+	};
+	
+	json blockArray = json::array();
+
+	for (const auto& asset : assets)
+	{
+		json block = {
+		   {"id", guidToString(asset->GetId())},
+		   {"alias", "block_basic"},
+		   {"x", asset->GetX() * 10.0f},
+		   {"y", asset->GetY() * 10.0f}
+		};
+
+		blockArray.push_back(block);
+	}
+
+
+	j["blocks"] = blockArray;
+
+	m_impl->Send(player, j.dump());
+}
+
+
+std::string ConnectionManager::CreateStatusMessage(std::string message)
+{
+	json j = {
+		{"type", "status"},
+		{"status", message},
+	};
+
+	return j.dump();
+}
+
+std::string ConnectionManager::CreateErrorMessage(std::string message)
+{
+	json j = {
+		{"type", "error"},
+		{"error", message},
+	};
+
+	return j.dump();
 }

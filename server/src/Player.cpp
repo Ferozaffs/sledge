@@ -4,6 +4,9 @@
 using namespace Gameplay;
 
 Player::Player(const std::shared_ptr<b2World>& world)
+	: m_sledgeInput(0.0f)
+	, m_moveInput(0.0f)
+	, m_jumpInput(0.0f)
 {
 	m_avatar = std::make_unique<Gameplay::Avatar>(world, b2Vec2(0.0f, 4.0f));
 }

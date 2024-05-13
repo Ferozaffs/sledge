@@ -14,9 +14,6 @@
       <Filter>Gameplay\Weapons</Filter>
     </ClCompile>
     <ClCompile Include="ConnectionManager.cpp" />
-    <ClCompile Include="LevelLoader.cpp">
-      <Filter>Gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
@@ -25,6 +22,12 @@
     </ClCompile>
     <ClCompile Include="Avatar.cpp">
       <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelLoader.cpp">
+      <Filter>Gameplay\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelAsset.cpp">
+      <Filter>Gameplay\Level</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -43,9 +46,6 @@
       <Filter>Gameplay\Weapons</Filter>
     </ClInclude>
     <ClInclude Include="ConnectionManager.h" />
-    <ClInclude Include="LevelLoader.h">
-      <Filter>Gameplay</Filter>
-    </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>Gameplay</Filter>
     </ClInclude>
@@ -55,6 +55,12 @@
     <ClInclude Include="Avatar.h">
       <Filter>Gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="LevelLoader.h">
+      <Filter>Gameplay\Level</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelAsset.h">
+      <Filter>Gameplay\Level</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Gameplay">
@@ -62,6 +68,9 @@
     </Filter>
     <Filter Include="Gameplay\Weapons">
       <UniqueIdentifier>{f854c837-8b46-4203-bac4-5234edc39c21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Gameplay\Level">
+      <UniqueIdentifier>{b20e8e9b-12d8-41d3-91bf-2ac3e3d9bc57}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
