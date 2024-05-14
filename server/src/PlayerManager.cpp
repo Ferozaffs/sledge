@@ -14,8 +14,16 @@ PlayerManager::~PlayerManager()
 
 void PlayerManager::Update(float deltaTime)
 {
-	for (const auto& player : m_players) {
-		player->Update(deltaTime);
+	for (auto it = m_players.begin(); it != m_players.end();) {
+		if ((*it)->m_pendingRemove)
+		{
+			it = m_players.erase(it);
+		}
+		else 
+		{
+			(*it)->Update(deltaTime);
+			it++;
+		}
 	}
 }
 

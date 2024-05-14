@@ -5,8 +5,10 @@ const socket = new WebSocket('ws://localhost:9002');
 socket.onopen = function(event) {
     console.log('WebSocket connection established.');
 
-    const message = "conreq";
-    socket.send(message);
+    const message = {
+      type: "conreq"
+    };
+    socket.send(JSON.stringify(message));
 };
 
 socket.onclose = function(event) {
@@ -26,10 +28,8 @@ socket.onmessage = function(event) {
             console.log('SERVER - ' + message.error);
           break;
         case 'addData':
-            console.log(message);
             addData(message);
           break;
-        // Add more cases as needed for other message types
         default:
           console.error('Unknown message type:', message.type);
       }
@@ -37,6 +37,20 @@ socket.onmessage = function(event) {
       console.error('Invalid message:', message);
     }
 };
+
+export function sendInput(input)
+{
+  const message = {
+    type: "input",
+    input: {
+      sledge: input.sledge,
+      move: input.move,
+      jump: input.jump
+    }
+  };
+
+    socket.send(JSON.stringify(message));
+}
 
 function addData(message)
 {

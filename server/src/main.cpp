@@ -21,11 +21,11 @@ void Update(const float& deltaTime)
     if (debugger != nullptr) {
         debugger->Update(deltaTime);
 
-        auto player = playerManager->GetPlayer(0);
-        if (player != nullptr)
-        {
-            player->SetInputs(debugger->DbgSledgeInput, debugger->DbgJumpInput, debugger->DbgMoveInput);
-        }
+        //auto player = playerManager->GetPlayer(0);
+        //if (player != nullptr && (debugger->DbgSledgeInput != 0.0f || debugger->DbgJumpInput != 0.0f || debugger->DbgMoveInput != 0.0f))
+        //{
+        //    player->SetInputs(debugger->DbgSledgeInput, debugger->DbgMoveInput, debugger->DbgJumpInput);
+        //}
     }
 
     playerManager->Update(deltaTime);

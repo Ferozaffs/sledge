@@ -1,5 +1,6 @@
 #include "ConnectionManager.h"
 #include "PlayerManager.h"
+#include "Player.h"
 #include "LevelLoader.h"
 #include "LevelAsset.h"
 
@@ -72,6 +73,7 @@ private:
 		endpoint.clear_access_channels(websocketpp::log::alevel::frame_payload);
 		endpoint.init_asio();
 
+		endpoint.set_close_handler(bind(&Impl::on_close, &endpoint, ::_1));
 		endpoint.set_message_handler(bind(&Impl::on_message, &endpoint, ::_1, ::_2));
 
 		endpoint.listen(9002);
@@ -80,15 +82,45 @@ private:
 		endpoint.run();
 	}
 
-	static void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
-		std::string message = msg->get_payload();
-		if (message == "conreq") {
-			s->send(hdl, ConnectionManager::CreateStatusMessage("Pending connection"), websocketpp::frame::opcode::text);
+	static void on_close(server* s, websocketpp::connection_hdl hdl) {
+		ConnectionManager::m_impl->CloseConnection(s->get_con_from_hdl(hdl));
+	}
 
-			ConnectionManager::m_impl->CompleteConnection(s->get_con_from_hdl(hdl));
+	static void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
+		try {
+			json j = json::parse(msg->get_payload());
+
+			if (j.contains("type"))
+			{
+				if (j["type"] == "conreq") {
+					s->send(hdl, ConnectionManager::CreateStatusMessage("Pending connection"), websocketpp::frame::opcode::text);
+
+					ConnectionManager::m_impl->CompleteConnection(s->get_con_from_hdl(hdl));
+				}
+				else if (j["type"] == "input")
+				{
+					ConnectionManager::m_impl->SetInput(s->get_con_from_hdl(hdl), j);
+				}
+			}
+			else {
+				s->send(hdl, ConnectionManager::CreateErrorMessage("Unknown request"), websocketpp::frame::opcode::text);
+			}
 		}
-		else {
-			s->send(hdl, ConnectionManager::CreateErrorMessage("Unknown request"), websocketpp::frame::opcode::text);
+		catch (json::parse_error& e) {
+			std::cerr << "Parse error: " << e.what() << std::endl;
+		}
+		catch (std::exception& e) {
+			std::cerr << "Error: " << e.what() << std::endl;
+		}	
+	}
+
+	void CloseConnection(const std::shared_ptr<connection>& handle)
+	{
+		auto it = connections.find(endpoint.get_con_from_hdl(handle));
+		if (it != connections.end())
+		{
+			it->second->m_pendingRemove = true;
+			connections.erase(it);
 		}
 	}
 	
@@ -97,6 +129,16 @@ private:
 		connections.insert({ handle, nullptr });
 	
 		endpoint.send(handle, ConnectionManager::CreateStatusMessage("Connection established"), websocketpp::frame::opcode::text);
+	}
+
+	void SetInput(const std::shared_ptr<connection>& handle, const json& j)
+	{
+		auto it = connections.find(endpoint.get_con_from_hdl(handle));
+		if (it != connections.end())
+		{
+			auto input = j["input"];
+			it->second->SetInputs(input["sledge"], input["move"], input["jump"]);
+		}
 	}
 
 };

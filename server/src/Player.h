@@ -17,6 +17,8 @@ namespace Gameplay
 
 		void SetInputs(float sledgeInput, float moveInput, float jumpInput);
 			
+		std::atomic<bool> m_pendingRemove;
+
 	private:
 		std::shared_ptr<Avatar> m_avatar;
 		float m_sledgeInput;
