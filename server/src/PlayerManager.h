@@ -18,7 +18,7 @@ namespace Gameplay
 		void Update(float deltaTime);
 
 		const std::shared_ptr<Player>& CreatePlayer();
-		const std::shared_ptr<Player>& GetPlayer(size_t index);
+		std::shared_ptr<Player> GetPlayer(size_t index);
 
 		std::vector< std::shared_ptr<Asset>> GetDynamicAssets() const;
 

@@ -12,7 +12,7 @@ namespace Gameplay
 	class Player
 	{
 	public:
-		Player(const std::shared_ptr<b2World>& world);
+		Player(b2World* world);
 		~Player();
 
 		void Update(float deltaTime);
@@ -28,6 +28,7 @@ namespace Gameplay
 		float m_sledgeInput;
 		float m_moveInput;
 		float m_jumpInput;
+		float m_respawnTimer;
 	};
 
 }

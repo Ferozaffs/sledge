@@ -59,10 +59,17 @@ public:
 		{
 			if (player == connection.second && connection.first->get_state() == websocketpp::session::state::open)
 			{
-				endpoint.send(connection.first, message.c_str(), websocketpp::frame::opcode::text);
+				Send(connection.first, message.c_str());
 			}
 		}
 	}
+
+	void Send(std::shared_ptr<connection> connection, std::string message)
+	{
+		endpoint.send(connection, message.c_str(), websocketpp::frame::opcode::text);
+	}
+
+
 
 private:
 	std::thread thread;
@@ -194,6 +201,21 @@ void ConnectionManager::Update(float deltaTime)
 			assets.insert(assets.end(), playerAssets.begin(), playerAssets.end());
 			SendAssets(connection.second, assets);
 		}
+	}
+	connectionMutex.unlock();
+}
+
+void ConnectionManager::RemoveAsset(GUID id)
+{
+	json j = {
+		{"type", "removeData"},
+		{"id", guidToString(id)},
+	};
+
+	connectionMutex.lock();
+	for (auto& connection : m_impl->connections)
+	{
+		m_impl->Send(connection.first, j.dump());
 	}
 	connectionMutex.unlock();
 }

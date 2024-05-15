@@ -3,6 +3,7 @@
 #include <vector>
 
 class b2Body;
+class b2Joint;
 
 namespace Gameplay
 {
@@ -24,8 +25,11 @@ namespace Gameplay
 
 		std::vector<std::shared_ptr<Asset>> GetAssets() const;
 
+		void BreakJoints();
+
 	protected:
 		std::vector<std::shared_ptr<Asset>> m_assets;
+		std::vector<b2Joint*> m_joints;
 		std::shared_ptr<Asset> m_shaftAsset;
 		float m_speed;
 		float m_torque;

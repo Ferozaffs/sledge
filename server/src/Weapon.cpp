@@ -16,6 +16,8 @@ Weapon::Weapon(const Avatar* avatar)
 
 Weapon::~Weapon()
 {
+	BreakJoints();
+
 	if (GetShaft() != nullptr)
 	{
 		GetShaft()->GetWorld()->DestroyBody(GetShaft());
@@ -47,4 +49,13 @@ const Avatar* Gameplay::Weapon::GetAvatar() const
 std::vector<std::shared_ptr<Asset>> Gameplay::Weapon::GetAssets() const
 {
 	return m_assets;
+}
+
+void Weapon::BreakJoints()
+{
+	while (m_joints.empty() == false)
+	{
+		GetShaft()->GetWorld()->DestroyJoint(m_joints.back());
+		m_joints.pop_back();
+	};
 }

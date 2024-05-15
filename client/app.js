@@ -30,7 +30,7 @@ let tickCounter = 0.0;
 
 async function init()
 {
-    await app.init({ background: '#888888', resizeTo: window });
+    await app.init({ background: '#222222', resizeTo: window });
 
     document.body.appendChild(app.canvas);
     document.addEventListener('keydown', (event) => {
@@ -76,11 +76,7 @@ export async function removeData(json)
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    const assets = json.assets;
-
-    assets.forEach((asset) => {
-        ASSETS.remove(asset.id);
-    });
+    ASSETS.remove(json.id);
 }
 
 function updateView()

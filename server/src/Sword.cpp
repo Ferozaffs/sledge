@@ -33,6 +33,11 @@ Sword::Sword(const Avatar* avatar)
 	fixtureDef.shape = &dynamicBox;
 	fixtureDef.density = shaftDensity;
 	fixtureDef.friction = shaftFriction;
+
+	fixtureDef.filter.categoryBits = 0x4000;
+	fixtureDef.filter.maskBits = 0xFFFF;
+	fixtureDef.filter.maskBits &= ~0x8000;
+
 	GetShaft()->CreateFixture(&fixtureDef);
 	m_shaftAsset->UpdateSize();
 
@@ -50,7 +55,8 @@ Sword::Sword(const Avatar* avatar)
 
 	b2WeldJointDef joint;
 	joint.Initialize(GetShaft(), m_hiltAsset->GetBody(), bodyDef.position);
-	m_weld = world->CreateJoint(&joint);
+	m_joints.emplace_back(world->CreateJoint(&joint));
+
 
 	m_assets.emplace_back(m_shaftAsset);
 	m_assets.emplace_back(m_hiltAsset);
@@ -58,10 +64,8 @@ Sword::Sword(const Avatar* avatar)
 
 Sword::~Sword()
 {
-	if (m_weld != nullptr)
-	{
-		m_hiltAsset->GetBody()->GetWorld()->DestroyJoint(m_weld);
-	}
+	BreakJoints();
+
 	if (m_hiltAsset->GetBody() != nullptr)
 	{
 		m_hiltAsset->GetBody()->GetWorld()->DestroyBody(m_hiltAsset->GetBody());

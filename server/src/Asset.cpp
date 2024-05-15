@@ -1,4 +1,5 @@
 #include "Asset.h"
+#include "ConnectionManager.h"
 
 #include <box2d/box2d.h>
 #include <combaseapi.h>
@@ -15,6 +16,7 @@ Asset::Asset(b2Body* body)
 
 Asset::~Asset()
 {
+	Network::ConnectionManager::RemoveAsset(m_id);
 }
 
 const GUID Asset::GetId() const

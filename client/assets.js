@@ -1,6 +1,6 @@
 import * as PIXI from 'https://cdn.skypack.dev/pixi.js';
 
-const assets = []
+let assets = []
 const assetContainer = new PIXI.Container();
 const bounds = {
     max: {
@@ -66,7 +66,7 @@ export function remove(id)
     if (foundObject !== undefined)
     {
         assetContainer.removeChild(foundObject.sprite);
-        foundObject.destroy();
+        foundObject.sprite.destroy();
     
         assets = assets.filter(obj => obj.id !== id);
     }

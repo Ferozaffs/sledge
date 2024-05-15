@@ -13,7 +13,7 @@ namespace Gameplay
 	class Avatar
 	{
 	public:
-		Avatar(const std::shared_ptr<b2World>& world, const b2Vec2& spawnPos);
+		Avatar(b2World* world, const b2Vec2& spawnPos);
 		~Avatar();
 
 		void AssignWeapon(WeaponType type);
@@ -25,8 +25,18 @@ namespace Gameplay
 
 		std::vector<std::shared_ptr<Asset>> GetAssets() const;
 
+		void Kill();
+		bool IsDead() const;
+
 	private:
+		b2Body* GetHead() const;
+		void BreakJoints();
+
+		bool m_dead;
+
 		std::shared_ptr<Asset> m_bodyAsset;
+		std::shared_ptr<Asset> m_headAsset;
+		b2Joint* m_headJoint;
 		std::shared_ptr<Weapon> m_weapon;
 		b2RevoluteJoint* m_weaponJoint;
 	};

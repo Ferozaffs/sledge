@@ -29,11 +29,11 @@ void PlayerManager::Update(float deltaTime)
 
 const std::shared_ptr<Player>& PlayerManager::CreatePlayer()
 {
-	m_players.emplace_back(std::make_shared<Player>(m_b2World));
+	m_players.emplace_back(std::make_shared<Player>(m_b2World.get()));
 	return m_players.back();
 }
 
-const std::shared_ptr<Player>& Gameplay::PlayerManager::GetPlayer(size_t index)
+std::shared_ptr<Player> Gameplay::PlayerManager::GetPlayer(size_t index)
 {
 	if (m_players.size() > index)
 	{

@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <guiddef.h>
 
 namespace Gameplay 
 {
@@ -22,6 +23,8 @@ namespace Network
 		~ConnectionManager();
 
 		void Update(float deltaTime);
+
+		static void RemoveAsset(GUID id);
 
 	private:
 		friend class Impl;
