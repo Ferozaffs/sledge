@@ -1,6 +1,6 @@
 import * as CONNECTION from './connection.js'
 import * as PIXI from 'https://cdn.skypack.dev/pixi.js';
-import * as BLOCKS from './blocks.js';
+import * as ASSETS from './assets.js';
 
 const app = new PIXI.Application();
 let initialized = false;
@@ -17,10 +17,12 @@ let tickCounter = 0.0;
 
     app.ticker.add((time) =>
     {
+        updateView();
+
         tickCounter += time.deltaTime;
         if (tickCounter > 1.0 / 60.0)
         {
-            SendData();
+            sendData();
             tickCounter = 0.0;
         }
     });
@@ -28,10 +30,8 @@ let tickCounter = 0.0;
 
 async function init()
 {
-    // Intialize the application.
     await app.init({ background: '#888888', resizeTo: window });
 
-    // Then adding the application's canvas to the DOM body.
     document.body.appendChild(app.canvas);
     document.addEventListener('keydown', (event) => {
         keysPressed[event.key] = true;
@@ -45,40 +45,56 @@ async function init()
         keysPressed = {};
       });
 
-    BLOCKS.init(app);
+      ASSETS.init(app);
 }
 
 async function preload()
 {
-    // Create an array of asset data to load.
     const assets = [
         { alias: 'block_basic', src: './assets/block_basic.png' },
     ];
 
-    // Load the assets defined above.
     await PIXI.Assets.load(assets);
 }
 
-export async function addData(json)
+export async function updateData(json)
 {
     while (!initialized) {
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    const blocks = json.blocks;
+    const assets = json.assets;
 
-    blocks.forEach((block) => {
-        BLOCKS.addBlock(app, block.id, block.alias, block.x, 800.0-block.y);
-    });
-
-    const avatars = json.avatars;
-    avatars.forEach((avatar) => {
-        AVATARS.addPlayer(app, avatar.id, avatar.alias, avatar.x, 800.0-avatar.y);
+    assets.forEach((asset) => {
+        ASSETS.update(asset.id, asset.alias, asset.x, asset.y, asset.sizeX, asset.sizeY, asset.rot);
     });
 }
 
-function SendData() {
+export async function removeData(json)
+{
+    while (!initialized) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
 
+    const assets = json.assets;
+
+    assets.forEach((asset) => {
+        ASSETS.remove(asset.id);
+    });
+}
+
+function updateView()
+{
+    const width = document.body.clientWidth;
+    const height = document.body.clientHeight
+    const assetBounds = ASSETS.getBounds(); 
+    
+    const scaleFactor = width / (assetBounds.max.x - assetBounds.min.x);
+    ASSETS.adjustAssetsView(scaleFactor, width, height);
+}
+
+function sendData() 
+{
     let sledgeInput = 0.0;
     let jumpInput = 0.0;
     let moveInput = 0.0;

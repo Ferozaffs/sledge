@@ -27,8 +27,11 @@ socket.onmessage = function(event) {
         case 'error':
             console.log('SERVER - ' + message.error);
           break;
-        case 'addData':
-            addData(message);
+        case 'updateData':
+          updateData(message);
+          break;
+        case 'removeData':
+          removeData(message);
           break;
         default:
           console.error('Unknown message type:', message.type);
@@ -49,10 +52,18 @@ export function sendInput(input)
     }
   };
 
+  if (socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify(message));
+  }
 }
 
-function addData(message)
+function removeData(message)
 {
-    APP.addData(message);
+    APP.removeData(message);
+}
+
+function updateData(message)
+{
+    console.log(message);
+    APP.updateData(message);
 }

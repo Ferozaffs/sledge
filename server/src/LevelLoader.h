@@ -7,7 +7,8 @@ class b2World;
 
 namespace Gameplay
 {
-	class LevelAsset;
+	class LevelBlock;
+	class Asset;
 
 	class LevelLoader 
 	{
@@ -17,7 +18,7 @@ namespace Gameplay
 
 		bool LoadLevel(const std::string& filename);
 
-		const std::vector< std::shared_ptr<LevelAsset>>& GetLevelAssets();
+		std::vector< std::shared_ptr<Asset>> GetLevelAssets() const;
 
 	private:
 		bool BuildLevel(std::vector<std::vector<uint8_t>> rows);
@@ -25,7 +26,7 @@ namespace Gameplay
 
 		std::shared_ptr<b2World> m_world;
 
-		std::vector<std::shared_ptr<LevelAsset>> m_assets;
+		std::vector<std::shared_ptr<LevelBlock>> m_blocks;
 	};
 
 }

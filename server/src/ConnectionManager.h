@@ -7,7 +7,7 @@ namespace Gameplay
 {
 	class PlayerManager;
 	class Player;
-	class LevelAsset;
+	class Asset;
 	class LevelLoader;
 }
 
@@ -29,7 +29,7 @@ namespace Network
 		static std::string CreateStatusMessage(std::string message);
 		static std::string CreateErrorMessage(std::string message);
 
-		void SendLevelAssets(const std::shared_ptr<Gameplay::Player>& player , std::vector<std::shared_ptr<Gameplay::LevelAsset>> assets);
+		void SendAssets(const std::shared_ptr<Gameplay::Player>& player, std::vector<std::shared_ptr<Gameplay::Asset>> assets);
 		
 		static std::unique_ptr<Impl> m_impl;
 		Gameplay::PlayerManager* m_playerManager;

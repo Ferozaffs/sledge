@@ -2,7 +2,7 @@
 #include "PlayerManager.h"
 #include "Player.h"
 #include "LevelLoader.h"
-#include "LevelAsset.h"
+#include "Asset.h"
 
 #pragma warning(push)
 #pragma warning(disable: 4267)
@@ -117,7 +117,7 @@ private:
 	void CloseConnection(const std::shared_ptr<connection>& handle)
 	{
 		auto it = connections.find(endpoint.get_con_from_hdl(handle));
-		if (it != connections.end())
+		if (it != connections.end() && it->second != nullptr)
 		{
 			it->second->m_pendingRemove = true;
 			connections.erase(it);
@@ -134,7 +134,7 @@ private:
 	void SetInput(const std::shared_ptr<connection>& handle, const json& j)
 	{
 		auto it = connections.find(endpoint.get_con_from_hdl(handle));
-		if (it != connections.end())
+		if (it != connections.end() && it->second != nullptr)
 		{
 			auto input = j["input"];
 			it->second->SetInputs(input["sledge"], input["move"], input["jump"]);
@@ -164,33 +164,36 @@ void ConnectionManager::Update(float deltaTime)
 			auto player = m_playerManager->CreatePlayer();
 			connection.second = player;
 
-			SendLevelAssets(player, m_levelLoader->GetLevelAssets());
+			SendAssets(player, m_levelLoader->GetLevelAssets());
 		}
 	}
 }
 
-void ConnectionManager::SendLevelAssets(const std::shared_ptr<Player>& player, std::vector<std::shared_ptr<LevelAsset>> assets)
+void ConnectionManager::SendAssets(const std::shared_ptr<Player>& player, std::vector<std::shared_ptr<Asset>> assets)
 {
 	json j = {
-		{"type", "addData"}
+		{"type", "updateData"}
 	};
 	
-	json blockArray = json::array();
+	json assetArray = json::array();
 
 	for (const auto& asset : assets)
 	{
-		json block = {
+		json assetData = {
 		   {"id", guidToString(asset->GetId())},
 		   {"alias", "block_basic"},
-		   {"x", asset->GetX() * 10.0f},
-		   {"y", asset->GetY() * 10.0f}
+		   {"x", asset->GetX()},
+		   {"y", asset->GetY()},
+		   {"sizeX", asset->GetSizeX()},
+		   {"sizeY", asset->GetSizeY()},
+		   {"rot", asset->GetRot()}
 		};
 
-		blockArray.push_back(block);
+		assetArray.push_back(assetData);
 	}
 
 
-	j["blocks"] = blockArray;
+	j["assets"] = assetArray;
 
 	m_impl->Send(player, j.dump());
 }

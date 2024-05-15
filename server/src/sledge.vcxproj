@@ -11,11 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Asset.cpp" />
     <ClCompile Include="B2Manager.cpp" />
     <ClCompile Include="Avatar.cpp" />
     <ClCompile Include="ConnectionManager.cpp" />
     <ClCompile Include="Debugger.cpp" />
-    <ClCompile Include="LevelAsset.cpp" />
+    <ClCompile Include="LevelBlock.cpp" />
     <ClCompile Include="LevelLoader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -29,7 +30,8 @@
     <ClInclude Include="Avatar.h" />
     <ClInclude Include="ConnectionManager.h" />
     <ClInclude Include="Debugger.h" />
-    <ClInclude Include="LevelAsset.h" />
+    <ClInclude Include="Asset.h" />
+    <ClInclude Include="LevelBlock.h" />
     <ClInclude Include="LevelLoader.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerManager.h" />

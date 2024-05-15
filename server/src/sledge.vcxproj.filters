@@ -26,8 +26,11 @@
     <ClCompile Include="LevelLoader.cpp">
       <Filter>Gameplay\Level</Filter>
     </ClCompile>
-    <ClCompile Include="LevelAsset.cpp">
+    <ClCompile Include="LevelBlock.cpp">
       <Filter>Gameplay\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Asset.cpp">
+      <Filter>Gameplay</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -58,8 +61,11 @@
     <ClInclude Include="LevelLoader.h">
       <Filter>Gameplay\Level</Filter>
     </ClInclude>
-    <ClInclude Include="LevelAsset.h">
+    <ClInclude Include="LevelBlock.h">
       <Filter>Gameplay\Level</Filter>
+    </ClInclude>
+    <ClInclude Include="Asset.h">
+      <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

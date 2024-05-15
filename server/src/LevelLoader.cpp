@@ -1,5 +1,5 @@
 #include "LevelLoader.h"
-#include "LevelAsset.h"
+#include "LevelBlock.h"
 
 #include <fstream>
 #include <box2d/box2d.h>
@@ -74,9 +74,19 @@ bool LevelLoader::LoadLevel(const std::string& filename)
     return BuildLevel(rows);
 }
 
-const std::vector<std::shared_ptr<LevelAsset>>& Gameplay::LevelLoader::GetLevelAssets()
+std::vector<std::shared_ptr<Asset>> LevelLoader::GetLevelAssets() const 
 {
-    return m_assets;
+    std::vector<std::shared_ptr<Asset>> assets;
+    for (const auto& block : m_blocks)
+    {
+        const auto& blockAsset = block->GetAsset();
+        if (blockAsset != nullptr)
+        {
+            assets.emplace_back(blockAsset);
+        }      
+    }
+    
+    return assets;
 }
 
 bool LevelLoader::BuildLevel(std::vector<std::vector<uint8_t>> rows)
@@ -100,7 +110,7 @@ bool LevelLoader::BuildLevel(std::vector<std::vector<uint8_t>> rows)
 
 bool LevelLoader::CreateStaticBlock(int x, int y)
 {
-    m_assets.emplace_back(std::make_shared<LevelAsset>(m_world.get(), x, y));
+    m_blocks.emplace_back(std::make_shared<LevelBlock>(m_world.get(), x, y));
 
     return true;
 }
