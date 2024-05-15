@@ -16,6 +16,7 @@
 #include <functional>
 #include <map>
 #include <Windows.h>
+#include <mutex>
 
 using namespace Network;
 using namespace Gameplay;
@@ -33,6 +34,7 @@ using websocketpp::lib::bind;
 typedef server::message_ptr message_ptr;
 
 std::unique_ptr<Impl> ConnectionManager::m_impl = nullptr;
+std::mutex connectionMutex;
 
 std::string guidToString(const GUID& guid) {
 	wchar_t guidWStr[39]; // GUIDs are 38 characters plus null terminator
@@ -55,7 +57,7 @@ public:
 	{
 		for (const auto& connection : connections)
 		{
-			if (player == connection.second)
+			if (player == connection.second && connection.first->get_state() == websocketpp::session::state::open)
 			{
 				endpoint.send(connection.first, message.c_str(), websocketpp::frame::opcode::text);
 			}
@@ -118,29 +120,35 @@ private:
 
 	void CloseConnection(const std::shared_ptr<connection>& handle)
 	{
+		connectionMutex.lock();
 		auto it = connections.find(endpoint.get_con_from_hdl(handle));
 		if (it != connections.end() && it->second != nullptr)
 		{
 			it->second->m_pendingRemove = true;
 			connections.erase(it);
 		}
+		connectionMutex.unlock();
 	}
 	
 	void CompleteConnection(const std::shared_ptr<connection>& handle)
 	{
+		connectionMutex.lock();
 		connections.insert({ handle, nullptr });
-	
+
 		endpoint.send(handle, ConnectionManager::CreateStatusMessage("Connection established"), websocketpp::frame::opcode::text);
+		connectionMutex.unlock();
 	}
 
 	void SetInput(const std::shared_ptr<connection>& handle, const json& j)
 	{
+		connectionMutex.lock();
 		auto it = connections.find(endpoint.get_con_from_hdl(handle));
 		if (it != connections.end() && it->second != nullptr)
 		{
 			auto input = j["input"];
 			it->second->SetInputs(input["sledge"], input["move"], input["jump"]);
 		}
+		connectionMutex.unlock();
 	}
 
 };
@@ -167,6 +175,7 @@ void ConnectionManager::Update(float deltaTime)
 		m_tickCounter = 0.0f;
 	}
 
+	connectionMutex.lock();
 	for (auto& connection : m_impl->connections)
 	{
 		if (connection.second == nullptr)
@@ -186,6 +195,7 @@ void ConnectionManager::Update(float deltaTime)
 			SendAssets(connection.second, assets);
 		}
 	}
+	connectionMutex.unlock();
 }
 
 void ConnectionManager::SendAssets(const std::shared_ptr<Player>& player, std::vector<std::shared_ptr<Asset>> assets)

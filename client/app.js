@@ -89,8 +89,9 @@ function updateView()
     const height = document.body.clientHeight
     const assetBounds = ASSETS.getBounds(); 
     
-    const scaleFactor = width / (assetBounds.max.x - assetBounds.min.x);
-    ASSETS.adjustAssetsView(scaleFactor, width, height);
+    const scaleFactorW = width / (assetBounds.max.x - assetBounds.min.x);
+    const scaleFactorH = height / (assetBounds.max.y - assetBounds.min.y);
+    ASSETS.adjustAssetsView(Math.min(scaleFactorW, scaleFactorH), width, height);
 }
 
 function sendData() 

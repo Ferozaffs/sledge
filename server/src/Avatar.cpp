@@ -71,7 +71,7 @@ void Avatar::AssignWeapon(WeaponType type)
 	m_weaponJoint = (b2RevoluteJoint*)GetBody()->GetWorld()->CreateJoint(&jd);
 }
 
-void Avatar::Update(const float& /*deltaTime*/, const float& debugSledgeInput, const float& debugJumpInput, const float& debugMoveInput)
+void Avatar::Update(const float& deltaTime, const float& debugSledgeInput, const float& debugJumpInput, const float& debugMoveInput)
 {
 	m_weaponJoint->SetMotorSpeed(m_weapon->GetSpeed() * debugSledgeInput);
 	
@@ -84,7 +84,7 @@ void Avatar::Update(const float& /*deltaTime*/, const float& debugSledgeInput, c
 	}
 	
 	//Air control movement
-	auto movement = 500.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
+	auto movement = 30000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
 	if (abs(GetBody()->GetLinearVelocity().y) < 10.0f && hasContact == true)
 	{
 		if (debugJumpInput > 0.0f) {
@@ -92,10 +92,10 @@ void Avatar::Update(const float& /*deltaTime*/, const float& debugSledgeInput, c
 		}	
 		
 		//Ground control movement
-		movement = 3000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
+		movement = 180000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
 	}
 
-	GetBody()->ApplyForce(b2Vec2(movement * debugMoveInput, 0.0f), GetBody()->GetTransform().p, true);
+	GetBody()->ApplyForce(b2Vec2(movement * debugMoveInput * deltaTime, 0.0f), GetBody()->GetTransform().p, true);
 
 }
 

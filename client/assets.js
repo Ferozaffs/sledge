@@ -98,7 +98,7 @@ export function adjustAssetsView(scaleFactor, width, height)
 
     assets.forEach((asset) => {
         asset.sprite.x = width * (1.0 - padding) / 2 + ((asset.x - bounds.min.x) * scaleFactor * padding);
-        asset.sprite.y = (height - ((asset.y - bounds.min.y) * scaleFactor)) * padding;
+        asset.sprite.y = height * (1.0 - padding) / 2 + (height - ((asset.y - bounds.min.y) * scaleFactor)) * padding;
 
         asset.sprite.width =  asset.size.x * scaleFactor; 
         asset.sprite.height =  asset.size.y * scaleFactor; 
