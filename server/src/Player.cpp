@@ -27,3 +27,14 @@ void Player::SetInputs(float sledgeInput, float moveInput, float jumpInput)
 	m_moveInput = moveInput;
 	m_jumpInput = jumpInput;
 }
+
+std::vector<std::shared_ptr<Asset>> Player::GetAssets() const
+{
+	std::vector<std::shared_ptr<Asset>> assets;
+	if (m_avatar != nullptr)
+	{
+		assets = m_avatar->GetAssets();
+	}
+
+	return assets;
+}

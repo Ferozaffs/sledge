@@ -2,11 +2,13 @@
 #include "WeaponTypes.h"
 
 #include <memory>
+#include <vector>
 #include <box2d/box2d.h>
 
 namespace Gameplay
 {
 	class Weapon;
+	class Asset;
 
 	class Avatar
 	{
@@ -21,9 +23,10 @@ namespace Gameplay
 		b2Body* GetBody() const;
 		const b2Vec2& GetPosition() const;
 
-	private:
-		b2Body* m_body;
+		std::vector<std::shared_ptr<Asset>> GetAssets() const;
 
+	private:
+		std::shared_ptr<Asset> m_bodyAsset;
 		std::shared_ptr<Weapon> m_weapon;
 		b2RevoluteJoint* m_weaponJoint;
 	};

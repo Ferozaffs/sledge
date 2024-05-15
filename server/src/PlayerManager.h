@@ -7,6 +7,7 @@ class b2World;
 namespace Gameplay
 {
 	class Player;
+	class Asset;
 
 	class PlayerManager
 	{
@@ -18,6 +19,8 @@ namespace Gameplay
 
 		const std::shared_ptr<Player>& CreatePlayer();
 		const std::shared_ptr<Player>& GetPlayer(size_t index);
+
+		std::vector< std::shared_ptr<Asset>> GetDynamicAssets() const;
 
 	private:
 		const std::shared_ptr<b2World>& m_b2World;

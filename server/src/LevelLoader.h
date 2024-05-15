@@ -18,7 +18,8 @@ namespace Gameplay
 
 		bool LoadLevel(const std::string& filename);
 
-		std::vector< std::shared_ptr<Asset>> GetLevelAssets() const;
+		std::vector< std::shared_ptr<Asset>> GetAssets() const;
+		std::vector< std::shared_ptr<Asset>> GetDynamicAssets() const;
 
 	private:
 		bool BuildLevel(std::vector<std::vector<uint8_t>> rows);

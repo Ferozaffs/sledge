@@ -74,7 +74,7 @@ bool LevelLoader::LoadLevel(const std::string& filename)
     return BuildLevel(rows);
 }
 
-std::vector<std::shared_ptr<Asset>> LevelLoader::GetLevelAssets() const 
+std::vector<std::shared_ptr<Asset>> LevelLoader::GetAssets() const 
 {
     std::vector<std::shared_ptr<Asset>> assets;
     for (const auto& block : m_blocks)
@@ -86,6 +86,21 @@ std::vector<std::shared_ptr<Asset>> LevelLoader::GetLevelAssets() const
         }      
     }
     
+    return assets;
+}
+
+std::vector<std::shared_ptr<Asset>> Gameplay::LevelLoader::GetDynamicAssets() const
+{
+    std::vector<std::shared_ptr<Asset>> assets;
+    for (const auto& block : m_blocks)
+    {
+        const auto& blockAsset = block->GetAsset();
+        if (blockAsset != nullptr && block->InMotion())
+        {
+            assets.emplace_back(blockAsset);
+        }
+    }
+
     return assets;
 }
 

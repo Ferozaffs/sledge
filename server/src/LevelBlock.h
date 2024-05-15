@@ -14,6 +14,7 @@ namespace Gameplay
 		~LevelBlock();
 
 		const std::shared_ptr<Asset>& GetAsset() const;
+		bool InMotion();
 
 	private:
 		std::shared_ptr<Asset> m_asset;

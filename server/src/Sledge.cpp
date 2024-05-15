@@ -1,5 +1,6 @@
 #include "Sledge.h"
 #include "Avatar.h"
+#include "Asset.h"
 
 using namespace Gameplay;
 
@@ -23,7 +24,7 @@ Sledge::Sledge(const Avatar* avatar)
 	bodyDef.position = avatar->GetPosition();
 	bodyDef.position.x += shaftSize.x;
 	bodyDef.fixedRotation = false;
-	m_shaft = world->CreateBody(&bodyDef);
+	m_shaftAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef));
 	
 	b2PolygonShape dynamicBox;
 	dynamicBox.SetAsBox(shaftSize.x, shaftSize.y);
@@ -32,32 +33,37 @@ Sledge::Sledge(const Avatar* avatar)
 	fixtureDef.shape = &dynamicBox;
 	fixtureDef.density = shaftDensity;
 	fixtureDef.friction = shaftFriction;
-	m_shaft->CreateFixture(&fixtureDef);
+	GetShaft()->CreateFixture(&fixtureDef);
+	m_shaftAsset->UpdateSize();
 
 	bodyDef.type = b2_dynamicBody;
 	bodyDef.position.x += shaftSize.x;
-	m_sledgeHead = world->CreateBody(&bodyDef);
+	m_sledgeHeadAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef));
 
 	dynamicBox.SetAsBox(headSize.x, headSize.y);
 
 	fixtureDef.shape = &dynamicBox;
 	fixtureDef.density = headDensity;
 	fixtureDef.friction = headFriction;
-	m_sledgeHead->CreateFixture(&fixtureDef);
+	m_sledgeHeadAsset->GetBody()->CreateFixture(&fixtureDef);
+	m_sledgeHeadAsset->UpdateSize();
 
 	b2WeldJointDef joint;
-	joint.Initialize(m_shaft, m_sledgeHead, bodyDef.position);
+	joint.Initialize(GetShaft(), m_sledgeHeadAsset->GetBody(), bodyDef.position);
 	m_weld = world->CreateJoint(&joint);
+
+	m_assets.emplace_back(m_shaftAsset);
+	m_assets.emplace_back(m_sledgeHeadAsset);
 }
 
 Sledge::~Sledge()
 {
 	if (m_weld != nullptr)
 	{
-		m_sledgeHead->GetWorld()->DestroyJoint(m_weld);
+		m_sledgeHeadAsset->GetBody()->GetWorld()->DestroyJoint(m_weld);
 	}
-	if (m_sledgeHead != nullptr)
+	if (m_sledgeHeadAsset->GetBody() != nullptr)
 	{
-		m_sledgeHead->GetWorld()->DestroyBody(m_sledgeHead);
+		m_sledgeHeadAsset->GetBody()->GetWorld()->DestroyBody(m_sledgeHeadAsset->GetBody());
 	}
 }

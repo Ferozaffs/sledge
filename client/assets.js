@@ -51,7 +51,7 @@ export function update(id, alias, x, y, sizeX, sizeY, rot)
 
     foundObject.x = x;
     foundObject.y = y;
-    foundObject.sprite.rotation = rot;
+    foundObject.sprite.rotation = -rot;
 
     bounds.max.x = -10000.0;
     bounds.max.y = -10000.0;
@@ -97,8 +97,8 @@ export function adjustAssetsView(scaleFactor, width, height)
     const padding = 0.95;
 
     assets.forEach((asset) => {
-        asset.sprite.x = width * (1.0 - padding) / 2 + (asset.x * scaleFactor * padding);
-        asset.sprite.y = (height - (asset.y * scaleFactor)) * padding;
+        asset.sprite.x = width * (1.0 - padding) / 2 + ((asset.x - bounds.min.x) * scaleFactor * padding);
+        asset.sprite.y = (height - ((asset.y - bounds.min.y) * scaleFactor)) * padding;
 
         asset.sprite.width =  asset.size.x * scaleFactor; 
         asset.sprite.height =  asset.size.y * scaleFactor; 

@@ -1,5 +1,6 @@
 #include "Sword.h"
 #include "Avatar.h"
+#include "Asset.h"
 
 using namespace Gameplay;
 
@@ -23,7 +24,7 @@ Sword::Sword(const Avatar* avatar)
 	bodyDef.position = avatar->GetPosition();
 	bodyDef.position.x += shaftSize.x;
 	bodyDef.fixedRotation = false;
-	m_shaft = world->CreateBody(&bodyDef);
+	m_shaftAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef));
 	
 	b2PolygonShape dynamicBox;
 	dynamicBox.SetAsBox(shaftSize.x, shaftSize.y);
@@ -32,32 +33,37 @@ Sword::Sword(const Avatar* avatar)
 	fixtureDef.shape = &dynamicBox;
 	fixtureDef.density = shaftDensity;
 	fixtureDef.friction = shaftFriction;
-	m_shaft->CreateFixture(&fixtureDef);
+	GetShaft()->CreateFixture(&fixtureDef);
+	m_shaftAsset->UpdateSize();
 
 	bodyDef.type = b2_dynamicBody;
 	bodyDef.position.x += shaftSize.x * 0.1f;
-	m_hilt = world->CreateBody(&bodyDef);
+	m_hiltAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef));
 
 	dynamicBox.SetAsBox(hiltSize.x, hiltSize.y);
 
 	fixtureDef.shape = &dynamicBox;
 	fixtureDef.density = hiltDensity;
 	fixtureDef.friction = hiltFriction;
-	m_hilt->CreateFixture(&fixtureDef);
+	m_hiltAsset->GetBody()->CreateFixture(&fixtureDef);
+	m_hiltAsset->UpdateSize();
 
 	b2WeldJointDef joint;
-	joint.Initialize(m_shaft, m_hilt, bodyDef.position);
+	joint.Initialize(GetShaft(), m_hiltAsset->GetBody(), bodyDef.position);
 	m_weld = world->CreateJoint(&joint);
+
+	m_assets.emplace_back(m_shaftAsset);
+	m_assets.emplace_back(m_hiltAsset);
 }
 
 Sword::~Sword()
 {
 	if (m_weld != nullptr)
 	{
-		m_hilt->GetWorld()->DestroyJoint(m_weld);
+		m_hiltAsset->GetBody()->GetWorld()->DestroyJoint(m_weld);
 	}
-	if (m_hilt != nullptr)
+	if (m_hiltAsset->GetBody() != nullptr)
 	{
-		m_hilt->GetWorld()->DestroyBody(m_hilt);
+		m_hiltAsset->GetBody()->GetWorld()->DestroyBody(m_hiltAsset->GetBody());
 	}
 }

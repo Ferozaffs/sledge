@@ -64,6 +64,5 @@ function removeData(message)
 
 function updateData(message)
 {
-    console.log(message);
     APP.updateData(message);
 }

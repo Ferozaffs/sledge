@@ -1,9 +1,13 @@
 #pragma once
+#include <memory>
+#include <vector>
+
 class b2Body;
 
 namespace Gameplay
 {
 	class Avatar;
+	class Asset;
 	
 	class Weapon
 	{
@@ -18,8 +22,11 @@ namespace Gameplay
 		const float& GetTorque() const;
 		const Avatar* GetAvatar() const;
 
+		std::vector<std::shared_ptr<Asset>> GetAssets() const;
+
 	protected:
-		b2Body* m_shaft;
+		std::vector<std::shared_ptr<Asset>> m_assets;
+		std::shared_ptr<Asset> m_shaftAsset;
 		float m_speed;
 		float m_torque;
 

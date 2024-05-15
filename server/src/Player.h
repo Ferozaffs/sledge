@@ -1,11 +1,13 @@
 #pragma once
 #include <memory>
+#include <vector>
 
 class b2World;
 
 namespace Gameplay
 {
 	class Avatar;
+	class Asset;
 
 	class Player
 	{
@@ -16,6 +18,8 @@ namespace Gameplay
 		void Update(float deltaTime);
 
 		void SetInputs(float sledgeInput, float moveInput, float jumpInput);
+
+		std::vector<std::shared_ptr<Asset>> GetAssets() const;
 			
 		std::atomic<bool> m_pendingRemove;
 

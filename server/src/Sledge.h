@@ -1,5 +1,6 @@
 #pragma once
 #include "Weapon.h"
+#include <memory>
 
 class b2Body;
 class b2Joint;
@@ -7,6 +8,7 @@ class b2Joint;
 namespace Gameplay
 {
 	class Avatar;
+	class Asset;
 
 	class Sledge : public Weapon
 	{
@@ -15,7 +17,7 @@ namespace Gameplay
 		virtual ~Sledge();
 
 	private:
-		b2Body* m_sledgeHead;
+		std::shared_ptr<Asset> m_sledgeHeadAsset;
 		b2Joint* m_weld;
 	};
 

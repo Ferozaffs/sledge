@@ -34,6 +34,8 @@ namespace Network
 		static std::unique_ptr<Impl> m_impl;
 		Gameplay::PlayerManager* m_playerManager;
 		Gameplay::LevelLoader* m_levelLoader;
+
+		float m_tickCounter;
 	};
 
 }

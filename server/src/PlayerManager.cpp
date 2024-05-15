@@ -42,3 +42,15 @@ const std::shared_ptr<Player>& Gameplay::PlayerManager::GetPlayer(size_t index)
 
 	return nullptr;
 }
+
+std::vector<std::shared_ptr<Asset>> Gameplay::PlayerManager::GetDynamicAssets() const
+{
+	std::vector<std::shared_ptr<Asset>> assets;
+	for (const auto& player : m_players)
+	{
+		auto playerAssets = player->GetAssets();
+		assets.insert(assets.end(), playerAssets.begin(), playerAssets.end());
+	}
+
+	return assets;
+}

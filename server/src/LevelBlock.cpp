@@ -24,3 +24,8 @@ const std::shared_ptr<Asset>& Gameplay::LevelBlock::GetAsset() const
 {
     return m_asset;
 }
+
+bool Gameplay::LevelBlock::InMotion()
+{
+    return m_asset->GetBody()->GetLinearVelocity().Length() > 0.0f;
+}

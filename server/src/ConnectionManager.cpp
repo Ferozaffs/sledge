@@ -69,8 +69,10 @@ private:
 	{
 		auto& endpoint = impl->endpoint;
 
-		endpoint.set_access_channels(websocketpp::log::alevel::all);
-		endpoint.clear_access_channels(websocketpp::log::alevel::frame_payload);
+		//endpoint.set_access_channels(websocketpp::log::alevel::all);
+		//endpoint.clear_access_channels(websocketpp::log::alevel::frame_payload);
+		endpoint.set_access_channels(websocketpp::log::alevel::none);
+		endpoint.clear_access_channels(websocketpp::log::alevel::none);
 		endpoint.init_asio();
 
 		endpoint.set_close_handler(bind(&Impl::on_close, &endpoint, ::_1));
@@ -157,6 +159,14 @@ ConnectionManager::~ConnectionManager()
 
 void ConnectionManager::Update(float deltaTime)
 {
+	bool tick = false;
+	m_tickCounter += deltaTime;
+	if (m_tickCounter > 1.0f / 120.0f)
+	{
+		tick = true;
+		m_tickCounter = 0.0f;
+	}
+
 	for (auto& connection : m_impl->connections)
 	{
 		if (connection.second == nullptr)
@@ -164,7 +174,16 @@ void ConnectionManager::Update(float deltaTime)
 			auto player = m_playerManager->CreatePlayer();
 			connection.second = player;
 
-			SendAssets(player, m_levelLoader->GetLevelAssets());
+			SendAssets(player, m_levelLoader->GetAssets());
+		}
+		
+		if (tick == true)
+		{
+			auto assets = m_levelLoader->GetDynamicAssets();
+			auto playerAssets =	m_playerManager->GetDynamicAssets();
+
+			assets.insert(assets.end(), playerAssets.begin(), playerAssets.end());
+			SendAssets(connection.second, assets);
 		}
 	}
 }

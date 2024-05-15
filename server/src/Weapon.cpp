@@ -1,4 +1,5 @@
 #include "Weapon.h"
+#include "Asset.h"
 
 #include <box2d/box2d.h>
 #include <assert.h>
@@ -6,8 +7,7 @@
 using namespace Gameplay;
 
 Weapon::Weapon(const Avatar* avatar)
-	: m_shaft(nullptr)
-	, m_avatar(avatar)
+	: m_avatar(avatar)
 	, m_speed(3.0f)
 	, m_torque(5000.0f)
 {
@@ -16,9 +16,9 @@ Weapon::Weapon(const Avatar* avatar)
 
 Weapon::~Weapon()
 {
-	if (m_shaft != nullptr)
+	if (GetShaft() != nullptr)
 	{
-		m_shaft->GetWorld()->DestroyBody(m_shaft);
+		GetShaft()->GetWorld()->DestroyBody(GetShaft());
 	}
 }
 
@@ -34,12 +34,17 @@ const float& Gameplay::Weapon::GetTorque() const
 
 b2Body* Gameplay::Weapon::GetShaft() const
 {
-	assert(m_shaft != nullptr && "Weapon not implemented");
+	assert(m_shaftAsset != nullptr && "Weapon not implemented");
 
-	return m_shaft;
+	return m_shaftAsset->GetBody();
 }
 
 const Avatar* Gameplay::Weapon::GetAvatar() const
 {
 	return m_avatar;
+}
+
+std::vector<std::shared_ptr<Asset>> Gameplay::Weapon::GetAssets() const
+{
+	return m_assets;
 }
