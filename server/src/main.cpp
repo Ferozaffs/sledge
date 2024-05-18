@@ -1,14 +1,13 @@
-#include "Debugger.h"
 #include "B2Manager.h"
-#include "LevelLoader.h"
-#include "PlayerManager.h"
-#include "Player.h"
 #include "ConnectionManager.h"
+#include "Debugger.h"
+#include "LevelLoader.h"
+#include "Player.h"
+#include "PlayerManager.h"
 
-#include <memory>
-#include <chrono>
 #include <GLFW/glfw3.h>
-
+#include <chrono>
+#include <memory>
 
 static std::unique_ptr<Debug::Debugger> debugger = nullptr;
 static std::unique_ptr<Physics::B2Manager> b2Manager = nullptr;
@@ -16,16 +15,18 @@ static std::unique_ptr<Gameplay::LevelLoader> levelLoader = nullptr;
 static std::unique_ptr<Gameplay::PlayerManager> playerManager = nullptr;
 static std::unique_ptr<Network::ConnectionManager> connectionManager = nullptr;
 
-void Update(const float& deltaTime)
+void Update(const float &deltaTime)
 {
-    if (debugger != nullptr) {
+    if (debugger != nullptr)
+    {
         debugger->Update(deltaTime);
 
-        //auto player = playerManager->GetPlayer(0);
-        //if (player != nullptr && (debugger->DbgSledgeInput != 0.0f || debugger->DbgJumpInput != 0.0f || debugger->DbgMoveInput != 0.0f))
+        // auto player = playerManager->GetPlayer(0);
+        // if (player != nullptr && (debugger->DbgSledgeInput != 0.0f || debugger->DbgJumpInput != 0.0f ||
+        // debugger->DbgMoveInput != 0.0f))
         //{
-        //    player->SetInputs(debugger->DbgSledgeInput, debugger->DbgMoveInput, debugger->DbgJumpInput);
-        //}
+        //     player->SetInputs(debugger->DbgSledgeInput, debugger->DbgMoveInput, debugger->DbgJumpInput);
+        // }
     }
 
     playerManager->Update(deltaTime);
@@ -34,23 +35,26 @@ void Update(const float& deltaTime)
     connectionManager->Update(deltaTime);
 }
 
-void Render() 
+void Render()
 {
-    if (debugger != nullptr) {
+    if (debugger != nullptr)
+    {
         b2Manager->DbgRender(debugger.get());
 
         debugger->Render();
     }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 #if defined(_WIN32)
     _CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
 #endif
 
-    for (int i = 0; i < argc; ++i) {
-        if (strcmp(argv[i],"--debug") == 0 || strcmp(argv[i],"-d") == 0) {
+    for (int i = 0; i < argc; ++i)
+    {
+        if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0)
+        {
             debugger = std::make_unique<Debug::Debugger>();
         }
     }
@@ -80,5 +84,3 @@ int main(int argc, char* argv[])
     b2Manager.reset();
     debugger.reset();
 }
-
-

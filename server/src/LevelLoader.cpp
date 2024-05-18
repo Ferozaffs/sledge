@@ -1,13 +1,14 @@
 #include "LevelLoader.h"
 #include "LevelBlock.h"
 
-#include <fstream>
 #include <box2d/box2d.h>
+#include <fstream>
 
 using namespace Gameplay;
 
 #pragma pack(push, 1)
-struct BMPHeader {
+struct BMPHeader
+{
     char signature[2];
     uint32_t fileSize;
     uint16_t reserved1;
@@ -27,33 +28,34 @@ struct BMPHeader {
 };
 #pragma pack(pop)
 
-LevelLoader::LevelLoader(const std::shared_ptr<b2World>& world)
-	: m_world(world)
+LevelLoader::LevelLoader(const std::shared_ptr<b2World> &world) : m_world(world)
 {
 }
 
 LevelLoader::~LevelLoader()
 {
-
 }
 
-bool LevelLoader::LoadLevel(const std::string& filename)
+bool LevelLoader::LoadLevel(const std::string &filename)
 {
     std::ifstream file(filename, std::ios::binary);
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         printf_s("Error opening file: %s\n", filename.c_str());
         return false;
     }
 
     BMPHeader header;
-    file.read(reinterpret_cast<char*>(&header), sizeof(header));
+    file.read(reinterpret_cast<char *>(&header), sizeof(header));
 
-    if (header.signature[0] != 'B' || header.signature[1] != 'M') {
+    if (header.signature[0] != 'B' || header.signature[1] != 'M')
+    {
         printf_s("Not a valid BMP file\n");
         return false;
     }
 
-    if (header.bitsPerPixel != 24) {
+    if (header.bitsPerPixel != 24)
+    {
         printf_s("Only 24-bit BMP files are supported\n");
         return false;
     }
@@ -62,39 +64,40 @@ bool LevelLoader::LoadLevel(const std::string& filename)
     const int padding = (4 - (header.width * 3) % 4) % 4;
 
     std::vector<std::vector<uint8_t>> rows;
-    for (int i = 0; i < header.height; i++) {
-        std::vector<uint8_t> pixelData(header.width*3);
+    for (int i = 0; i < header.height; i++)
+    {
+        std::vector<uint8_t> pixelData(header.width * 3);
 
-        file.read(reinterpret_cast<char*>(pixelData.data()), pixelData.size());
+        file.read(reinterpret_cast<char *>(pixelData.data()), pixelData.size());
         file.seekg(padding, std::ios_base::cur);
 
         rows.emplace_back(pixelData);
-    } 
+    }
 
     return BuildLevel(rows);
 }
 
-std::vector<std::shared_ptr<Asset>> LevelLoader::GetAssets() const 
+std::vector<std::shared_ptr<Asset>> LevelLoader::GetAssets() const
 {
     std::vector<std::shared_ptr<Asset>> assets;
-    for (const auto& block : m_blocks)
+    for (const auto &block : m_blocks)
     {
-        const auto& blockAsset = block->GetAsset();
+        const auto &blockAsset = block->GetAsset();
         if (blockAsset != nullptr)
         {
             assets.emplace_back(blockAsset);
-        }      
+        }
     }
-    
+
     return assets;
 }
 
 std::vector<std::shared_ptr<Asset>> Gameplay::LevelLoader::GetDynamicAssets() const
 {
     std::vector<std::shared_ptr<Asset>> assets;
-    for (const auto& block : m_blocks)
+    for (const auto &block : m_blocks)
     {
-        const auto& blockAsset = block->GetAsset();
+        const auto &blockAsset = block->GetAsset();
         if (blockAsset != nullptr && block->InMotion())
         {
             assets.emplace_back(blockAsset);
@@ -106,15 +109,18 @@ std::vector<std::shared_ptr<Asset>> Gameplay::LevelLoader::GetDynamicAssets() co
 
 bool LevelLoader::BuildLevel(std::vector<std::vector<uint8_t>> rows)
 {
-    for (int row = 0; row < rows.size(); row++) {
+    for (int row = 0; row < rows.size(); row++)
+    {
         auto cols = rows[row].size() / 3;
-        for (int col = 0; col < cols; col++) {
+        for (int col = 0; col < cols; col++)
+        {
             auto index = col * 3;
             uint8_t red = rows[row][index];
-            uint8_t green = rows[row][index +1];
-            uint8_t blue = rows[row][index +1];
+            uint8_t green = rows[row][index + 1];
+            uint8_t blue = rows[row][index + 1];
 
-            if (red + green + blue == 0) {
+            if (red + green + blue == 0)
+            {
                 CreateStaticBlock(col, row);
             }
         }

@@ -1,6 +1,7 @@
 import * as CONNECTION from './connection.js'
 import * as PIXI from 'https://cdn.skypack.dev/pixi.js';
 import * as ASSETS from './assets.js';
+import * as JOYSTICKS from './joystick.js'
 
 const app = new PIXI.Application();
 let initialized = false;
@@ -17,6 +18,7 @@ let tickCounter = 0.0;
 
     app.ticker.add((time) =>
     {
+        ASSETS.interpolate(time.deltaTime);
         updateView();
 
         tickCounter += time.deltaTime;
@@ -96,28 +98,42 @@ function sendData()
     let jumpInput = 0.0;
     let moveInput = 0.0;
 
-    if (keysPressed['ArrowRight'])
-    {
-        sledgeInput  = -1.0;
-    };
-    if (keysPressed['ArrowLeft'])
-    {
-        sledgeInput  = 1.0;
-    };
+    const joystickInputLeft = JOYSTICKS.getJoystickValues('joystickLeft');
+    const joystickInputRight = JOYSTICKS.getJoystickValues('joystickRight');
 
-    if (keysPressed['w'])
+    if (joystickInputLeft !== undefined && joystickInputRight !== undefined)
     {
-        jumpInput  = 1.0;
-    };
 
-    if (keysPressed['a'])
+        moveInput = joystickInputLeft.x;
+        jumpInput = joystickInputLeft.y;
+        
+        sledgeInput = joystickInputRight.x;
+    }
+    else
     {
-        moveInput  = -1.0;
-    };
-    if (keysPressed['d'])
-    {
-        moveInput  = 1.0;
-    };
+        if (keysPressed['ArrowRight'])
+            {
+                sledgeInput  = 1.0;
+            };
+            if (keysPressed['ArrowLeft'])
+            {
+                sledgeInput  = -1.0;
+            };
+        
+            if (keysPressed['w'])
+            {
+                jumpInput  = 1.0;
+            };
+        
+            if (keysPressed['a'])
+            {
+                moveInput  = -1.0;
+            };
+            if (keysPressed['d'])
+            {
+                moveInput  = 1.0;
+            };
+    }
 
     let input = {
         sledge: sledgeInput,

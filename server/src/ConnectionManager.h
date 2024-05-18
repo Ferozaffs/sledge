@@ -1,45 +1,45 @@
 #pragma once
+#include <guiddef.h>
 #include <memory>
 #include <string>
 #include <vector>
-#include <guiddef.h>
 
-namespace Gameplay 
+namespace Gameplay
 {
-	class PlayerManager;
-	class Player;
-	class Asset;
-	class LevelLoader;
-}
+class PlayerManager;
+class Player;
+class Asset;
+class LevelLoader;
+} // namespace Gameplay
 
 namespace Network
 {
-	class Impl;
+class Impl;
 
-	class ConnectionManager
-	{
-	public:
-		ConnectionManager(Gameplay::PlayerManager* playerManager, Gameplay::LevelLoader* levelLoader);
-		~ConnectionManager();
+class ConnectionManager
+{
+  public:
+    ConnectionManager(Gameplay::PlayerManager *playerManager, Gameplay::LevelLoader *levelLoader);
+    ~ConnectionManager();
 
-		void Update(float deltaTime);
+    void Update(float deltaTime);
 
-		static void RemoveAsset(GUID id);
+    static void RemoveAsset(GUID id);
 
-	private:
-		friend class Impl;
+  private:
+    friend class Impl;
 
-		static std::string CreateStatusMessage(std::string message);
-		static std::string CreateErrorMessage(std::string message);
+    static std::string CreateStatusMessage(std::string message);
+    static std::string CreateErrorMessage(std::string message);
 
-		void SendAssets(const std::shared_ptr<Gameplay::Player>& player, std::vector<std::shared_ptr<Gameplay::Asset>> assets);
-		
-		static std::unique_ptr<Impl> m_impl;
-		Gameplay::PlayerManager* m_playerManager;
-		Gameplay::LevelLoader* m_levelLoader;
+    void SendAssets(const std::shared_ptr<Gameplay::Player> &player,
+                    std::vector<std::shared_ptr<Gameplay::Asset>> assets);
 
-		float m_tickCounter;
-	};
+    static std::unique_ptr<Impl> m_impl;
+    Gameplay::PlayerManager *m_playerManager;
+    Gameplay::LevelLoader *m_levelLoader;
 
-}
+    float m_tickCounter;
+};
 
+} // namespace Network

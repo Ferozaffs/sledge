@@ -24,6 +24,8 @@ function add(id, alias, sizeX, sizeY)
         id: id,
         x: 0,
         x: 0,
+        smoothX: 0,
+        smoothY: 0,
         size: {
             x: sizeX,
             y: sizeY
@@ -49,8 +51,8 @@ export function update(id, alias, x, y, sizeX, sizeY, rot)
         foundObject = add(id, alias, sizeX, sizeY);
     }
 
-    foundObject.x = x;
-    foundObject.y = y;
+    foundObject.smoothX = foundObject.x = x;
+    foundObject.smoothY = foundObject.y = y;
     foundObject.sprite.rotation = -rot;
 
     bounds.max.x = -10000.0;
@@ -92,13 +94,25 @@ export function getBounds()
     return bounds;
 }
 
+function lerp(start, end, t) {
+    return start * (1 - t) + end * t;
+}
+
+export function interpolate(deltaTime)
+{
+    assets.forEach((asset) => {
+        asset.smoothX = lerp(asset.smoothX, asset.x, deltaTime * 2.0);
+        asset.smoothY = lerp(asset.smoothY, asset.y, deltaTime * 2.0);
+    });
+}
+
 export function adjustAssetsView(scaleFactor, width, height)
 {
     const padding = 0.95;
 
     assets.forEach((asset) => {
-        asset.sprite.x = width * (1.0 - padding) / 2 + ((asset.x - bounds.min.x) * scaleFactor * padding);
-        asset.sprite.y = height * (1.0 - padding) / 2 + (height - ((asset.y - bounds.min.y) * scaleFactor)) * padding;
+        asset.sprite.x = width * (1.0 - padding) / 2 + ((asset.smoothX - bounds.min.x) * scaleFactor * padding);
+        asset.sprite.y = height * (1.0 - padding) / 2 + (height - ((asset.smoothY - bounds.min.y) * scaleFactor)) * padding;
 
         asset.sprite.width =  asset.size.x * scaleFactor; 
         asset.sprite.height =  asset.size.y * scaleFactor; 

@@ -3,3 +3,19 @@ body {
     padding: 0;
     overflow: hidden;
 }
+
+@media (max-width: 1024px) {
+    .joystick-container {
+        position: absolute;
+        width: 50%;
+        height: 100%;
+    }
+
+    #joystickLeft {
+        left: 0px;
+    }
+
+    #joystickRight {
+        right: 0px;
+    }
+}

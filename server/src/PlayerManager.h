@@ -6,26 +6,25 @@ class b2World;
 
 namespace Gameplay
 {
-	class Player;
-	class Asset;
+class Player;
+class Asset;
 
-	class PlayerManager
-	{
-	public:
-		PlayerManager(const std::shared_ptr<b2World>& b2World);
-		~PlayerManager();
+class PlayerManager
+{
+  public:
+    PlayerManager(const std::shared_ptr<b2World> &b2World);
+    ~PlayerManager();
 
-		void Update(float deltaTime);
+    void Update(float deltaTime);
 
-		const std::shared_ptr<Player>& CreatePlayer();
-		std::shared_ptr<Player> GetPlayer(size_t index);
+    const std::shared_ptr<Player> &CreatePlayer();
+    std::shared_ptr<Player> GetPlayer(size_t index);
 
-		std::vector< std::shared_ptr<Asset>> GetDynamicAssets() const;
+    std::vector<std::shared_ptr<Asset>> GetDynamicAssets() const;
 
-	private:
-		const std::shared_ptr<b2World>& m_b2World;
-		std::vector<std::shared_ptr<Player>> m_players;
-	};
+  private:
+    const std::shared_ptr<b2World> &m_b2World;
+    std::vector<std::shared_ptr<Player>> m_players;
+};
 
-}
-
+} // namespace Gameplay

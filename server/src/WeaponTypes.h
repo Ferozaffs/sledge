@@ -2,10 +2,10 @@
 
 namespace Gameplay
 {
-	enum class WeaponType {
-		Sledge,
-		Sword,
-	};
+enum class WeaponType
+{
+    Sledge,
+    Sword,
+};
 
-}
-
+} // namespace Gameplay

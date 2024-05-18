@@ -5,7 +5,7 @@
 
 using namespace Gameplay;
 
-LevelBlock::LevelBlock(b2World* world, int x, int y)
+LevelBlock::LevelBlock(b2World *world, int x, int y)
 {
     b2BodyDef blockDef;
     blockDef.position.Set(2.0f * static_cast<float>(x), 2.0f * static_cast<float>(y));
@@ -20,7 +20,7 @@ LevelBlock::~LevelBlock()
 {
 }
 
-const std::shared_ptr<Asset>& Gameplay::LevelBlock::GetAsset() const
+const std::shared_ptr<Asset> &Gameplay::LevelBlock::GetAsset() const
 {
     return m_asset;
 }

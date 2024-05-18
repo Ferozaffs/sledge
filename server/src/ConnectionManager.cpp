@@ -1,22 +1,22 @@
 #include "ConnectionManager.h"
-#include "PlayerManager.h"
-#include "Player.h"
-#include "LevelLoader.h"
 #include "Asset.h"
+#include "LevelLoader.h"
+#include "Player.h"
+#include "PlayerManager.h"
 
 #pragma warning(push)
-#pragma warning(disable: 4267)
+#pragma warning(disable : 4267)
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 #pragma warning(pop)
 
 #include <nlohmann/json.hpp>
 
-#include <string>
+#include <Windows.h>
 #include <functional>
 #include <map>
-#include <Windows.h>
 #include <mutex>
+#include <string>
 
 using namespace Network;
 using namespace Gameplay;
@@ -27,145 +27,155 @@ using namespace nlohmann::literals;
 typedef websocketpp::server<websocketpp::config::asio> server;
 typedef websocketpp::connection<websocketpp::config::asio> connection;
 
+using websocketpp::lib::bind;
 using websocketpp::lib::placeholders::_1;
 using websocketpp::lib::placeholders::_2;
-using websocketpp::lib::bind;
 
 typedef server::message_ptr message_ptr;
 
 std::unique_ptr<Impl> ConnectionManager::m_impl = nullptr;
 std::mutex connectionMutex;
 
-std::string guidToString(const GUID& guid) {
-	wchar_t guidWStr[39]; // GUIDs are 38 characters plus null terminator
-	StringFromGUID2(guid, guidWStr, 39);
-	std::wstring wideStr(guidWStr);
-	return std::string(wideStr.begin(), wideStr.end());
+#pragma warning(push)
+#pragma warning(disable : 4244)
+std::string guidToString(const GUID &guid)
+{
+    wchar_t guidWStr[39]; // GUIDs are 38 characters plus null terminator
+    StringFromGUID2(guid, guidWStr, 39);
+    std::wstring wideStr(guidWStr);
+    return std::string(wideStr.begin(), wideStr.end());
 }
+#pragma warning(pop)
 
-class Network::Impl{
-public:
-	server endpoint;
-	std::map<std::shared_ptr<connection>, std::shared_ptr<Gameplay::Player>> connections;
-	
-	Impl()
-	{
-		thread = std::thread(&websocketThread, this);
-	}
+class Network::Impl
+{
+  public:
+    server endpoint;
+    std::map<std::shared_ptr<connection>, std::shared_ptr<Gameplay::Player>> connections;
 
-	void Send(const std::shared_ptr<Gameplay::Player>& player, std::string message)
-	{
-		for (const auto& connection : connections)
-		{
-			if (player == connection.second && connection.first->get_state() == websocketpp::session::state::open)
-			{
-				Send(connection.first, message.c_str());
-			}
-		}
-	}
+    Impl()
+    {
+        thread = std::thread(&websocketThread, this);
+    }
 
-	void Send(std::shared_ptr<connection> connection, std::string message)
-	{
-		endpoint.send(connection, message.c_str(), websocketpp::frame::opcode::text);
-	}
+    void Send(const std::shared_ptr<Gameplay::Player> &player, std::string message)
+    {
+        for (const auto &connection : connections)
+        {
+            if (player == connection.second && connection.first->get_state() == websocketpp::session::state::open)
+            {
+                Send(connection.first, message.c_str());
+            }
+        }
+    }
 
+    void Send(std::shared_ptr<connection> connection, std::string message)
+    {
+        endpoint.send(connection, message.c_str(), websocketpp::frame::opcode::text);
+    }
 
+  private:
+    std::thread thread;
 
-private:
-	std::thread thread;
+    static void websocketThread(Impl *impl)
+    {
+        auto &endpoint = impl->endpoint;
 
-	static void websocketThread(Impl* impl)
-	{
-		auto& endpoint = impl->endpoint;
+        // endpoint.set_access_channels(websocketpp::log::alevel::all);
+        // endpoint.clear_access_channels(websocketpp::log::alevel::frame_payload);
+        endpoint.set_access_channels(websocketpp::log::alevel::none);
+        endpoint.clear_access_channels(websocketpp::log::alevel::none);
+        endpoint.init_asio();
 
-		//endpoint.set_access_channels(websocketpp::log::alevel::all);
-		//endpoint.clear_access_channels(websocketpp::log::alevel::frame_payload);
-		endpoint.set_access_channels(websocketpp::log::alevel::none);
-		endpoint.clear_access_channels(websocketpp::log::alevel::none);
-		endpoint.init_asio();
+        endpoint.set_close_handler(bind(&Impl::on_close, &endpoint, ::_1));
+        endpoint.set_message_handler(bind(&Impl::on_message, &endpoint, ::_1, ::_2));
 
-		endpoint.set_close_handler(bind(&Impl::on_close, &endpoint, ::_1));
-		endpoint.set_message_handler(bind(&Impl::on_message, &endpoint, ::_1, ::_2));
+        endpoint.listen(9002);
+        endpoint.start_accept();
 
-		endpoint.listen(9002);
-		endpoint.start_accept();
+        endpoint.run();
+    }
 
-		endpoint.run();
-	}
+    static void on_close(server *s, websocketpp::connection_hdl hdl)
+    {
+        ConnectionManager::m_impl->CloseConnection(s->get_con_from_hdl(hdl));
+    }
 
-	static void on_close(server* s, websocketpp::connection_hdl hdl) {
-		ConnectionManager::m_impl->CloseConnection(s->get_con_from_hdl(hdl));
-	}
+    static void on_message(server *s, websocketpp::connection_hdl hdl, message_ptr msg)
+    {
+        try
+        {
+            json j = json::parse(msg->get_payload());
 
-	static void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
-		try {
-			json j = json::parse(msg->get_payload());
+            if (j.contains("type"))
+            {
+                if (j["type"] == "conreq")
+                {
+                    s->send(hdl, ConnectionManager::CreateStatusMessage("Pending connection"),
+                            websocketpp::frame::opcode::text);
 
-			if (j.contains("type"))
-			{
-				if (j["type"] == "conreq") {
-					s->send(hdl, ConnectionManager::CreateStatusMessage("Pending connection"), websocketpp::frame::opcode::text);
+                    ConnectionManager::m_impl->CompleteConnection(s->get_con_from_hdl(hdl));
+                }
+                else if (j["type"] == "input")
+                {
+                    ConnectionManager::m_impl->SetInput(s->get_con_from_hdl(hdl), j);
+                }
+            }
+            else
+            {
+                s->send(hdl, ConnectionManager::CreateErrorMessage("Unknown request"),
+                        websocketpp::frame::opcode::text);
+            }
+        }
+        catch (json::parse_error &e)
+        {
+            std::cerr << "Parse error: " << e.what() << std::endl;
+        }
+        catch (std::exception &e)
+        {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
+    }
 
-					ConnectionManager::m_impl->CompleteConnection(s->get_con_from_hdl(hdl));
-				}
-				else if (j["type"] == "input")
-				{
-					ConnectionManager::m_impl->SetInput(s->get_con_from_hdl(hdl), j);
-				}
-			}
-			else {
-				s->send(hdl, ConnectionManager::CreateErrorMessage("Unknown request"), websocketpp::frame::opcode::text);
-			}
-		}
-		catch (json::parse_error& e) {
-			std::cerr << "Parse error: " << e.what() << std::endl;
-		}
-		catch (std::exception& e) {
-			std::cerr << "Error: " << e.what() << std::endl;
-		}	
-	}
+    void CloseConnection(const std::shared_ptr<connection> &handle)
+    {
+        connectionMutex.lock();
+        auto it = connections.find(endpoint.get_con_from_hdl(handle));
+        if (it != connections.end() && it->second != nullptr)
+        {
+            it->second->m_pendingRemove = true;
+            connections.erase(it);
+        }
+        connectionMutex.unlock();
+    }
 
-	void CloseConnection(const std::shared_ptr<connection>& handle)
-	{
-		connectionMutex.lock();
-		auto it = connections.find(endpoint.get_con_from_hdl(handle));
-		if (it != connections.end() && it->second != nullptr)
-		{
-			it->second->m_pendingRemove = true;
-			connections.erase(it);
-		}
-		connectionMutex.unlock();
-	}
-	
-	void CompleteConnection(const std::shared_ptr<connection>& handle)
-	{
-		connectionMutex.lock();
-		connections.insert({ handle, nullptr });
+    void CompleteConnection(const std::shared_ptr<connection> &handle)
+    {
+        connectionMutex.lock();
+        connections.insert({handle, nullptr});
 
-		endpoint.send(handle, ConnectionManager::CreateStatusMessage("Connection established"), websocketpp::frame::opcode::text);
-		connectionMutex.unlock();
-	}
+        endpoint.send(handle, ConnectionManager::CreateStatusMessage("Connection established"),
+                      websocketpp::frame::opcode::text);
+        connectionMutex.unlock();
+    }
 
-	void SetInput(const std::shared_ptr<connection>& handle, const json& j)
-	{
-		connectionMutex.lock();
-		auto it = connections.find(endpoint.get_con_from_hdl(handle));
-		if (it != connections.end() && it->second != nullptr)
-		{
-			auto input = j["input"];
-			it->second->SetInputs(input["sledge"], input["move"], input["jump"]);
-		}
-		connectionMutex.unlock();
-	}
-
+    void SetInput(const std::shared_ptr<connection> &handle, const json &j)
+    {
+        connectionMutex.lock();
+        auto it = connections.find(endpoint.get_con_from_hdl(handle));
+        if (it != connections.end() && it->second != nullptr)
+        {
+            auto input = j["input"];
+            it->second->SetInputs(input["sledge"], input["move"], input["jump"]);
+        }
+        connectionMutex.unlock();
+    }
 };
 
-
-ConnectionManager::ConnectionManager(PlayerManager* playerManager, Gameplay::LevelLoader* levelLoader)
-	: m_playerManager(playerManager)
-	, m_levelLoader(levelLoader)
+ConnectionManager::ConnectionManager(PlayerManager *playerManager, Gameplay::LevelLoader *levelLoader)
+    : m_playerManager(playerManager), m_levelLoader(levelLoader), m_tickCounter(0.0f)
 {
-	m_impl = std::make_unique<Impl>();
+    m_impl = std::make_unique<Impl>();
 }
 
 ConnectionManager::~ConnectionManager()
@@ -174,98 +184,92 @@ ConnectionManager::~ConnectionManager()
 
 void ConnectionManager::Update(float deltaTime)
 {
-	bool tick = false;
-	m_tickCounter += deltaTime;
-	if (m_tickCounter > 1.0f / 120.0f)
-	{
-		tick = true;
-		m_tickCounter = 0.0f;
-	}
+    bool tick = false;
+    m_tickCounter += deltaTime;
+    if (m_tickCounter > 1.0f / 60.0f)
+    {
+        tick = true;
+        m_tickCounter = 0.0f;
+    }
 
-	connectionMutex.lock();
-	for (auto& connection : m_impl->connections)
-	{
-		if (connection.second == nullptr)
-		{
-			auto player = m_playerManager->CreatePlayer();
-			connection.second = player;
+    connectionMutex.lock();
+    for (auto &connection : m_impl->connections)
+    {
+        if (connection.second == nullptr)
+        {
+            auto player = m_playerManager->CreatePlayer();
+            connection.second = player;
 
-			SendAssets(player, m_levelLoader->GetAssets());
-		}
-		
-		if (tick == true)
-		{
-			auto assets = m_levelLoader->GetDynamicAssets();
-			auto playerAssets =	m_playerManager->GetDynamicAssets();
+            SendAssets(player, m_levelLoader->GetAssets());
+        }
 
-			assets.insert(assets.end(), playerAssets.begin(), playerAssets.end());
-			SendAssets(connection.second, assets);
-		}
-	}
-	connectionMutex.unlock();
+        if (tick == true)
+        {
+            auto assets = m_levelLoader->GetDynamicAssets();
+            auto playerAssets = m_playerManager->GetDynamicAssets();
+
+            assets.insert(assets.end(), playerAssets.begin(), playerAssets.end());
+            SendAssets(connection.second, assets);
+        }
+    }
+    connectionMutex.unlock();
 }
 
 void ConnectionManager::RemoveAsset(GUID id)
 {
-	json j = {
-		{"type", "removeData"},
-		{"id", guidToString(id)},
-	};
+    json j = {
+        {"type", "removeData"},
+        {"id", guidToString(id)},
+    };
 
-	connectionMutex.lock();
-	for (auto& connection : m_impl->connections)
-	{
-		m_impl->Send(connection.first, j.dump());
-	}
-	connectionMutex.unlock();
+    connectionMutex.lock();
+    for (auto &connection : m_impl->connections)
+    {
+        m_impl->Send(connection.first, j.dump());
+    }
+    connectionMutex.unlock();
 }
 
-void ConnectionManager::SendAssets(const std::shared_ptr<Player>& player, std::vector<std::shared_ptr<Asset>> assets)
+void ConnectionManager::SendAssets(const std::shared_ptr<Player> &player, std::vector<std::shared_ptr<Asset>> assets)
 {
-	json j = {
-		{"type", "updateData"}
-	};
-	
-	json assetArray = json::array();
+    json j = {{"type", "updateData"}};
 
-	for (const auto& asset : assets)
-	{
-		json assetData = {
-		   {"id", guidToString(asset->GetId())},
-		   {"alias", "block_basic"},
-		   {"x", asset->GetX()},
-		   {"y", asset->GetY()},
-		   {"sizeX", asset->GetSizeX()},
-		   {"sizeY", asset->GetSizeY()},
-		   {"rot", asset->GetRot()}
-		};
+    json assetArray = json::array();
 
-		assetArray.push_back(assetData);
-	}
+    for (const auto &asset : assets)
+    {
+        json assetData = {{"id", guidToString(asset->GetId())},
+                          {"alias", "block_basic"},
+                          {"x", asset->GetX()},
+                          {"y", asset->GetY()},
+                          {"sizeX", asset->GetSizeX()},
+                          {"sizeY", asset->GetSizeY()},
+                          {"rot", asset->GetRot()}};
 
+        assetArray.push_back(assetData);
+    }
 
-	j["assets"] = assetArray;
+    j["assets"] = assetArray;
 
-	m_impl->Send(player, j.dump());
+    m_impl->Send(player, j.dump());
 }
-
 
 std::string ConnectionManager::CreateStatusMessage(std::string message)
 {
-	json j = {
-		{"type", "status"},
-		{"status", message},
-	};
+    json j = {
+        {"type", "status"},
+        {"status", message},
+    };
 
-	return j.dump();
+    return j.dump();
 }
 
 std::string ConnectionManager::CreateErrorMessage(std::string message)
 {
-	json j = {
-		{"type", "error"},
-		{"error", message},
-	};
+    json j = {
+        {"type", "error"},
+        {"error", message},
+    };
 
-	return j.dump();
+    return j.dump();
 }

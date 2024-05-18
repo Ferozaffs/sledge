@@ -7,19 +7,17 @@ class b2Joint;
 
 namespace Gameplay
 {
-	class Avatar;
-	class Asset;
+class Avatar;
+class Asset;
 
-	class Sword : public Weapon
-	{
-	public:
-		Sword(const Avatar* player);
-		virtual ~Sword();
+class Sword : public Weapon
+{
+  public:
+    Sword(const Avatar *player);
+    virtual ~Sword();
 
-	private:
-		std::shared_ptr<Asset> m_hiltAsset;
-		b2Joint* m_weld;
-	};
+  private:
+    std::shared_ptr<Asset> m_hiltAsset;
+};
 
-}
-
+} // namespace Gameplay
