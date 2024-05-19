@@ -6,7 +6,8 @@
 
 using namespace Gameplay;
 
-Asset::Asset(b2Body *body) : m_body(body), m_sizeX(0.0f), m_sizeY(0.0f)
+Asset::Asset(b2Body *body, const std::string &alias)
+    : m_body(body), m_alias(alias), m_sizeX(0.0f), m_sizeY(0.0f), m_tint(0xFFFFFF)
 {
     CoCreateGuid(&m_id);
 }
@@ -14,11 +15,21 @@ Asset::Asset(b2Body *body) : m_body(body), m_sizeX(0.0f), m_sizeY(0.0f)
 Asset::~Asset()
 {
     Network::ConnectionManager::RemoveAsset(m_id);
+
+    if (m_body != nullptr)
+    {
+        m_body->GetWorld()->DestroyBody(m_body);
+    }
 }
 
 const GUID Asset::GetId() const
 {
     return m_id;
+}
+
+const std::string &Asset::GetAlias() const
+{
+    return m_alias;
 }
 
 const float Asset::GetX() const
@@ -50,9 +61,19 @@ const float Asset::GetRot() const
     return m_body->GetTransform().q.GetAngle();
 }
 
+const unsigned int Asset::GetTint() const
+{
+    return m_tint;
+}
+
 b2Body *Asset::GetBody()
 {
     return m_body;
+}
+
+void Asset::SetTint(unsigned int tint)
+{
+    m_tint = tint;
 }
 
 void Asset::UpdateSize()

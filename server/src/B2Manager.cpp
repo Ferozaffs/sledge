@@ -27,27 +27,6 @@ B2Manager::B2Manager() : m_accumelatedTime(0.0f)
 {
     b2Vec2 gravity(0.0f, -9.81f);
     m_world = std::make_shared<b2World>(gravity);
-
-    b2BodyDef groundBodyDef;
-    groundBodyDef.position.Set(0.0f, -10.0f);
-    b2Body *groundBody = m_world->CreateBody(&groundBodyDef);
-    b2PolygonShape groundBox;
-    groundBox.SetAsBox(50.0f, 10.0f);
-    groundBody->CreateFixture(&groundBox, 0.0f);
-
-    // b2BodyDef bodyDef;
-    // bodyDef.type = b2_dynamicBody;
-    // bodyDef.position.Set(0.0f, 4.0f);
-    // b2Body* body = m_world->CreateBody(&bodyDef);
-    // b2PolygonShape dynamicBox;
-    // dynamicBox.SetAsBox(1.0f, 1.0f);
-    // b2FixtureDef fixtureDef;
-    // fixtureDef.shape = &dynamicBox;
-    // fixtureDef.density = 1.0f;
-    // fixtureDef.friction = 0.3f;
-    // body->CreateFixture(&fixtureDef);
-    //
-    // body->ApplyAngularImpulse(100.0f, true);
 }
 
 B2Manager::~B2Manager()

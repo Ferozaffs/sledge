@@ -1,15 +1,16 @@
 #include "Avatar.h"
 #include "Asset.h"
+#include "B2Filters.h"
 #include "Sledge.h"
 #include "Sword.h"
 
 using namespace Gameplay;
 
-Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos)
+Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint)
     : m_spawnInvincibility(2.0f), m_dead(false), m_weaponJoint(nullptr)
 {
     static const b2Vec2 bodySize(2.0f, 2.0f);
-    static const b2Vec2 headSize(0.5f, 0.5f);
+    static const b2Vec2 headSize(1.0f, 1.0f);
     constexpr float AvatarDensity = 1.0f;
     constexpr float AvatarFriction = 0.3f;
     constexpr float gravityScale = 2.0f;
@@ -19,7 +20,8 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos)
     bodyDef.position = spawnPos;
     bodyDef.fixedRotation = true;
     bodyDef.gravityScale = gravityScale;
-    m_bodyAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef));
+    m_bodyAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "avatar_body");
+    m_bodyAsset->SetTint(tint);
 
     b2PolygonShape dynamicBox;
     dynamicBox.SetAsBox(bodySize.x, bodySize.y);
@@ -28,6 +30,10 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos)
     fixtureDef.shape = &dynamicBox;
     fixtureDef.density = AvatarDensity;
     fixtureDef.friction = AvatarFriction;
+
+    fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Avatar_Body);
+    fixtureDef.filter.maskBits = 0xFFFF;
+    fixtureDef.filter.maskBits &= ~std::to_underlying(CollisionFilter::Block_Decor);
     GetBody()->CreateFixture(&fixtureDef);
     m_bodyAsset->UpdateSize();
 
@@ -35,13 +41,13 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos)
     bodyDef.position.y += bodySize.y + headSize.y;
     bodyDef.fixedRotation = false;
     bodyDef.gravityScale = 1.0f;
-    m_headAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef));
+    m_headAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "avatar_head");
 
     dynamicBox.SetAsBox(headSize.x, headSize.y);
 
-    fixtureDef.filter.categoryBits = 0x8000;
+    fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Avatar_Head);
     fixtureDef.filter.maskBits = 0xFFFF;
-    fixtureDef.filter.maskBits &= ~0x4000;
+    fixtureDef.filter.maskBits &= ~std::to_underlying(CollisionFilter::Weapon_Shaft);
 
     GetHead()->CreateFixture(&fixtureDef);
     m_headAsset->UpdateSize();
@@ -50,17 +56,20 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos)
     joint.Initialize(GetBody(), GetHead(), bodyDef.position);
     m_headJoint = world->CreateJoint(&joint);
 
-    AssignWeapon(WeaponType::Sledge);
+    int random = rand();
+    if (random % 4 == 0)
+    {
+        AssignWeapon(WeaponType::Sword);
+    }
+    else
+    {
+        AssignWeapon(WeaponType::Sledge);
+    }
 }
 
 Avatar::~Avatar()
 {
     BreakJoints();
-
-    if (GetBody() != nullptr)
-    {
-        GetBody()->GetWorld()->DestroyBody(GetBody());
-    }
 }
 
 void Avatar::AssignWeapon(WeaponType type)
@@ -95,11 +104,18 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
         GetHead()->GetContactList()->contact->IsTouching())
     {
         auto contact = GetHead()->GetContactList()->contact;
-        auto velA = contact->GetFixtureA()->GetBody()->GetLinearVelocity().Length();
-        auto velB = contact->GetFixtureB()->GetBody()->GetLinearVelocity().Length();
+        auto vel = 0.0f;
+        if (contact->GetFixtureA()->GetBody() == GetHead())
+        {
+            vel = contact->GetFixtureB()->GetBody()->GetLinearVelocity().Length();
+        }
+        else
+        {
+            vel = contact->GetFixtureA()->GetBody()->GetLinearVelocity().Length();
+        }
 
         constexpr float killThreshold = 1.0f;
-        if (velA + velB > killThreshold)
+        if (vel > killThreshold)
         {
             Kill();
         }
@@ -152,6 +168,21 @@ b2Body *Avatar::GetHead() const
 const b2Vec2 &Avatar::GetPosition() const
 {
     return GetBody()->GetTransform().p;
+}
+
+const float Avatar::GetX() const
+{
+    return GetPosition().x;
+}
+
+const float Avatar::GetY() const
+{
+    return GetPosition().y;
+}
+
+const float Avatar::GetWeaponRot() const
+{
+    return m_weapon != nullptr ? m_weapon->GetShaft()->GetTransform().q.GetAngle() : 0.0f;
 }
 
 std::vector<std::shared_ptr<Asset>> Avatar::GetAssets() const

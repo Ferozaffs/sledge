@@ -17,7 +17,7 @@
     <ClCompile Include="ConnectionManager.cpp" />
     <ClCompile Include="Debugger.cpp" />
     <ClCompile Include="LevelBlock.cpp" />
-    <ClCompile Include="LevelLoader.cpp" />
+    <ClCompile Include="LevelManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerManager.cpp" />
@@ -26,13 +26,14 @@
     <ClCompile Include="Weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="B2Filters.h" />
     <ClInclude Include="B2Manager.h" />
     <ClInclude Include="Avatar.h" />
     <ClInclude Include="ConnectionManager.h" />
     <ClInclude Include="Debugger.h" />
     <ClInclude Include="Asset.h" />
     <ClInclude Include="LevelBlock.h" />
-    <ClInclude Include="LevelLoader.h" />
+    <ClInclude Include="LevelManager.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerManager.h" />
     <ClInclude Include="Sledge.h" />

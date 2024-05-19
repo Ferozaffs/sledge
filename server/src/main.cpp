@@ -1,7 +1,7 @@
 #include "B2Manager.h"
 #include "ConnectionManager.h"
 #include "Debugger.h"
-#include "LevelLoader.h"
+#include "LevelManager.h"
 #include "Player.h"
 #include "PlayerManager.h"
 
@@ -11,7 +11,7 @@
 
 static std::unique_ptr<Debug::Debugger> debugger = nullptr;
 static std::unique_ptr<Physics::B2Manager> b2Manager = nullptr;
-static std::unique_ptr<Gameplay::LevelLoader> levelLoader = nullptr;
+static std::unique_ptr<Gameplay::LevelManager> levelManager = nullptr;
 static std::unique_ptr<Gameplay::PlayerManager> playerManager = nullptr;
 static std::unique_ptr<Network::ConnectionManager> connectionManager = nullptr;
 
@@ -22,13 +22,14 @@ void Update(const float &deltaTime)
         debugger->Update(deltaTime);
 
         // auto player = playerManager->GetPlayer(0);
-        // if (player != nullptr && (debugger->DbgSledgeInput != 0.0f || debugger->DbgJumpInput != 0.0f ||
-        // debugger->DbgMoveInput != 0.0f))
+        // if (player != nullptr &&
+        //     (debugger->DbgSledgeInput != 0.0f || debugger->DbgJumpInput != 0.0f || debugger->DbgMoveInput != 0.0f))
         //{
         //     player->SetInputs(debugger->DbgSledgeInput, debugger->DbgMoveInput, debugger->DbgJumpInput);
         // }
     }
 
+    levelManager->Update(deltaTime);
     playerManager->Update(deltaTime);
     b2Manager->Update(deltaTime);
 
@@ -60,11 +61,11 @@ int main(int argc, char *argv[])
     }
 
     b2Manager = std::make_unique<Physics::B2Manager>();
-    levelLoader = std::make_unique<Gameplay::LevelLoader>(b2Manager->GetWorld());
-    playerManager = std::make_unique<Gameplay::PlayerManager>(b2Manager->GetWorld());
-    connectionManager = std::make_unique<Network::ConnectionManager>(playerManager.get(), levelLoader.get());
+    levelManager = std::make_unique<Gameplay::LevelManager>(b2Manager->GetWorld());
+    playerManager = std::make_unique<Gameplay::PlayerManager>(levelManager.get(), b2Manager->GetWorld());
+    connectionManager = std::make_unique<Network::ConnectionManager>(playerManager.get(), levelManager.get());
 
-    levelLoader->LoadLevel("data/levels/testlevel.bmp");
+    levelManager->LoadLevel("data/levels/material_test_level.bmp");
 
     auto startTime = std::chrono::high_resolution_clock::now();
     auto endTime = std::chrono::high_resolution_clock::now();

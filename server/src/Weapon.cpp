@@ -13,11 +13,6 @@ Weapon::Weapon(const Avatar *avatar) : m_speed(3.0f), m_torque(5000.0f), m_avata
 Weapon::~Weapon()
 {
     BreakJoints();
-
-    if (GetShaft() != nullptr)
-    {
-        GetShaft()->GetWorld()->DestroyBody(GetShaft());
-    }
 }
 
 const float &Gameplay::Weapon::GetSpeed() const

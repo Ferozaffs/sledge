@@ -1,16 +1,28 @@
 #include "Player.h"
 #include "Avatar.h"
+#include "PlayerManager.h"
 
 using namespace Gameplay;
 
-Player::Player(b2World *world)
-    : m_sledgeInput(0.0f), m_moveInput(0.0f), m_jumpInput(0.0f), m_pendingRemove(false), m_respawnTimer(0.0f)
+Player::Player(PlayerManager *playerManager, b2World *world, unsigned int tint)
+    : m_playerManager(playerManager), m_sledgeInput(0.0f), m_moveInput(0.0f), m_jumpInput(0.0f), m_pendingRemove(false),
+      m_respawnTimer(0.0f), m_tint(tint), m_wishToRestart(false)
 {
-    m_avatar = std::make_unique<Gameplay::Avatar>(world, b2Vec2(0.0f, 4.0f));
+    SpawnAvatar(world);
 }
 
 Player::~Player()
 {
+}
+
+const float Player::GetX() const
+{
+    return m_avatar->GetX();
+}
+
+const float Player::GetY() const
+{
+    return m_avatar->GetY();
 }
 
 void Player::Update(float deltaTime)
@@ -26,11 +38,18 @@ void Player::Update(float deltaTime)
         m_respawnTimer = 0.0f;
     }
 
-    if (m_avatar->GetPosition().y < -100.0f || m_respawnTimer > 5.0f)
+    if (m_avatar->GetPosition().y < -50.0f || m_respawnTimer > 5.0f)
     {
-        auto world = m_avatar->GetBody()->GetWorld();
-        m_avatar = std::make_unique<Gameplay::Avatar>(world, b2Vec2(0.0f, 4.0f));
+        Respawn();
     }
+
+    m_wishToRestart = m_avatar->GetWeaponRot() < -1.0f ? true : false;
+}
+
+void Player::Respawn()
+{
+    auto world = m_avatar->GetBody()->GetWorld();
+    SpawnAvatar(world);
 }
 
 void Player::SetInputs(float sledgeInput, float moveInput, float jumpInput)
@@ -49,4 +68,19 @@ std::vector<std::shared_ptr<Asset>> Player::GetAssets() const
     }
 
     return assets;
+}
+
+bool Player::IsWishingToRestart() const
+{
+    return m_wishToRestart;
+}
+
+void Player::SpawnAvatar(b2World *world)
+{
+    auto spawn = m_playerManager->GetOptimalSpawn();
+    b2Vec2 spawnVec;
+    spawnVec.x = 2.0f * static_cast<float>(spawn.first);
+    spawnVec.y = 2.0f * static_cast<float>(spawn.second);
+
+    m_avatar = std::make_unique<Gameplay::Avatar>(world, spawnVec, m_tint);
 }

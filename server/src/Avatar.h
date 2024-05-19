@@ -13,7 +13,7 @@ class Asset;
 class Avatar
 {
   public:
-    Avatar(b2World *world, const b2Vec2 &spawnPos);
+    Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint = 0xFFFFFF);
     ~Avatar();
 
     void AssignWeapon(WeaponType type);
@@ -22,6 +22,9 @@ class Avatar
 
     b2Body *GetBody() const;
     const b2Vec2 &GetPosition() const;
+    const float GetX() const;
+    const float GetY() const;
+    const float GetWeaponRot() const;
 
     std::vector<std::shared_ptr<Asset>> GetAssets() const;
 

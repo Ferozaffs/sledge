@@ -32,7 +32,7 @@ let tickCounter = 0.0;
 
 async function init()
 {
-    await app.init({ background: '#222222', resizeTo: window });
+    await app.init({ backgroundAlpha: 0, resizeTo: window, antialias: true, autoDensity: true });
 
     document.body.appendChild(app.canvas);
     document.addEventListener('keydown', (event) => {
@@ -53,7 +53,18 @@ async function init()
 async function preload()
 {
     const assets = [
-        { alias: 'block_basic', src: './assets/block_basic.png' },
+        { alias: 'block_default', src: './assets/block_default.png' },
+        { alias: 'block_static', src: './assets/block_static.png' },
+        { alias: 'block_tough', src: './assets/block_tough.png' },
+        { alias: 'block_weak', src: './assets/block_weak.png' },
+        { alias: 'block_floor_decor', src: './assets/block_floor_decor.png' },
+        { alias: 'block_floor_decor2', src: './assets/block_floor_decor2.png' },
+        { alias: 'block_roof_decor', src: './assets/block_roof_decor.png' },
+        { alias: 'avatar_head', src: './assets/avatar_head.png' },
+        { alias: 'avatar_body', src: './assets/avatar_body.png' },
+        { alias: 'avatar_legs', src: './assets/avatar_legs.png' },
+        { alias: 'weapon_shaft', src: './assets/weapon_shaft.png' },
+        { alias: 'weapon_head', src: './assets/weapon_head.png' },
     ];
 
     await PIXI.Assets.load(assets);
@@ -68,7 +79,7 @@ export async function updateData(json)
     const assets = json.assets;
 
     assets.forEach((asset) => {
-        ASSETS.update(asset.id, asset.alias, asset.x, asset.y, asset.sizeX, asset.sizeY, asset.rot);
+        ASSETS.update(asset.id, asset.alias, asset.x, asset.y, asset.sizeX, asset.sizeY, asset.rot, asset.tint);
     });
 }
 
@@ -78,7 +89,11 @@ export async function removeData(json)
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    ASSETS.remove(json.id);
+    const assets = json.assets;
+
+    assets.forEach((asset) => {
+        ASSETS.remove(asset.id);
+    });
 }
 
 function updateView()
@@ -86,7 +101,7 @@ function updateView()
     const width = document.body.clientWidth;
     const height = document.body.clientHeight
     const assetBounds = ASSETS.getBounds(); 
-    
+
     const scaleFactorW = width / (assetBounds.max.x - assetBounds.min.x);
     const scaleFactorH = height / (assetBounds.max.y - assetBounds.min.y);
     ASSETS.adjustAssetsView(Math.min(scaleFactorW, scaleFactorH), width, height);
@@ -101,15 +116,20 @@ function sendData()
     const joystickInputLeft = JOYSTICKS.getJoystickValues('joystickLeft');
     const joystickInputRight = JOYSTICKS.getJoystickValues('joystickRight');
 
-    if (joystickInputLeft !== undefined && joystickInputRight !== undefined)
+    let joystickInput = false;
+    if (joystickInputLeft !== undefined && joystickInputRight !== undefined )
     {
-
-        moveInput = joystickInputLeft.x;
-        jumpInput = joystickInputLeft.y;
-        
-        sledgeInput = joystickInputRight.x;
+        if(joystickInputLeft.x !== 0.0 || joystickInputLeft.y !== 0.0 || joystickInputRight.x !== 0.0 || joystickInputRight.y !== 0.0 )
+        {
+            joystickInput = true;
+            moveInput = joystickInputLeft.x;
+            jumpInput = joystickInputLeft.y;
+            
+            sledgeInput = joystickInputRight.x;
+        }
     }
-    else
+    
+    if (joystickInput == false)
     {
         if (keysPressed['ArrowRight'])
             {

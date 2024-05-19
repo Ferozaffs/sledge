@@ -18,10 +18,11 @@ export function init(app)
     app.stage.addChild(assetContainer);
 }
 
-function add(id, alias, sizeX, sizeY) 
+function add(id, alias, sizeX, sizeY, tint) 
 {
     const asset = {
         id: id,
+        alias: alias,
         x: 0,
         x: 0,
         smoothX: 0,
@@ -35,6 +36,7 @@ function add(id, alias, sizeX, sizeY)
     }
         
     asset.sprite.anchor.set(0.5);
+    asset.sprite.tint = tint;
 
     assetContainer.addChild(asset.sprite);
     assets.push(asset);
@@ -42,23 +44,23 @@ function add(id, alias, sizeX, sizeY)
     return asset;
 }
 
-export function update(id, alias, x, y, sizeX, sizeY, rot)
+export function update(id, alias, x, y, sizeX, sizeY, rot, tint)
 {
     let foundObject = assets.find(obj => obj.id === id);
 
     if (foundObject === undefined)
     {
-        foundObject = add(id, alias, sizeX, sizeY);
+        foundObject = add(id, alias, sizeX, sizeY, tint);
+
+        bounds.max.x = -10000.0;
+        bounds.max.y = -10000.0;
+        bounds.min.x = 10000.0;
+        bounds.min.y = 10000.0;
     }
 
     foundObject.smoothX = foundObject.x = x;
     foundObject.smoothY = foundObject.y = y;
     foundObject.sprite.rotation = -rot;
-
-    bounds.max.x = -10000.0;
-    bounds.max.y = -10000.0;
-    bounds.min.x = 10000.0;
-    bounds.min.y = 10000.0;
 }
 
 export function remove(id)
@@ -71,12 +73,12 @@ export function remove(id)
         foundObject.sprite.destroy();
     
         assets = assets.filter(obj => obj.id !== id);
-    }
 
-    bounds.max.x = -10000.0;
-    bounds.max.y = -10000.0;
-    bounds.min.x = 10000.0;
-    bounds.min.y = 10000.0;
+        bounds.max.x = -10000.0;
+        bounds.max.y = -10000.0;
+        bounds.min.x = 10000.0;
+        bounds.min.y = 10000.0;
+    }
 }
 
 export function getBounds()
@@ -84,10 +86,13 @@ export function getBounds()
     if (bounds.max.x === -10000.0)
     {    
         assets.forEach((asset) => {
-            bounds.max.x = Math.max(bounds.max.x, asset.x);
-            bounds.max.y = Math.max(bounds.max.y, asset.y);
-            bounds.min.x = Math.min(bounds.min.x, asset.x);
-            bounds.min.y = Math.min(bounds.min.y, asset.y);
+            if (asset.alias.includes('static') === true)
+            {
+                bounds.max.x = Math.max(bounds.max.x, asset.x);
+                bounds.max.y = Math.max(bounds.max.y, asset.y);
+                bounds.min.x = Math.min(bounds.min.x, asset.x);
+                bounds.min.y = Math.min(bounds.min.y, asset.y);
+            }
         });
     }
 

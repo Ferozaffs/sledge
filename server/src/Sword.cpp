@@ -1,6 +1,7 @@
 #include "Sword.h"
 #include "Asset.h"
 #include "Avatar.h"
+#include "B2Filters.h"
 
 using namespace Gameplay;
 
@@ -11,9 +12,9 @@ Sword::Sword(const Avatar *avatar) : Weapon(avatar)
 
     static const b2Vec2 shaftSize(5.0f, 0.25f);
     static const b2Vec2 hiltSize(0.25f, 1.0f);
-    constexpr float shaftDensity = 0.1f;
+    constexpr float shaftDensity = 0.01f;
     constexpr float shaftFriction = 0.3f;
-    constexpr float hiltDensity = 0.1f;
+    constexpr float hiltDensity = 0.01f;
     constexpr float hiltFriction = 0.5f;
 
     auto world = avatar->GetBody()->GetWorld();
@@ -23,7 +24,7 @@ Sword::Sword(const Avatar *avatar) : Weapon(avatar)
     bodyDef.position = avatar->GetPosition();
     bodyDef.position.x += shaftSize.x;
     bodyDef.fixedRotation = false;
-    m_shaftAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef));
+    m_shaftAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "weapon_head");
 
     b2PolygonShape dynamicBox;
     dynamicBox.SetAsBox(shaftSize.x, shaftSize.y);
@@ -33,22 +34,26 @@ Sword::Sword(const Avatar *avatar) : Weapon(avatar)
     fixtureDef.density = shaftDensity;
     fixtureDef.friction = shaftFriction;
 
-    fixtureDef.filter.categoryBits = 0x4000;
+    fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Weapon_Shaft);
     fixtureDef.filter.maskBits = 0xFFFF;
-    fixtureDef.filter.maskBits &= ~0x8000;
+    fixtureDef.filter.maskBits &= ~std::to_underlying(CollisionFilter::Avatar_Head);
 
     GetShaft()->CreateFixture(&fixtureDef);
     m_shaftAsset->UpdateSize();
 
     bodyDef.type = b2_dynamicBody;
     bodyDef.position.x += shaftSize.x * 0.1f;
-    m_hiltAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef));
+    m_hiltAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "weapon_head");
 
     dynamicBox.SetAsBox(hiltSize.x, hiltSize.y);
 
     fixtureDef.shape = &dynamicBox;
     fixtureDef.density = hiltDensity;
     fixtureDef.friction = hiltFriction;
+
+    fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Weapon_Head);
+    fixtureDef.filter.maskBits = 0xFFFF;
+
     m_hiltAsset->GetBody()->CreateFixture(&fixtureDef);
     m_hiltAsset->UpdateSize();
 
@@ -63,9 +68,4 @@ Sword::Sword(const Avatar *avatar) : Weapon(avatar)
 Sword::~Sword()
 {
     BreakJoints();
-
-    if (m_hiltAsset->GetBody() != nullptr)
-    {
-        m_hiltAsset->GetBody()->GetWorld()->DestroyBody(m_hiltAsset->GetBody());
-    }
 }

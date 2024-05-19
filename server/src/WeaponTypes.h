@@ -2,7 +2,7 @@
 
 namespace Gameplay
 {
-enum class WeaponType
+enum class WeaponType : int
 {
     Sledge,
     Sword,

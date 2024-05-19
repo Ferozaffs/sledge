@@ -1,6 +1,6 @@
 #include "ConnectionManager.h"
 #include "Asset.h"
-#include "LevelLoader.h"
+#include "LevelManager.h"
 #include "Player.h"
 #include "PlayerManager.h"
 
@@ -34,7 +34,9 @@ using websocketpp::lib::placeholders::_2;
 typedef server::message_ptr message_ptr;
 
 std::unique_ptr<Impl> ConnectionManager::m_impl = nullptr;
+std::vector<GUID> ConnectionManager::m_assetsToRemove;
 std::mutex connectionMutex;
+std::mutex removalMutex;
 
 #pragma warning(push)
 #pragma warning(disable : 4244)
@@ -62,7 +64,7 @@ class Network::Impl
     {
         for (const auto &connection : connections)
         {
-            if (player == connection.second && connection.first->get_state() == websocketpp::session::state::open)
+            if (player == connection.second)
             {
                 Send(connection.first, message.c_str());
             }
@@ -71,7 +73,10 @@ class Network::Impl
 
     void Send(std::shared_ptr<connection> connection, std::string message)
     {
-        endpoint.send(connection, message.c_str(), websocketpp::frame::opcode::text);
+        if (connection->get_state() == websocketpp::session::state::open)
+        {
+            endpoint.send(connection, message.c_str(), websocketpp::frame::opcode::text);
+        }
     }
 
   private:
@@ -172,8 +177,8 @@ class Network::Impl
     }
 };
 
-ConnectionManager::ConnectionManager(PlayerManager *playerManager, Gameplay::LevelLoader *levelLoader)
-    : m_playerManager(playerManager), m_levelLoader(levelLoader), m_tickCounter(0.0f)
+ConnectionManager::ConnectionManager(PlayerManager *playerManager, Gameplay::LevelManager *levelManager)
+    : m_playerManager(playerManager), m_levelManager(levelManager), m_tickCounter(0.0f)
 {
     m_impl = std::make_unique<Impl>();
 }
@@ -200,16 +205,18 @@ void ConnectionManager::Update(float deltaTime)
             auto player = m_playerManager->CreatePlayer();
             connection.second = player;
 
-            SendAssets(player, m_levelLoader->GetAssets());
+            SendAssets(player, m_levelManager->GetAssets());
         }
 
         if (tick == true)
         {
-            auto assets = m_levelLoader->GetDynamicAssets();
+            auto assets = m_levelManager->GetDynamicAssets();
             auto playerAssets = m_playerManager->GetDynamicAssets();
 
             assets.insert(assets.end(), playerAssets.begin(), playerAssets.end());
             SendAssets(connection.second, assets);
+
+            RemoveAssets();
         }
     }
     connectionMutex.unlock();
@@ -217,17 +224,9 @@ void ConnectionManager::Update(float deltaTime)
 
 void ConnectionManager::RemoveAsset(GUID id)
 {
-    json j = {
-        {"type", "removeData"},
-        {"id", guidToString(id)},
-    };
-
-    connectionMutex.lock();
-    for (auto &connection : m_impl->connections)
-    {
-        m_impl->Send(connection.first, j.dump());
-    }
-    connectionMutex.unlock();
+    removalMutex.lock();
+    m_assetsToRemove.emplace_back(id);
+    removalMutex.unlock();
 }
 
 void ConnectionManager::SendAssets(const std::shared_ptr<Player> &player, std::vector<std::shared_ptr<Asset>> assets)
@@ -238,13 +237,16 @@ void ConnectionManager::SendAssets(const std::shared_ptr<Player> &player, std::v
 
     for (const auto &asset : assets)
     {
-        json assetData = {{"id", guidToString(asset->GetId())},
-                          {"alias", "block_basic"},
-                          {"x", asset->GetX()},
-                          {"y", asset->GetY()},
-                          {"sizeX", asset->GetSizeX()},
-                          {"sizeY", asset->GetSizeY()},
-                          {"rot", asset->GetRot()}};
+        json assetData = {
+            {"id", guidToString(asset->GetId())},
+            {"alias", asset->GetAlias()},
+            {"x", asset->GetX()},
+            {"y", asset->GetY()},
+            {"sizeX", asset->GetSizeX()},
+            {"sizeY", asset->GetSizeY()},
+            {"rot", asset->GetRot()},
+            {"tint", asset->GetTint()},
+        };
 
         assetArray.push_back(assetData);
     }
@@ -252,6 +254,29 @@ void ConnectionManager::SendAssets(const std::shared_ptr<Player> &player, std::v
     j["assets"] = assetArray;
 
     m_impl->Send(player, j.dump());
+}
+
+void ConnectionManager::RemoveAssets()
+{
+    json j = {{"type", "removeData"}};
+
+    json assetArray = json::array();
+
+    removalMutex.lock();
+    for (auto const &id : m_assetsToRemove)
+    {
+        json assetData = {{"id", guidToString(id)}};
+        assetArray.push_back(assetData);
+    }
+    m_assetsToRemove.clear();
+    removalMutex.unlock();
+
+    j["assets"] = assetArray;
+
+    for (auto &connection : m_impl->connections)
+    {
+        m_impl->Send(connection.first, j.dump());
+    }
 }
 
 std::string ConnectionManager::CreateStatusMessage(std::string message)

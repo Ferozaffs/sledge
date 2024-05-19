@@ -23,7 +23,7 @@ static const Vertex triangleVertices[3] = {{-0.6f, -0.4f}, {0.6f, -0.4f}, {0.f, 
 static const Vertex boxVertices[6] = {{0.5f, 0.5f},  {0.5f, -0.5f},  {-0.5f, 0.5f},
                                       {0.5f, -0.5f}, {-0.5f, -0.5f}, {-0.5f, 0.5f}};
 
-constexpr size_t MaxNumInstances = 500;
+constexpr size_t MaxNumInstances = 1500;
 
 static const char *vertexShaderSource = "#version 330\n"
                                         "layout (location = 0) in vec2 vPos;\n"

@@ -23,7 +23,7 @@
     <ClCompile Include="Avatar.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="LevelLoader.cpp">
+    <ClCompile Include="LevelManager.cpp">
       <Filter>Gameplay\Level</Filter>
     </ClCompile>
     <ClCompile Include="LevelBlock.cpp">
@@ -58,7 +58,7 @@
     <ClInclude Include="Avatar.h">
       <Filter>Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="LevelLoader.h">
+    <ClInclude Include="LevelManager.h">
       <Filter>Gameplay\Level</Filter>
     </ClInclude>
     <ClInclude Include="LevelBlock.h">
@@ -67,6 +67,7 @@
     <ClInclude Include="Asset.h">
       <Filter>Gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="B2Filters.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Gameplay">

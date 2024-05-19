@@ -9,7 +9,7 @@ namespace Gameplay
 class PlayerManager;
 class Player;
 class Asset;
-class LevelLoader;
+class LevelManager;
 } // namespace Gameplay
 
 namespace Network
@@ -19,7 +19,7 @@ class Impl;
 class ConnectionManager
 {
   public:
-    ConnectionManager(Gameplay::PlayerManager *playerManager, Gameplay::LevelLoader *levelLoader);
+    ConnectionManager(Gameplay::PlayerManager *playerManager, Gameplay::LevelManager *levelManager);
     ~ConnectionManager();
 
     void Update(float deltaTime);
@@ -35,11 +35,15 @@ class ConnectionManager
     void SendAssets(const std::shared_ptr<Gameplay::Player> &player,
                     std::vector<std::shared_ptr<Gameplay::Asset>> assets);
 
+    void RemoveAssets();
+
     static std::unique_ptr<Impl> m_impl;
     Gameplay::PlayerManager *m_playerManager;
-    Gameplay::LevelLoader *m_levelLoader;
+    Gameplay::LevelManager *m_levelManager;
 
     float m_tickCounter;
+
+    static std::vector<GUID> m_assetsToRemove;
 };
 
 } // namespace Network
