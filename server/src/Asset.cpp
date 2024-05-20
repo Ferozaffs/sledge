@@ -1,6 +1,7 @@
 #include "Asset.h"
 #include "ConnectionManager.h"
 
+#include <boost/uuid/uuid_generators.hpp>
 #include <box2d/box2d.h>
 #include <combaseapi.h>
 
@@ -9,7 +10,7 @@ using namespace Gameplay;
 Asset::Asset(b2Body *body, const std::string &alias)
     : m_body(body), m_alias(alias), m_sizeX(0.0f), m_sizeY(0.0f), m_tint(0xFFFFFF)
 {
-    CoCreateGuid(&m_id);
+    m_id = boost::uuids::random_generator()();
 }
 
 Asset::~Asset()
@@ -22,7 +23,7 @@ Asset::~Asset()
     }
 }
 
-const GUID Asset::GetId() const
+const boost::uuids::uuid Asset::GetId() const
 {
     return m_id;
 }

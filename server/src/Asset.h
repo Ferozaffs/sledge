@@ -1,5 +1,5 @@
 #pragma once
-#include <guiddef.h>
+#include <boost/uuid/uuid.hpp>
 #include <string>
 
 class b2Body;
@@ -12,7 +12,7 @@ class Asset
     Asset(b2Body *body, const std::string &alias);
     ~Asset();
 
-    const GUID GetId() const;
+    const boost::uuids::uuid GetId() const;
     const std::string &GetAlias() const;
     const float GetX() const;
     const float GetY() const;
@@ -28,7 +28,7 @@ class Asset
     void UpdateSize();
 
   private:
-    GUID m_id;
+    boost::uuids::uuid m_id;
     b2Body *m_body;
     std::string m_alias;
     unsigned int m_tint;

@@ -10,6 +10,7 @@
 #include <websocketpp/server.hpp>
 #pragma warning(pop)
 
+#include <boost/uuid/uuid_io.hpp>
 #include <nlohmann/json.hpp>
 
 #include <Windows.h>
@@ -34,20 +35,9 @@ using websocketpp::lib::placeholders::_2;
 typedef server::message_ptr message_ptr;
 
 std::unique_ptr<Impl> ConnectionManager::m_impl = nullptr;
-std::vector<GUID> ConnectionManager::m_assetsToRemove;
+std::vector<boost::uuids::uuid> ConnectionManager::m_assetsToRemove;
 std::mutex connectionMutex;
 std::mutex removalMutex;
-
-#pragma warning(push)
-#pragma warning(disable : 4244)
-std::string guidToString(const GUID &guid)
-{
-    wchar_t guidWStr[39]; // GUIDs are 38 characters plus null terminator
-    StringFromGUID2(guid, guidWStr, 39);
-    std::wstring wideStr(guidWStr);
-    return std::string(wideStr.begin(), wideStr.end());
-}
-#pragma warning(pop)
 
 class Network::Impl
 {
@@ -222,7 +212,7 @@ void ConnectionManager::Update(float deltaTime)
     connectionMutex.unlock();
 }
 
-void ConnectionManager::RemoveAsset(GUID id)
+void ConnectionManager::RemoveAsset(boost::uuids::uuid id)
 {
     removalMutex.lock();
     m_assetsToRemove.emplace_back(id);
@@ -238,7 +228,7 @@ void ConnectionManager::SendAssets(const std::shared_ptr<Player> &player, std::v
     for (const auto &asset : assets)
     {
         json assetData = {
-            {"id", guidToString(asset->GetId())},
+            {"id", boost::uuids::to_string(asset->GetId())},
             {"alias", asset->GetAlias()},
             {"x", asset->GetX()},
             {"y", asset->GetY()},
@@ -265,7 +255,7 @@ void ConnectionManager::RemoveAssets()
     removalMutex.lock();
     for (auto const &id : m_assetsToRemove)
     {
-        json assetData = {{"id", guidToString(id)}};
+        json assetData = {{"id", boost::uuids::to_string(id)}};
         assetArray.push_back(assetData);
     }
     m_assetsToRemove.clear();

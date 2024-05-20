@@ -1,5 +1,5 @@
 #pragma once
-#include <guiddef.h>
+#include <boost/uuid/uuid.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,7 +24,7 @@ class ConnectionManager
 
     void Update(float deltaTime);
 
-    static void RemoveAsset(GUID id);
+    static void RemoveAsset(boost::uuids::uuid id);
 
   private:
     friend class Impl;
@@ -43,7 +43,7 @@ class ConnectionManager
 
     float m_tickCounter;
 
-    static std::vector<GUID> m_assetsToRemove;
+    static std::vector<boost::uuids::uuid> m_assetsToRemove;
 };
 
 } // namespace Network
