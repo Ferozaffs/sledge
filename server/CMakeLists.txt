@@ -16,7 +16,7 @@ include_directories(${CMAKE_SOURCE_DIR}/includes)
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE})
 
-link_directories(libs)
+link_directories(${CMAKE_SOURCE_DIR}/libs)
 
 target_link_libraries(sledge debug ${CMAKE_SOURCE_DIR}/libs/box2d/debug/box2d.lib)
 target_link_libraries(sledge debug ${CMAKE_SOURCE_DIR}/libs/glfw/debug/glfw3.lib)
