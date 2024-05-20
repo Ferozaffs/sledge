@@ -2,7 +2,7 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background: linear-gradient(#221E54, #02002B);
+    background: linear-gradient(#1ca1ca, #177fc5);
 }
 
 @media (max-width: 1024px) {

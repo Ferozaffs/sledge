@@ -2,7 +2,7 @@
 #include "LevelManager.h"
 #include "Player.h"
 
-#include <math.h>
+#include <cmath>
 
 using namespace Gameplay;
 
@@ -12,7 +12,7 @@ std::vector<unsigned int> tintList = {
 };
 
 PlayerManager::PlayerManager(LevelManager *levelManager, const std::shared_ptr<b2World> &b2World)
-    : m_levelManager(levelManager), m_b2World(b2World), m_restartTimer(5.0f)
+    : m_levelManager(levelManager), m_b2World(b2World), m_playersSpawned(0), m_restartTimer(5.0f)
 {
 }
 
@@ -22,7 +22,7 @@ PlayerManager::~PlayerManager()
 
 void PlayerManager::Update(float deltaTime)
 {
-    bool wishingToRestart = true;
+    unsigned int wishingToRestart = 0;
     for (auto it = m_players.begin(); it != m_players.end();)
     {
         if ((*it)->m_pendingRemove)
@@ -33,21 +33,21 @@ void PlayerManager::Update(float deltaTime)
         {
             (*it)->Update(deltaTime);
 
-            if ((*it)->IsWishingToRestart() == false)
+            if ((*it)->IsWishingToRestart() == true)
             {
-                wishingToRestart = false;
+                ++wishingToRestart;
             }
 
             it++;
         }
     }
 
-    if (wishingToRestart == true)
+    if (wishingToRestart >= std::ceil(m_players.size() / 2.0f))
     {
         m_restartTimer -= deltaTime;
         if (m_restartTimer <= 0.0f)
         {
-            m_levelManager->ReloadLevel();
+            m_levelManager->NextLevel();
             for (auto it = m_players.begin(); it != m_players.end(); ++it)
             {
                 (*it)->Respawn();
@@ -65,7 +65,7 @@ void PlayerManager::Update(float deltaTime)
 const std::shared_ptr<Player> &PlayerManager::CreatePlayer()
 {
     m_players.emplace_back(
-        std::make_shared<Player>(this, m_b2World.get(), tintList[m_players.size() % tintList.size()]));
+        std::make_shared<Player>(this, m_b2World.get(), tintList[m_playersSpawned++ % tintList.size()]));
     return m_players.back();
 }
 

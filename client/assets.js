@@ -4,12 +4,22 @@ let assets = []
 const assetContainer = new PIXI.Container();
 const bounds = {
     max: {
-        x: 0.0,
-        y: 0.0
+        x: -10000.0,
+        y: -10000.0
     },
     min: {
-        x: 0.0,
-        y: 0.0
+        x: 10000.0,
+        y: 10000.0
+    },
+}
+const staticBounds = {
+    max: {
+        x: -10000.0,
+        y: -10000.0
+    },
+    min: {
+        x: 10000.0,
+        y: 10000.0
     },
 }
 
@@ -86,29 +96,51 @@ export function getBounds()
     if (bounds.max.x === -10000.0)
     {    
         assets.forEach((asset) => {
-            if (asset.alias.includes('static') === true)
+            if (asset.alias.includes('static') === true || asset.alias.includes('weak') === true)
             {
-                bounds.max.x = Math.max(bounds.max.x, asset.x);
-                bounds.max.y = Math.max(bounds.max.y, asset.y);
-                bounds.min.x = Math.min(bounds.min.x, asset.x);
-                bounds.min.y = Math.min(bounds.min.y, asset.y);
+                staticBounds.max.x = Math.max(staticBounds.max.x, asset.x + 10);
+                staticBounds.max.y = Math.max(staticBounds.max.y, asset.y + 10);
+                staticBounds.min.x = Math.min(staticBounds.min.x, asset.x - 10);
+                staticBounds.min.y = Math.min(staticBounds.min.y, asset.y - 10);
             }
         });
+
+        bounds.max.x = staticBounds.max.x;
+        bounds.max.y = staticBounds.max.y;
+        bounds.min.x = staticBounds.min.x;
+        bounds.min.y = staticBounds.min.y;
     }
 
+    //let avatarBounds = {
+    //    max: {
+    //        x: -10000.0,
+    //        y: -10000.0
+    //    },
+    //    min: {
+    //        x: 10000.0,
+    //        y: 10000.0
+    //    },
+    //}
+//
+    //assets.forEach((asset) => {
+    //    if(asset.alias.includes('avatar') === true)
+    //    {
+    //        avatarBounds.max.x = Math.max(avatarBounds.max.x, asset.x + 10);
+    //        avatarBounds.max.y = Math.max(avatarBounds.max.y, asset.y + 10);
+    //        avatarBounds.min.x = Math.min(avatarBounds.min.x, asset.x - 10);
+    //        avatarBounds.min.y = Math.min(avatarBounds.min.y, asset.y - 10);
+    //    }
+    //});
+//
+    //staticBounds.max.x = Math.min(staticBounds.max.x, staticBounds.min.x + 250);
+    //staticBounds.max.y = Math.min(staticBounds.max.y, staticBounds.min.y + 250);
+//
+    //bounds.max.x = Math.max(avatarBounds.max.x, staticBounds.max.x);
+    //bounds.max.y = Math.max(avatarBounds.max.y, staticBounds.max.y);
+    //bounds.min.x = Math.min(avatarBounds.min.x, staticBounds.min.x);
+    //bounds.min.y = staticBounds.min.y;
+
     return bounds;
-}
-
-function lerp(start, end, t) {
-    return start * (1 - t) + end * t;
-}
-
-export function interpolate(deltaTime)
-{
-    assets.forEach((asset) => {
-        asset.smoothX = lerp(asset.smoothX, asset.x, deltaTime * 2.0);
-        asset.smoothY = lerp(asset.smoothY, asset.y, deltaTime * 2.0);
-    });
 }
 
 export function adjustAssetsView(scaleFactor, width, height)

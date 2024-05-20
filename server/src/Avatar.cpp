@@ -10,9 +10,11 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint)
     : m_spawnInvincibility(2.0f), m_dead(false), m_weaponJoint(nullptr)
 {
     static const b2Vec2 bodySize(2.0f, 2.0f);
+    static const b2Vec2 legsSize(1.5f, 0.5f);
     static const b2Vec2 headSize(1.0f, 1.0f);
-    constexpr float AvatarDensity = 1.0f;
-    constexpr float AvatarFriction = 0.3f;
+    constexpr float AvatarDensity = 0.8f;
+    constexpr float AvatarFriction = 0.01f;
+    constexpr float LegsFriction = 0.3f;
     constexpr float gravityScale = 2.0f;
 
     b2BodyDef bodyDef;
@@ -37,13 +39,32 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint)
     GetBody()->CreateFixture(&fixtureDef);
     m_bodyAsset->UpdateSize();
 
+    bodyDef.position = spawnPos;
+    bodyDef.position.y -= (bodySize.y + legsSize.y);
+    m_legsAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "avatar_legs");
+
+    dynamicBox.SetAsBox(legsSize.x, legsSize.y);
+    fixtureDef.friction = LegsFriction;
+    fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Avatar_Legs);
+    fixtureDef.filter.maskBits = 0xFFFF;
+    fixtureDef.filter.maskBits &=
+        ~(std::to_underlying(CollisionFilter::Block_Decor) | std::to_underlying(CollisionFilter::Weapon_Shaft));
+    GetLegs()->CreateFixture(&fixtureDef);
+    m_legsAsset->UpdateSize();
+
+    b2WeldJointDef joint;
+    joint.Initialize(GetBody(), GetLegs(), bodyDef.position);
+    m_legsJoint = world->CreateJoint(&joint);
+
     bodyDef.type = b2_dynamicBody;
+    bodyDef.position = spawnPos;
     bodyDef.position.y += bodySize.y + headSize.y;
     bodyDef.fixedRotation = false;
     bodyDef.gravityScale = 1.0f;
     m_headAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "avatar_head");
 
     dynamicBox.SetAsBox(headSize.x, headSize.y);
+    fixtureDef.friction = AvatarFriction;
 
     fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Avatar_Head);
     fixtureDef.filter.maskBits = 0xFFFF;
@@ -52,7 +73,6 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint)
     GetHead()->CreateFixture(&fixtureDef);
     m_headAsset->UpdateSize();
 
-    b2WeldJointDef joint;
     joint.Initialize(GetBody(), GetHead(), bodyDef.position);
     m_headJoint = world->CreateJoint(&joint);
 
@@ -128,19 +148,19 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
             m_weaponJoint->SetMotorSpeed(m_weapon->GetSpeed() * -sledgeInput);
         }
 
-        bool hasContact = false;
-        for (auto c = GetBody()->GetContactList(); c; c = c->next)
+        bool hasGroundContact = false;
+        for (auto c = GetLegs()->GetContactList(); c; c = c->next)
         {
             if (c->contact->IsTouching())
             {
-                hasContact = true;
+                hasGroundContact = true;
                 break;
             }
         }
 
         // Air control movement
         auto movement = 30000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
-        if (abs(GetBody()->GetLinearVelocity().y) < 10.0f && hasContact == true)
+        if (abs(GetBody()->GetLinearVelocity().y) < 10.0f && hasGroundContact == true)
         {
             if (jumpInput > 0.5f)
             {
@@ -163,6 +183,11 @@ b2Body *Avatar::GetBody() const
 b2Body *Avatar::GetHead() const
 {
     return m_headAsset->GetBody();
+}
+
+b2Body *Gameplay::Avatar::GetLegs() const
+{
+    return m_legsAsset->GetBody();
 }
 
 const b2Vec2 &Avatar::GetPosition() const
@@ -190,6 +215,7 @@ std::vector<std::shared_ptr<Asset>> Avatar::GetAssets() const
     std::vector<std::shared_ptr<Asset>> assets;
     assets.emplace_back(m_bodyAsset);
     assets.emplace_back(m_headAsset);
+    assets.emplace_back(m_legsAsset);
 
     auto weaponAssets = m_weapon->GetAssets();
     assets.insert(assets.end(), weaponAssets.begin(), weaponAssets.end());
@@ -222,5 +248,11 @@ void Avatar::BreakJoints()
     {
         GetBody()->GetWorld()->DestroyJoint(m_headJoint);
         m_headJoint = nullptr;
+    }
+
+    if (m_legsJoint != nullptr)
+    {
+        GetBody()->GetWorld()->DestroyJoint(m_legsJoint);
+        m_legsJoint = nullptr;
     }
 }

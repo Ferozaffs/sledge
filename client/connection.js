@@ -1,6 +1,6 @@
 import * as APP from './app.js';
 
-const socket = new WebSocket('ws://192.168.1.222:9002');
+const socket = new WebSocket('ws://' + window.location.hostname + ':9002');
 
 socket.onopen = function(event) {
     console.log('WebSocket connection established.');

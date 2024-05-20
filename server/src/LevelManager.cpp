@@ -2,10 +2,12 @@
 #include "LevelBlock.h"
 
 #include <box2d/box2d.h>
+#include <filesystem>
 #include <fstream>
 #include <random>
 #include <set>
 
+namespace fs = std::filesystem;
 using namespace Gameplay;
 
 #pragma pack(push, 1)
@@ -34,7 +36,7 @@ std::map<unsigned int, std::string> assetMap = {
     {0x000000, "block_static"}, {0x7F7F7F, "block_tough"}, {0xB97A57, "block_weak"}, {0xED1C24, "spawn"}};
 
 LevelManager::LevelManager(const std::shared_ptr<b2World> &world)
-    : m_world(world), m_currentLevel(""), m_reloaded(false)
+    : m_world(world), m_currentLevelIndex(0), m_reloaded(false)
 {
 }
 
@@ -42,10 +44,49 @@ LevelManager::~LevelManager()
 {
 }
 
+bool LevelManager::LoadPlaylist(const std::string &path)
+{
+    fs::path p(path);
+
+    if (fs::exists(p))
+    {
+        if (fs::is_directory(p))
+        {
+            for (const auto &entry : fs::directory_iterator(p))
+            {
+                if (entry.is_regular_file() && entry.path().extension() == ".bmp")
+                {
+                    m_playlist.emplace_back(entry.path().generic_string());
+                }
+            }
+
+            if (m_playlist.empty() == false)
+            {
+                return LoadLevel(m_playlist.back());
+            }
+
+            return false;
+        }
+        else if (fs::is_regular_file(p))
+        {
+            if (p.extension() == ".bmp")
+            {
+                m_playlist.emplace_back(p.generic_string());
+                return LoadLevel(m_playlist.back());
+            }
+            return false;
+        }
+
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 bool LevelManager::LoadLevel(const std::string &filename)
 {
-    m_currentLevel = filename;
-
     std::ifstream file(filename, std::ios::binary);
     if (!file.is_open())
     {
@@ -85,11 +126,18 @@ bool LevelManager::LoadLevel(const std::string &filename)
     return BuildLevel(rows);
 }
 
-bool LevelManager::ReloadLevel()
+bool LevelManager::NextLevel()
 {
     m_blocks.clear();
     m_spawns.clear();
-    LoadLevel(m_currentLevel);
+
+    ++m_currentLevelIndex;
+    auto numLevels = m_playlist.size();
+    while (LoadLevel(m_playlist[m_currentLevelIndex % m_playlist.size()]) == false && numLevels > 0)
+    {
+        ++m_currentLevelIndex;
+        --numLevels;
+    }
 
     m_reloaded = true;
 
@@ -201,7 +249,7 @@ bool LevelManager::Decorate()
         coords.insert(block.first);
     }
 
-    constexpr float decorChance = 0.5f;
+    constexpr float decorChance = 0.75f;
     for (const auto &coord : coords)
     {
         if (dist(engine) < decorChance)
@@ -229,12 +277,14 @@ bool LevelManager::Decorate()
 
 bool LevelManager::CreateFloorDecor(std::pair<int, int> coord)
 {
-    CreateBlock(coord.first, coord.second, "block_floor_decor");
+    constexpr unsigned int numDecor = 3;
+    CreateBlock(coord.first, coord.second, "block_floor_decor_" + std::to_string((rand() % numDecor) + 1));
     return true;
 }
 
 bool LevelManager::CreateRoofDecor(std::pair<int, int> coord)
 {
-    CreateBlock(coord.first, coord.second, "block_roof_decor");
+    constexpr unsigned int numDecor = 2;
+    CreateBlock(coord.first, coord.second, "block_roof_decor_" + std::to_string((rand() % numDecor) + 1));
     return true;
 }

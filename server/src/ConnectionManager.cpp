@@ -88,8 +88,8 @@ class Network::Impl
 
         // endpoint.set_access_channels(websocketpp::log::alevel::all);
         // endpoint.clear_access_channels(websocketpp::log::alevel::frame_payload);
-        endpoint.set_access_channels(websocketpp::log::alevel::none);
-        endpoint.clear_access_channels(websocketpp::log::alevel::none);
+        endpoint.clear_access_channels(websocketpp::log::alevel::all);
+        endpoint.set_access_channels(websocketpp::log::alevel::connect | websocketpp::log::alevel::disconnect);
         endpoint.init_asio();
 
         endpoint.set_close_handler(bind(&Impl::on_close, &endpoint, ::_1));

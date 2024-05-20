@@ -1,0 +1,7 @@
+version: '3'
+services:
+  my_service:
+    image: .
+    ports:
+      - "5500:5500"
+      - "9002:9002"

@@ -17,8 +17,8 @@ class LevelManager
     LevelManager(const std::shared_ptr<b2World> &world);
     ~LevelManager();
 
-    bool LoadLevel(const std::string &filename);
-    bool ReloadLevel();
+    bool LoadPlaylist(const std::string &path);
+    bool NextLevel();
 
     void Update(float deltaTime);
 
@@ -28,6 +28,7 @@ class LevelManager
     const std::vector<std::pair<int, int>> &GetSpawns() const;
 
   private:
+    bool LoadLevel(const std::string &filename);
     bool BuildLevel(std::vector<std::vector<uint8_t>> rows);
     bool CreateBlock(int x, int y, std::string alias);
     bool Decorate();
@@ -39,7 +40,8 @@ class LevelManager
     std::map<std::pair<int, int>, std::shared_ptr<LevelBlock>> m_blocks;
     std::vector<std::pair<int, int>> m_spawns;
 
-    std::string m_currentLevel;
+    std::vector<std::string> m_playlist;
+    unsigned int m_currentLevelIndex;
     bool m_reloaded;
 };
 

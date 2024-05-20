@@ -33,6 +33,7 @@ class Avatar
 
   private:
     b2Body *GetHead() const;
+    b2Body *GetLegs() const;
     void BreakJoints();
 
     float m_spawnInvincibility;
@@ -40,7 +41,9 @@ class Avatar
 
     std::shared_ptr<Asset> m_bodyAsset;
     std::shared_ptr<Asset> m_headAsset;
+    std::shared_ptr<Asset> m_legsAsset;
     b2Joint *m_headJoint;
+    b2Joint *m_legsJoint;
     std::shared_ptr<Weapon> m_weapon;
     b2RevoluteJoint *m_weaponJoint;
 };

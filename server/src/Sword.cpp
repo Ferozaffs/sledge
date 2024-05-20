@@ -36,7 +36,8 @@ Sword::Sword(const Avatar *avatar) : Weapon(avatar)
 
     fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Weapon_Shaft);
     fixtureDef.filter.maskBits = 0xFFFF;
-    fixtureDef.filter.maskBits &= ~std::to_underlying(CollisionFilter::Avatar_Head);
+    fixtureDef.filter.maskBits &=
+        ~(std::to_underlying(CollisionFilter::Avatar_Head) | std::to_underlying(CollisionFilter::Avatar_Legs));
 
     GetShaft()->CreateFixture(&fixtureDef);
     m_shaftAsset->UpdateSize();

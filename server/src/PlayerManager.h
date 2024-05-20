@@ -29,6 +29,7 @@ class PlayerManager
     LevelManager *m_levelManager;
     const std::shared_ptr<b2World> &m_b2World;
     std::vector<std::shared_ptr<Player>> m_players;
+    unsigned int m_playersSpawned;
     float m_restartTimer;
 };
 

@@ -16,12 +16,12 @@ LevelBlock::LevelBlock(b2World *world, int x, int y, std::string alias)
     else if (alias.contains("weak"))
     {
         m_type = BlockType::Weak;
-        m_health = 100.0f;
+        m_health = 0.2f;
     }
     else if (alias.contains("tough"))
     {
         m_type = BlockType::Tough;
-        m_health = 500.0f;
+        m_health = 1.0f;
     }
     else if (alias.contains("static"))
     {
@@ -42,7 +42,8 @@ LevelBlock::LevelBlock(b2World *world, int x, int y, std::string alias)
     {
         fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Block_Decor);
         fixtureDef.filter.maskBits = 0xFFFF;
-        fixtureDef.filter.maskBits &= ~std::to_underlying(CollisionFilter::Avatar_Body);
+        fixtureDef.filter.maskBits &=
+            ~(std::to_underlying(CollisionFilter::Avatar_Body) | std::to_underlying(CollisionFilter::Avatar_Legs));
     }
 
     m_asset->GetBody()->CreateFixture(&fixtureDef);
@@ -72,10 +73,12 @@ bool LevelBlock::Update(float deltaTime)
                 }
 
                 auto impact = 0.0f;
-                if (contactFixture->GetFilterData().categoryBits != std::to_underlying(CollisionFilter::Avatar_Body))
+                if (contactFixture->GetFilterData().categoryBits != std::to_underlying(CollisionFilter::Avatar_Body) &&
+                    contactFixture->GetFilterData().categoryBits != std::to_underlying(CollisionFilter::Avatar_Legs))
                 {
-                    impact =
-                        contactFixture->GetBody()->GetLinearVelocity().Length() * contactFixture->GetBody()->GetMass();
+                    impact = contactFixture->GetBody()->GetLinearVelocity().Length() *
+                             contactFixture->GetBody()->GetMass() * deltaTime;
+
                     m_health -= impact;
                 }
 

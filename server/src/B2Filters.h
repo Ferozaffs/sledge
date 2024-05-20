@@ -1,6 +1,7 @@
 enum class CollisionFilter : int
 {
     Avatar_Head = 0x8000,
+    Avatar_Legs = 0x2000,
     Avatar_Body = 0x1000,
 
     Weapon_Head = 0x0800,

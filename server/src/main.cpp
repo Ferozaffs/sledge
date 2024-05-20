@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     playerManager = std::make_unique<Gameplay::PlayerManager>(levelManager.get(), b2Manager->GetWorld());
     connectionManager = std::make_unique<Network::ConnectionManager>(playerManager.get(), levelManager.get());
 
-    levelManager->LoadLevel("data/levels/material_test_level.bmp");
+    levelManager->LoadPlaylist("data/levels");
 
     auto startTime = std::chrono::high_resolution_clock::now();
     auto endTime = std::chrono::high_resolution_clock::now();

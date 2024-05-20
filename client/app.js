@@ -8,7 +8,6 @@ let initialized = false;
 let keysPressed = {};
 let tickCounter = 0.0;
 
-// Asynchronous IIFE
 (async () =>
 {
     await init();
@@ -18,7 +17,6 @@ let tickCounter = 0.0;
 
     app.ticker.add((time) =>
     {
-        ASSETS.interpolate(time.deltaTime);
         updateView();
 
         tickCounter += time.deltaTime;
@@ -57,9 +55,11 @@ async function preload()
         { alias: 'block_static', src: './assets/block_static.png' },
         { alias: 'block_tough', src: './assets/block_tough.png' },
         { alias: 'block_weak', src: './assets/block_weak.png' },
-        { alias: 'block_floor_decor', src: './assets/block_floor_decor.png' },
-        { alias: 'block_floor_decor2', src: './assets/block_floor_decor2.png' },
-        { alias: 'block_roof_decor', src: './assets/block_roof_decor.png' },
+        { alias: 'block_floor_decor_1', src: './assets/block_floor_decor_1.png' },
+        { alias: 'block_floor_decor_2', src: './assets/block_floor_decor_2.png' },
+        { alias: 'block_floor_decor_3', src: './assets/block_floor_decor_3.png' },
+        { alias: 'block_roof_decor_1', src: './assets/block_roof_decor_1.png' },
+        { alias: 'block_roof_decor_2', src: './assets/block_roof_decor_2.png' },
         { alias: 'avatar_head', src: './assets/avatar_head.png' },
         { alias: 'avatar_body', src: './assets/avatar_body.png' },
         { alias: 'avatar_legs', src: './assets/avatar_legs.png' },
@@ -100,7 +100,7 @@ function updateView()
 {
     const width = document.body.clientWidth;
     const height = document.body.clientHeight
-    const assetBounds = ASSETS.getBounds(); 
+    const assetBounds = ASSETS.getBounds();
 
     const scaleFactorW = width / (assetBounds.max.x - assetBounds.min.x);
     const scaleFactorH = height / (assetBounds.max.y - assetBounds.min.y);
