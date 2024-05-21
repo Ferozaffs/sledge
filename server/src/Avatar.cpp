@@ -33,9 +33,9 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint)
     fixtureDef.density = AvatarDensity;
     fixtureDef.friction = AvatarFriction;
 
-    fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Avatar_Body);
+    fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Avatar_Body);
     fixtureDef.filter.maskBits = 0xFFFF;
-    fixtureDef.filter.maskBits &= ~std::to_underlying(CollisionFilter::Block_Decor);
+    fixtureDef.filter.maskBits &= ~static_cast<unsigned int>(CollisionFilter::Block_Decor);
     GetBody()->CreateFixture(&fixtureDef);
     m_bodyAsset->UpdateSize();
 
@@ -45,10 +45,10 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint)
 
     dynamicBox.SetAsBox(legsSize.x, legsSize.y);
     fixtureDef.friction = LegsFriction;
-    fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Avatar_Legs);
+    fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Avatar_Legs);
     fixtureDef.filter.maskBits = 0xFFFF;
-    fixtureDef.filter.maskBits &=
-        ~(std::to_underlying(CollisionFilter::Block_Decor) | std::to_underlying(CollisionFilter::Weapon_Shaft));
+    fixtureDef.filter.maskBits &= ~(static_cast<unsigned int>(CollisionFilter::Block_Decor) |
+                                    static_cast<unsigned int>(CollisionFilter::Weapon_Shaft));
     GetLegs()->CreateFixture(&fixtureDef);
     m_legsAsset->UpdateSize();
 
@@ -66,9 +66,9 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint)
     dynamicBox.SetAsBox(headSize.x, headSize.y);
     fixtureDef.friction = AvatarFriction;
 
-    fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Avatar_Head);
+    fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Avatar_Head);
     fixtureDef.filter.maskBits = 0xFFFF;
-    fixtureDef.filter.maskBits &= ~std::to_underlying(CollisionFilter::Weapon_Shaft);
+    fixtureDef.filter.maskBits &= ~static_cast<unsigned int>(CollisionFilter::Weapon_Shaft);
 
     GetHead()->CreateFixture(&fixtureDef);
     m_headAsset->UpdateSize();

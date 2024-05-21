@@ -13,7 +13,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <nlohmann/json.hpp>
 
-#include <Windows.h>
 #include <functional>
 #include <map>
 #include <mutex>

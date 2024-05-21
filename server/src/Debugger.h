@@ -1,4 +1,5 @@
 #pragma once
+#ifdef WIN32
 #include <array>
 #include <linmath.h>
 #include <map>
@@ -50,3 +51,4 @@ class Debugger
 };
 
 } // namespace Debug
+#endif

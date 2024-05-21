@@ -13,7 +13,7 @@ class LevelManager;
 class PlayerManager
 {
   public:
-    PlayerManager(LevelManager *levelManager, const std::shared_ptr<b2World> &b2World);
+    PlayerManager(LevelManager *levelManager, b2World *world);
     ~PlayerManager();
 
     void Update(float deltaTime);
@@ -27,7 +27,7 @@ class PlayerManager
 
   private:
     LevelManager *m_levelManager;
-    const std::shared_ptr<b2World> &m_b2World;
+    b2World *m_world;
     std::vector<std::shared_ptr<Player>> m_players;
     unsigned int m_playersSpawned;
     float m_restartTimer;

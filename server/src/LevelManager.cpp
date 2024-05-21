@@ -35,8 +35,7 @@ struct BMPHeader
 std::map<unsigned int, std::string> assetMap = {
     {0x000000, "block_static"}, {0x7F7F7F, "block_tough"}, {0xB97A57, "block_weak"}, {0xED1C24, "spawn"}};
 
-LevelManager::LevelManager(const std::shared_ptr<b2World> &world)
-    : m_world(world), m_currentLevelIndex(0), m_reloaded(false)
+LevelManager::LevelManager(b2World *world) : m_world(world), m_currentLevelIndex(0), m_reloaded(false)
 {
 }
 
@@ -90,7 +89,7 @@ bool LevelManager::LoadLevel(const std::string &filename)
     std::ifstream file(filename, std::ios::binary);
     if (!file.is_open())
     {
-        printf_s("Error opening file: %s\n", filename.c_str());
+        printf("Error opening file: %s\n", filename.c_str());
         return false;
     }
 
@@ -99,13 +98,13 @@ bool LevelManager::LoadLevel(const std::string &filename)
 
     if (header.signature[0] != 'B' || header.signature[1] != 'M')
     {
-        printf_s("Not a valid BMP file\n");
+        printf("Not a valid BMP file\n");
         return false;
     }
 
     if (header.bitsPerPixel != 24)
     {
-        printf_s("Only 24-bit BMP files are supported\n");
+        printf("Only 24-bit BMP files are supported\n");
         return false;
     }
     file.seekg(header.pixelDataOffset);
@@ -232,7 +231,7 @@ bool LevelManager::BuildLevel(std::vector<std::vector<uint8_t>> rows)
 
 bool LevelManager::CreateBlock(int x, int y, std::string alias)
 {
-    m_blocks.insert(std::make_pair(std::make_pair(x, y), std::make_shared<LevelBlock>(m_world.get(), x, y, alias)));
+    m_blocks.insert(std::make_pair(std::make_pair(x, y), std::make_shared<LevelBlock>(m_world, x, y, alias)));
 
     return true;
 }

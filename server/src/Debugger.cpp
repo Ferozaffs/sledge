@@ -1,5 +1,5 @@
 #include "Debugger.h"
-
+#ifdef WIN32
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
@@ -252,7 +252,7 @@ void Debugger::CreateDefaultProgram()
     {
         char error[1024];
         glGetShaderInfoLog(vertex_shader, 1024, nullptr, error);
-        printf_s("%s\n", error);
+        printf("%s\n", error);
 
         glDeleteShader(vertex_shader);
         return;
@@ -267,7 +267,7 @@ void Debugger::CreateDefaultProgram()
     {
         char error[1024];
         glGetShaderInfoLog(fragment_shader, 1024, nullptr, error);
-        printf_s("%s\n", error);
+        printf("%s\n", error);
 
         glDeleteShader(fragment_shader);
         return;
@@ -283,7 +283,7 @@ void Debugger::CreateDefaultProgram()
     {
         char error[1024];
         glGetProgramInfoLog(fragment_shader, 1024, nullptr, error);
-        printf_s("%s\n", error);
+        printf("%s\n", error);
 
         glDeleteShader(fragment_shader);
     }
@@ -362,3 +362,4 @@ void Debugger::CreateBoxVertices()
     glBindVertexArray(0);
 }
 } // namespace Debug
+#endif

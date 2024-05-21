@@ -34,10 +34,10 @@ Sword::Sword(const Avatar *avatar) : Weapon(avatar)
     fixtureDef.density = shaftDensity;
     fixtureDef.friction = shaftFriction;
 
-    fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Weapon_Shaft);
+    fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Weapon_Shaft);
     fixtureDef.filter.maskBits = 0xFFFF;
     fixtureDef.filter.maskBits &=
-        ~(std::to_underlying(CollisionFilter::Avatar_Head) | std::to_underlying(CollisionFilter::Avatar_Legs));
+        ~(static_cast<unsigned int>(CollisionFilter::Avatar_Head) | static_cast<unsigned int>(CollisionFilter::Avatar_Legs));
 
     GetShaft()->CreateFixture(&fixtureDef);
     m_shaftAsset->UpdateSize();
@@ -52,7 +52,7 @@ Sword::Sword(const Avatar *avatar) : Weapon(avatar)
     fixtureDef.density = hiltDensity;
     fixtureDef.friction = hiltFriction;
 
-    fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Weapon_Head);
+    fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Weapon_Head);
     fixtureDef.filter.maskBits = 0xFFFF;
 
     m_hiltAsset->GetBody()->CreateFixture(&fixtureDef);

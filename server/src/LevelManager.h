@@ -14,7 +14,7 @@ class Asset;
 class LevelManager
 {
   public:
-    LevelManager(const std::shared_ptr<b2World> &world);
+    LevelManager(b2World *world);
     ~LevelManager();
 
     bool LoadPlaylist(const std::string &path);
@@ -35,7 +35,7 @@ class LevelManager
     bool CreateFloorDecor(std::pair<int, int> coord);
     bool CreateRoofDecor(std::pair<int, int> coord);
 
-    std::shared_ptr<b2World> m_world;
+    b2World *m_world;
 
     std::map<std::pair<int, int>, std::shared_ptr<LevelBlock>> m_blocks;
     std::vector<std::pair<int, int>> m_spawns;

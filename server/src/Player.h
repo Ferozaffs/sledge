@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <memory>
 #include <vector>
 
@@ -31,7 +32,7 @@ class Player
     bool IsWishingToRestart() const;
 
   private:
-    void SpawnAvatar(b2World* world);
+    void SpawnAvatar(b2World *world);
 
     PlayerManager *m_playerManager;
     std::shared_ptr<Avatar> m_avatar;

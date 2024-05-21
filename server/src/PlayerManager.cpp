@@ -11,8 +11,8 @@ std::vector<unsigned int> tintList = {
     0xFFFF00, 0x00FFFF, 0xFF00FF, 0x880000, 0x000088, 0x008800, 0x888800, 0x008888, 0x880088,
 };
 
-PlayerManager::PlayerManager(LevelManager *levelManager, const std::shared_ptr<b2World> &b2World)
-    : m_levelManager(levelManager), m_b2World(b2World), m_playersSpawned(0), m_restartTimer(5.0f)
+PlayerManager::PlayerManager(LevelManager *levelManager, b2World* world)
+    : m_levelManager(levelManager), m_world(world), m_playersSpawned(0), m_restartTimer(5.0f)
 {
 }
 
@@ -65,7 +65,7 @@ void PlayerManager::Update(float deltaTime)
 const std::shared_ptr<Player> &PlayerManager::CreatePlayer()
 {
     m_players.emplace_back(
-        std::make_shared<Player>(this, m_b2World.get(), tintList[m_playersSpawned++ % tintList.size()]));
+        std::make_shared<Player>(this, m_world, tintList[m_playersSpawned++ % tintList.size()]));
     return m_players.back();
 }
 
@@ -104,8 +104,8 @@ std::pair<int, int> PlayerManager::GetOptimalSpawn() const
         float spawnDistance = 100000.0f;
         for (const auto &player : m_players)
         {
-            spawnDistance = std::min(spawnDistance, abs(spawnX - player->GetX()));
-            spawnDistance = std::min(spawnDistance, abs(spawnY - player->GetY()));
+            spawnDistance = std::min(spawnDistance, std::abs(spawnX - player->GetX()));
+            spawnDistance = std::min(spawnDistance, std::abs(spawnY - player->GetY()));
         }
 
         spawnDistances.insert(std::make_pair(s, spawnDistance));

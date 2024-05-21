@@ -1,15 +1,19 @@
 #include "B2Manager.h"
 #include "ConnectionManager.h"
+#ifdef WIN32
 #include "Debugger.h"
+#endif
 #include "LevelManager.h"
 #include "Player.h"
 #include "PlayerManager.h"
 
-#include <GLFW/glfw3.h>
 #include <chrono>
+#include <cstring>
 #include <memory>
 
+#ifdef WIN32
 static std::unique_ptr<Debug::Debugger> debugger = nullptr;
+#endif
 static std::unique_ptr<Physics::B2Manager> b2Manager = nullptr;
 static std::unique_ptr<Gameplay::LevelManager> levelManager = nullptr;
 static std::unique_ptr<Gameplay::PlayerManager> playerManager = nullptr;
@@ -17,6 +21,7 @@ static std::unique_ptr<Network::ConnectionManager> connectionManager = nullptr;
 
 void Update(const float &deltaTime)
 {
+#ifdef WIN32
     if (debugger != nullptr)
     {
         debugger->Update(deltaTime);
@@ -28,22 +33,24 @@ void Update(const float &deltaTime)
         //     player->SetInputs(debugger->DbgSledgeInput, debugger->DbgMoveInput, debugger->DbgJumpInput);
         // }
     }
+#endif
 
     levelManager->Update(deltaTime);
     playerManager->Update(deltaTime);
-    b2Manager->Update(deltaTime);
-
     connectionManager->Update(deltaTime);
+    b2Manager->Update(deltaTime);
 }
 
 void Render()
 {
+#ifdef WIN32
     if (debugger != nullptr)
     {
         b2Manager->DbgRender(debugger.get());
 
         debugger->Render();
     }
+#endif
 }
 
 int main(int argc, char *argv[])
@@ -56,7 +63,9 @@ int main(int argc, char *argv[])
     {
         if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0)
         {
+#ifdef WIN32
             debugger = std::make_unique<Debug::Debugger>();
+#endif
         }
     }
 
@@ -83,5 +92,8 @@ int main(int argc, char *argv[])
     connectionManager.reset();
     playerManager.reset();
     b2Manager.reset();
+
+#ifdef WIN32
     debugger.reset();
+#endif
 }

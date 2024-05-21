@@ -22,7 +22,15 @@ ExternalProject_Add(
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
-    DOWNLOAD_EXTRACT_TIMESTAMP true
+)
+
+set(BOX2D_ROOT "${CMAKE_BINARY_DIR}/box2d_build")
+ExternalProject_Add(
+	"box2d" 
+	GIT_REPOSITORY https://github.com/erincatto/box2d.git
+    GIT_TAG v2.4.1
+	CMAKE_ARGS
+		-DCMAKE_INSTALL_PREFIX:PATH=${BOX2D_ROOT} -DBOX2D_BUILD_TESTBED=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF
 )
 
 file(GLOB SOURCES "src/*.cpp" "src/*.h")
@@ -30,12 +38,18 @@ file(GLOB SOURCES "src/*.cpp" "src/*.h")
 add_executable(sledge ${SOURCES})
 
 include_directories(${BOOST_ROOT}/src/boost)
+include_directories(${BOX2D_ROOT}/include)
 include_directories(${CMAKE_SOURCE_DIR}/includes)
 
 link_directories(${CMAKE_SOURCE_DIR}/libs)
+link_directories(${BOX2D_ROOT}/lib)
 
-target_link_libraries(sledge debug ${CMAKE_SOURCE_DIR}/libs/box2d/debug/box2d.lib)
-target_link_libraries(sledge debug ${CMAKE_SOURCE_DIR}/libs/glfw/debug/glfw3.lib)
-target_link_libraries(sledge ${CMAKE_SOURCE_DIR}/libs/box2d/release/box2d.lib)
-target_link_libraries(sledge ${CMAKE_SOURCE_DIR}/libs/glfw/release/glfw3.lib)
+if(WIN32)
+    target_link_libraries(sledge debug ${BOX2D_ROOT}/lib/box2d.lib)
+    target_link_libraries(sledge debug ${CMAKE_SOURCE_DIR}/libs/glfw/debug/glfw3.lib)
+    target_link_libraries(sledge ${BOX2D_ROOT}/lib/box2d.lib)
+    target_link_libraries(sledge ${CMAKE_SOURCE_DIR}/libs/glfw/release/glfw3.lib)
+elseif(UNIX)
+    target_link_libraries(sledge ${BOX2D_ROOT}/lib/libbox2d.a)
+endif()
 

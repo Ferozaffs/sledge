@@ -8,22 +8,22 @@ using namespace Gameplay;
 
 LevelBlock::LevelBlock(b2World *world, int x, int y, std::string alias)
 {
-    if (alias.contains("decor"))
+    if (alias.find("decor") != std::string::npos)
     {
         m_type = BlockType::Decor;
         m_health = 0.0f;
     }
-    else if (alias.contains("weak"))
+    else if (alias.find("weak") != std::string::npos)
     {
         m_type = BlockType::Weak;
         m_health = 0.2f;
     }
-    else if (alias.contains("tough"))
+    else if (alias.find("tough") != std::string::npos)
     {
         m_type = BlockType::Tough;
         m_health = 1.0f;
     }
-    else if (alias.contains("static"))
+    else if (alias.find("static") != std::string::npos)
     {
         m_type = BlockType::Static;
         m_health = -1.0f;
@@ -40,10 +40,10 @@ LevelBlock::LevelBlock(b2World *world, int x, int y, std::string alias)
 
     if (m_type == BlockType::Decor)
     {
-        fixtureDef.filter.categoryBits = std::to_underlying(CollisionFilter::Block_Decor);
+        fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Block_Decor);
         fixtureDef.filter.maskBits = 0xFFFF;
-        fixtureDef.filter.maskBits &=
-            ~(std::to_underlying(CollisionFilter::Avatar_Body) | std::to_underlying(CollisionFilter::Avatar_Legs));
+        fixtureDef.filter.maskBits &= ~(static_cast<unsigned int>(CollisionFilter::Avatar_Body) |
+                                        static_cast<unsigned int>(CollisionFilter::Avatar_Legs));
     }
 
     m_asset->GetBody()->CreateFixture(&fixtureDef);
@@ -73,8 +73,10 @@ bool LevelBlock::Update(float deltaTime)
                 }
 
                 auto impact = 0.0f;
-                if (contactFixture->GetFilterData().categoryBits != std::to_underlying(CollisionFilter::Avatar_Body) &&
-                    contactFixture->GetFilterData().categoryBits != std::to_underlying(CollisionFilter::Avatar_Legs))
+                if (contactFixture->GetFilterData().categoryBits !=
+                        static_cast<unsigned int>(CollisionFilter::Avatar_Body) &&
+                    contactFixture->GetFilterData().categoryBits !=
+                        static_cast<unsigned int>(CollisionFilter::Avatar_Legs))
                 {
                     impact = contactFixture->GetBody()->GetLinearVelocity().Length() *
                              contactFixture->GetBody()->GetMass() * deltaTime;

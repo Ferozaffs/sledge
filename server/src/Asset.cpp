@@ -3,7 +3,6 @@
 
 #include <boost/uuid/uuid_generators.hpp>
 #include <box2d/box2d.h>
-#include <combaseapi.h>
 
 using namespace Gameplay;
 
@@ -87,10 +86,10 @@ void Asset::UpdateSize()
         min = max = shape->m_vertices[0];
         for (int i = 1; i < shape->m_count; i++)
         {
-            min.x = min(min.x, shape->m_vertices[i].x);
-            min.y = min(min.y, shape->m_vertices[i].y);
-            max.x = max(max.x, shape->m_vertices[i].x);
-            max.y = max(max.y, shape->m_vertices[i].y);
+            min.x = std::min(min.x, shape->m_vertices[i].x);
+            min.y = std::min(min.y, shape->m_vertices[i].y);
+            max.x = std::max(max.x, shape->m_vertices[i].x);
+            max.y = std::max(max.y, shape->m_vertices[i].y);
         }
 
         m_sizeX = max.x - min.x;

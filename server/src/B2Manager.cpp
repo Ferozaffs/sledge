@@ -1,5 +1,7 @@
 #include "B2Manager.h"
+#ifdef WIN32
 #include "Debugger.h"
+#endif
 
 #include <box2d/box2d.h>
 #include <linmath.h>
@@ -10,6 +12,7 @@ constexpr float timeStep = 1.0f / 60.0f;
 constexpr int32 velocityIterations = 6;
 constexpr int32 positionIterations = 2;
 
+#ifdef WIN32
 static Debug::Debugger::ShapeType GetRenderType(b2Shape::Type type)
 {
     switch (type)
@@ -22,11 +25,12 @@ static Debug::Debugger::ShapeType GetRenderType(b2Shape::Type type)
         return Debug::Debugger::ShapeType::Box;
     }
 }
+#endif
 
 B2Manager::B2Manager() : m_accumelatedTime(0.0f)
 {
     b2Vec2 gravity(0.0f, -9.81f);
-    m_world = std::make_shared<b2World>(gravity);
+    m_world = std::make_unique<b2World>(gravity);
 }
 
 B2Manager::~B2Manager()
@@ -44,11 +48,12 @@ void B2Manager::Update(const float &deltaTime)
     }
 }
 
-std::shared_ptr<b2World> Physics::B2Manager::GetWorld()
+b2World *Physics::B2Manager::GetWorld()
 {
-    return m_world;
+    return m_world.get();
 }
 
+#ifdef WIN32
 void B2Manager::DbgRender(Debug::Debugger *debugger)
 {
     for (auto b = m_world->GetBodyList(); b; b = b->GetNext())
@@ -79,3 +84,4 @@ void B2Manager::DbgRender(Debug::Debugger *debugger)
         }
     }
 }
+#endif

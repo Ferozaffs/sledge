@@ -2,10 +2,13 @@
 #include <memory>
 
 class b2World;
+
+#ifdef WIN32
 namespace Debug
 {
 class Debugger;
 }
+#endif
 
 namespace Physics
 {
@@ -17,12 +20,14 @@ class B2Manager
 
     void Update(const float &deltaTime);
 
-    std::shared_ptr<b2World> GetWorld();
+    b2World *GetWorld();
 
+#ifdef WIN32
     void DbgRender(Debug::Debugger *debugger);
+#endif
 
   private:
-    std::shared_ptr<b2World> m_world;
+    std::unique_ptr<b2World> m_world;
     float m_accumelatedTime;
 };
 
