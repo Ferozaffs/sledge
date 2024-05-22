@@ -22,8 +22,7 @@ class LevelManager
 
     void Update(float deltaTime);
 
-    std::vector<std::shared_ptr<Asset>> GetAssets() const;
-    std::vector<std::shared_ptr<Asset>> GetDynamicAssets();
+    std::vector<std::shared_ptr<Asset>> GetAssets(bool allAssets = false);
 
     const std::vector<std::pair<int, int>> &GetSpawns() const;
 

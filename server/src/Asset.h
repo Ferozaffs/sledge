@@ -1,5 +1,5 @@
 #pragma once
-#include <boost/uuid/uuid.hpp>
+#include <random>
 #include <string>
 
 class b2Body;
@@ -12,7 +12,7 @@ class Asset
     Asset(b2Body *body, const std::string &alias);
     ~Asset();
 
-    const boost::uuids::uuid GetId() const;
+    const int GetId() const;
     const std::string &GetAlias() const;
     const float GetX() const;
     const float GetY() const;
@@ -27,12 +27,20 @@ class Asset
 
     void UpdateSize();
 
+    bool ShouldSendFull();
+    void Sent();
+
   private:
-    boost::uuids::uuid m_id;
+    int m_id;
     b2Body *m_body;
     std::string m_alias;
     unsigned int m_tint;
     float m_sizeX;
     float m_sizeY;
+
+    bool m_sendFull;
+
+    static std::mt19937 rng;
+    static std::uniform_int_distribution<int> distribution;
 };
 } // namespace Gameplay

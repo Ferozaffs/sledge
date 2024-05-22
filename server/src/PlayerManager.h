@@ -21,7 +21,7 @@ class PlayerManager
     const std::shared_ptr<Player> &CreatePlayer();
     std::shared_ptr<Player> GetPlayer(size_t index);
 
-    std::vector<std::shared_ptr<Asset>> GetDynamicAssets() const;
+    std::vector<std::shared_ptr<Asset>> GetAssets();
 
     std::pair<int, int> GetOptimalSpawn() const;
 

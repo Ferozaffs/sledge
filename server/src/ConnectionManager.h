@@ -1,5 +1,4 @@
 #pragma once
-#include <boost/uuid/uuid.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,7 +23,7 @@ class ConnectionManager
 
     void Update(float deltaTime);
 
-    static void RemoveAsset(boost::uuids::uuid id);
+    static void RemoveAsset(int id);
 
   private:
     friend class Impl;
@@ -32,8 +31,7 @@ class ConnectionManager
     static std::string CreateStatusMessage(std::string message);
     static std::string CreateErrorMessage(std::string message);
 
-    void SendAssets(const std::shared_ptr<Gameplay::Player> &player,
-                    std::vector<std::shared_ptr<Gameplay::Asset>> assets);
+    void SendAssets(std::vector<std::shared_ptr<Gameplay::Asset>> assets, bool playerJoined);
 
     void RemoveAssets();
 
@@ -43,7 +41,7 @@ class ConnectionManager
 
     float m_tickCounter;
 
-    static std::vector<boost::uuids::uuid> m_assetsToRemove;
+    static std::vector<int> m_assetsToRemove;
 };
 
 } // namespace Network

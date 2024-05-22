@@ -10,7 +10,6 @@
 #include <websocketpp/server.hpp>
 #pragma warning(pop)
 
-#include <boost/uuid/uuid_io.hpp>
 #include <nlohmann/json.hpp>
 
 #include <functional>
@@ -34,7 +33,7 @@ using websocketpp::lib::placeholders::_2;
 typedef server::message_ptr message_ptr;
 
 std::unique_ptr<Impl> ConnectionManager::m_impl = nullptr;
-std::vector<boost::uuids::uuid> ConnectionManager::m_assetsToRemove;
+std::vector<int> ConnectionManager::m_assetsToRemove;
 std::mutex connectionMutex;
 std::mutex removalMutex;
 
@@ -47,17 +46,6 @@ class Network::Impl
     Impl()
     {
         thread = std::thread(&websocketThread, this);
-    }
-
-    void Send(const std::shared_ptr<Gameplay::Player> &player, std::string message)
-    {
-        for (const auto &connection : connections)
-        {
-            if (player == connection.second)
-            {
-                Send(connection.first, message.c_str());
-            }
-        }
     }
 
     void Send(std::shared_ptr<connection> connection, std::string message)
@@ -187,66 +175,91 @@ void ConnectionManager::Update(float deltaTime)
     }
 
     connectionMutex.lock();
+    bool playerJoined = false;
     for (auto &connection : m_impl->connections)
     {
-        if (connection.second == nullptr)
+        if (connection.second == nullptr && connection.first->get_state() == websocketpp::session::state::open)
         {
             auto player = m_playerManager->CreatePlayer();
             connection.second = player;
-
-            SendAssets(player, m_levelManager->GetAssets());
-        }
-
-        if (tick == true)
-        {
-            auto assets = m_levelManager->GetDynamicAssets();
-            auto playerAssets = m_playerManager->GetDynamicAssets();
-
-            assets.insert(assets.end(), playerAssets.begin(), playerAssets.end());
-            SendAssets(connection.second, assets);
-
-            RemoveAssets();
+            playerJoined = true;
         }
     }
+
+    if (tick == true || playerJoined)
+    {
+        auto assets = m_levelManager->GetAssets(playerJoined);
+        auto playerAssets = m_playerManager->GetAssets();
+
+        assets.insert(assets.end(), playerAssets.begin(), playerAssets.end());
+        SendAssets(assets, playerJoined);
+
+        RemoveAssets();
+    }
+
     connectionMutex.unlock();
 }
 
-void ConnectionManager::RemoveAsset(boost::uuids::uuid id)
+void ConnectionManager::RemoveAsset(int id)
 {
     removalMutex.lock();
     m_assetsToRemove.emplace_back(id);
     removalMutex.unlock();
 }
 
-void ConnectionManager::SendAssets(const std::shared_ptr<Player> &player, std::vector<std::shared_ptr<Asset>> assets)
+void ConnectionManager::SendAssets(std::vector<std::shared_ptr<Asset>> assets, bool playerJoined)
 {
+    if (assets.empty())
+    {
+        return;
+    }
+
     json j = {{"type", "updateData"}};
 
     json assetArray = json::array();
 
     for (const auto &asset : assets)
     {
-        json assetData = {
-            {"id", boost::uuids::to_string(asset->GetId())},
-            {"alias", asset->GetAlias()},
-            {"x", asset->GetX()},
-            {"y", asset->GetY()},
-            {"sizeX", asset->GetSizeX()},
-            {"sizeY", asset->GetSizeY()},
-            {"rot", asset->GetRot()},
-            {"tint", asset->GetTint()},
-        };
+        if (asset->ShouldSendFull() == true || playerJoined)
+        {
+            json assetData = {
+                {"id", asset->GetId()},   {"alias", asset->GetAlias()}, {"x", asset->GetX()},
+                {"y", asset->GetY()},     {"sizeX", asset->GetSizeX()}, {"sizeY", asset->GetSizeY()},
+                {"rot", asset->GetRot()}, {"tint", asset->GetTint()},
+            };
 
-        assetArray.push_back(assetData);
+            assetArray.push_back(assetData);
+        }
+        else
+        {
+            json assetData = {
+                {"id", asset->GetId()},
+                {"x", asset->GetX()},
+                {"y", asset->GetY()},
+                {"rot", asset->GetRot()},
+            };
+
+            assetArray.push_back(assetData);
+        }
+
+        asset->Sent();
     }
 
     j["assets"] = assetArray;
 
-    m_impl->Send(player, j.dump());
+    for (auto &connection : m_impl->connections)
+    {
+        m_impl->Send(connection.first, j.dump());
+    }
 }
 
 void ConnectionManager::RemoveAssets()
 {
+    if (m_assetsToRemove.empty())
+    {
+        return;
+    }
+
     json j = {{"type", "removeData"}};
 
     json assetArray = json::array();
@@ -254,7 +267,7 @@ void ConnectionManager::RemoveAssets()
     removalMutex.lock();
     for (auto const &id : m_assetsToRemove)
     {
-        json assetData = {{"id", boost::uuids::to_string(id)}};
+        json assetData = {{"id", id}};
         assetArray.push_back(assetData);
     }
     m_assetsToRemove.clear();

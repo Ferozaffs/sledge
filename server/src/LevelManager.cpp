@@ -1,4 +1,5 @@
 #include "LevelManager.h"
+#include "Asset.h"
 #include "LevelBlock.h"
 
 #include <box2d/box2d.h>
@@ -163,28 +164,14 @@ void LevelManager::Update(float deltaTime)
     }
 }
 
-std::vector<std::shared_ptr<Asset>> LevelManager::GetAssets() const
+std::vector<std::shared_ptr<Asset>> LevelManager::GetAssets(bool allAssets)
 {
     std::vector<std::shared_ptr<Asset>> assets;
     for (const auto &block : m_blocks)
     {
         const auto &blockAsset = block.second->GetAsset();
-        if (blockAsset != nullptr)
-        {
-            assets.emplace_back(blockAsset);
-        }
-    }
-
-    return assets;
-}
-
-std::vector<std::shared_ptr<Asset>> LevelManager::GetDynamicAssets()
-{
-    std::vector<std::shared_ptr<Asset>> assets;
-    for (const auto &block : m_blocks)
-    {
-        const auto &blockAsset = block.second->GetAsset();
-        if (blockAsset != nullptr && (block.second->InMotion() || m_reloaded))
+        if (blockAsset != nullptr &&
+            (allAssets || m_reloaded || block.second->InMotion() || block.second->GetAsset()->ShouldSendFull()))
         {
             assets.emplace_back(blockAsset);
         }

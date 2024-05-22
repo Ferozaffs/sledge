@@ -1,15 +1,17 @@
 #include "Asset.h"
 #include "ConnectionManager.h"
 
-#include <boost/uuid/uuid_generators.hpp>
 #include <box2d/box2d.h>
 
 using namespace Gameplay;
 
+std::mt19937 Asset::rng{std::random_device{}()};
+std::uniform_int_distribution<int> Asset::distribution{0, std::numeric_limits<int>::max()};
+
 Asset::Asset(b2Body *body, const std::string &alias)
-    : m_body(body), m_alias(alias), m_sizeX(0.0f), m_sizeY(0.0f), m_tint(0xFFFFFF)
+    : m_body(body), m_alias(alias), m_sizeX(0.0f), m_sizeY(0.0f), m_tint(0xFFFFFF), m_sendFull(true)
 {
-    m_id = boost::uuids::random_generator()();
+    m_id = distribution(rng);
 }
 
 Asset::~Asset()
@@ -22,7 +24,7 @@ Asset::~Asset()
     }
 }
 
-const boost::uuids::uuid Asset::GetId() const
+const int Asset::GetId() const
 {
     return m_id;
 }
@@ -95,4 +97,14 @@ void Asset::UpdateSize()
         m_sizeX = max.x - min.x;
         m_sizeY = max.y - min.y;
     }
+}
+
+bool Asset::ShouldSendFull()
+{
+    return m_sendFull;
+}
+
+void Asset::Sent()
+{
+    m_sendFull = false;
 }

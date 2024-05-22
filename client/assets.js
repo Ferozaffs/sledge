@@ -60,6 +60,11 @@ export function update(id, alias, x, y, sizeX, sizeY, rot, tint)
 
     if (foundObject === undefined)
     {
+        if (alias === undefined)
+        {
+            return;
+        }
+        
         foundObject = add(id, alias, sizeX, sizeY, tint);
 
         bounds.max.x = -10000.0;
@@ -98,10 +103,10 @@ export function getBounds()
         assets.forEach((asset) => {
             if (asset.alias.includes('static') === true || asset.alias.includes('weak') === true)
             {
-                staticBounds.max.x = Math.max(staticBounds.max.x, asset.x + 10);
-                staticBounds.max.y = Math.max(staticBounds.max.y, asset.y + 10);
-                staticBounds.min.x = Math.min(staticBounds.min.x, asset.x - 10);
-                staticBounds.min.y = Math.min(staticBounds.min.y, asset.y - 10);
+                staticBounds.max.x = Math.max(staticBounds.max.x, asset.x + 50);
+                staticBounds.max.y = Math.max(staticBounds.max.y, asset.y + 50);
+                staticBounds.min.x = Math.min(staticBounds.min.x, asset.x - 50);
+                staticBounds.min.y = Math.min(staticBounds.min.y, asset.y - 5);
             }
         });
 

@@ -11,7 +11,7 @@ std::vector<unsigned int> tintList = {
     0xFFFF00, 0x00FFFF, 0xFF00FF, 0x880000, 0x000088, 0x008800, 0x888800, 0x008888, 0x880088,
 };
 
-PlayerManager::PlayerManager(LevelManager *levelManager, b2World* world)
+PlayerManager::PlayerManager(LevelManager *levelManager, b2World *world)
     : m_levelManager(levelManager), m_world(world), m_playersSpawned(0), m_restartTimer(5.0f)
 {
 }
@@ -64,8 +64,8 @@ void PlayerManager::Update(float deltaTime)
 
 const std::shared_ptr<Player> &PlayerManager::CreatePlayer()
 {
-    m_players.emplace_back(
-        std::make_shared<Player>(this, m_world, tintList[m_playersSpawned++ % tintList.size()]));
+    m_players.emplace_back(std::make_shared<Player>(this, m_world, tintList[m_playersSpawned++ % tintList.size()]));
+
     return m_players.back();
 }
 
@@ -79,7 +79,7 @@ std::shared_ptr<Player> PlayerManager::GetPlayer(size_t index)
     return nullptr;
 }
 
-std::vector<std::shared_ptr<Asset>> PlayerManager::GetDynamicAssets() const
+std::vector<std::shared_ptr<Asset>> PlayerManager::GetAssets()
 {
     std::vector<std::shared_ptr<Asset>> assets;
     for (const auto &player : m_players)
