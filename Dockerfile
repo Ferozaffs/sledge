@@ -1,11 +1,10 @@
-FROM alpine:latest AS build
+FROM ubuntu:latest AS build
 
-RUN apk add --no-cache \
+RUN apt-get update
+RUN apt-get -y install \
     git \
     cmake \
-    make \
-    clang \
-    openssl-dev
+    g++
 
 WORKDIR /src
 
@@ -16,22 +15,21 @@ WORKDIR /src/sledge/server
 RUN mkdir build
 WORKDIR /src/sledge/server/build
 
-RUN cmake -DCMAKE_CXX_COMPILER=clang ..
+RUN cmake ..
 RUN make
 
 #---------------------------------------
 FROM alpine:latest
 
 RUN apk add --no-cache \
-    nginx \
-    openssl
+    nginx 
 
 COPY --from=build /src/sledge/client /app/client
 COPY --from=build /src/sledge/server/build/sledge /app/server/sledge
-COPY --from=build /src/sledge/server/data/app/server/data  
+COPY --from=build /src/sledge/server/data /app/server/data  
 
 COPY --from=build /src/sledge/nginx.conf /etc/nginx/nginx.conf
-COPY --from=build /src/sledge/nginx.conf /start.sh
+COPY --from=build /src/sledge/start.sh /start.sh
 RUN chmod +x /start.sh
 
 EXPOSE 5500
