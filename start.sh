@@ -3,4 +3,4 @@
 cd /app/server
 ./sledge &
 
-nginx -g "daemon off;" &
+nginx -g "daemon off;" 
