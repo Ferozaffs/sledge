@@ -18,7 +18,6 @@ socket.onclose = function(event) {
 socket.onmessage = function(event) {
     const message = JSON.parse(event.data);
 
-    console.log(message);
     // Check the type of the message
     if (message && message.type) {
       switch (message.type) {
