@@ -127,6 +127,11 @@ bool LevelManager::LoadLevel(const std::string &filename)
 
 bool LevelManager::NextLevel()
 {
+    if (m_playlist.size() == 0)
+    {
+        return false;
+    }
+
     m_blocks.clear();
     m_spawns.clear();
 
