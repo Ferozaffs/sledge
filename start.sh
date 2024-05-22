@@ -1,5 +1,6 @@
 #!/bin/sh
 
-/app/server/sledge &
+cd /app/server
+./sledge &
 
-nginx -g "daemon off;"
+nginx -g "daemon off;" &

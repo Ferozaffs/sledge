@@ -19,16 +19,16 @@ RUN cmake ..
 RUN make
 
 #---------------------------------------
-FROM alpine:latest
+FROM ubuntu:latest
 
-RUN apk add --no-cache \
-    nginx 
+RUN apt-get update
+RUN apt-get -y install nginx
 
 COPY --from=build /src/sledge/client /app/client
 COPY --from=build /src/sledge/server/build/sledge /app/server/sledge
 COPY --from=build /src/sledge/server/data /app/server/data  
 
-COPY --from=build /src/sledge/nginx.conf /etc/nginx/nginx.conf
+COPY --from=build /src/sledge/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /src/sledge/start.sh /start.sh
 RUN chmod +x /start.sh
 
