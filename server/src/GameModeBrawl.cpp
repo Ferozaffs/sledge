@@ -27,7 +27,7 @@ GameModeBrawl::~GameModeBrawl()
 void GameModeBrawl::Update(float deltaTime)
 {
     auto players = m_playerManager->GetPlayersAlive();
-    size_t numPlayers = players.size();
+    int numPlayers = players.size();
     if (numPlayers < m_numPlayers)
     {
         for (const auto &player : players)

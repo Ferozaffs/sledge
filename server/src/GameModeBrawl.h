@@ -18,7 +18,7 @@ class GameModeBrawl : public IGameMode
 
   private:
     PlayerManager *m_playerManager;
-    size_t m_numPlayers;
+    int m_numPlayers;
     bool m_valid;
 
     float m_countDown;
