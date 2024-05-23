@@ -33,6 +33,9 @@ socket.onmessage = function(event) {
         case 'removeData':
           removeData(message);
           break;
+        case 'scoreData':
+          scoreData(message);
+          break;
         default:
           console.error('Unknown message type:', message.type);
       }
@@ -65,4 +68,9 @@ function removeData(message)
 function updateData(message)
 {
     APP.updateData(message);
+}
+
+function scoreData(message)
+{
+    APP.scoreData(message);
 }

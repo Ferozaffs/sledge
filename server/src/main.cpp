@@ -3,6 +3,7 @@
 #ifdef WIN32
 #include "Debugger.h"
 #endif
+#include "GameManager.h"
 #include "LevelManager.h"
 #include "Player.h"
 #include "PlayerManager.h"
@@ -17,6 +18,7 @@ static std::unique_ptr<Debug::Debugger> debugger = nullptr;
 static std::unique_ptr<Physics::B2Manager> b2Manager = nullptr;
 static std::unique_ptr<Gameplay::LevelManager> levelManager = nullptr;
 static std::unique_ptr<Gameplay::PlayerManager> playerManager = nullptr;
+static std::unique_ptr<Gameplay::GameManager> gameManager = nullptr;
 static std::unique_ptr<Network::ConnectionManager> connectionManager = nullptr;
 
 void Update(const float &deltaTime)
@@ -37,7 +39,10 @@ void Update(const float &deltaTime)
 
     levelManager->Update(deltaTime);
     playerManager->Update(deltaTime);
+    gameManager->Update(deltaTime);
+
     connectionManager->Update(deltaTime);
+
     b2Manager->Update(deltaTime);
 }
 
@@ -70,8 +75,10 @@ int main(int argc, char *argv[])
     }
 
     b2Manager = std::make_unique<Physics::B2Manager>();
-    levelManager = std::make_unique<Gameplay::LevelManager>(b2Manager->GetWorld());
-    playerManager = std::make_unique<Gameplay::PlayerManager>(levelManager.get(), b2Manager->GetWorld());
+    playerManager = std::make_unique<Gameplay::PlayerManager>(b2Manager->GetWorld());
+    gameManager = std::make_unique<Gameplay::GameManager>(playerManager.get());
+    levelManager = std::make_unique<Gameplay::LevelManager>(gameManager.get(), b2Manager->GetWorld());
+    playerManager->SetLevelManager(levelManager.get());
     connectionManager = std::make_unique<Network::ConnectionManager>(playerManager.get(), levelManager.get());
 
     levelManager->LoadPlaylist("data/levels");

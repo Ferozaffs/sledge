@@ -32,16 +32,18 @@ class ConnectionManager
     static std::string CreateErrorMessage(std::string message);
 
     void SendAssets(std::vector<std::shared_ptr<Gameplay::Asset>> assets, bool playerJoined);
+    void SendScore() const;
 
     void RemoveAssets();
 
     static std::unique_ptr<Impl> m_impl;
+    static std::vector<int> m_assetsToRemove;
+
     Gameplay::PlayerManager *m_playerManager;
     Gameplay::LevelManager *m_levelManager;
 
     float m_tickCounter;
-
-    static std::vector<int> m_assetsToRemove;
+    signed int m_cachedScore;
 };
 
 } // namespace Network

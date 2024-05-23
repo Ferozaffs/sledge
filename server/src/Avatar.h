@@ -20,6 +20,7 @@ class Avatar
 
     void Update(const float &deltaTime, const float &sledgeInput, const float &jumpInput, const float &moveInput);
 
+    unsigned int GetBodyId() const;
     b2Body *GetBody() const;
     const b2Vec2 &GetPosition() const;
     const float GetX() const;

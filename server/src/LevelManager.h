@@ -10,11 +10,12 @@ namespace Gameplay
 {
 class LevelBlock;
 class Asset;
+class GameManager;
 
 class LevelManager
 {
   public:
-    LevelManager(b2World *world);
+    LevelManager(GameManager *gameManager, b2World *world);
     ~LevelManager();
 
     bool LoadPlaylist(const std::string &path);
@@ -35,6 +36,7 @@ class LevelManager
     bool CreateRoofDecor(std::pair<int, int> coord);
 
     b2World *m_world;
+    GameManager* m_gameManager;
 
     std::map<std::pair<int, int>, std::shared_ptr<LevelBlock>> m_blocks;
     std::vector<std::pair<int, int>> m_spawns;

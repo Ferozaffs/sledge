@@ -175,6 +175,11 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
     }
 }
 
+unsigned int Avatar::GetBodyId() const
+{
+    return m_bodyAsset->GetId();
+}
+
 b2Body *Avatar::GetBody() const
 {
     return m_bodyAsset->GetBody();

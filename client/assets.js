@@ -43,6 +43,7 @@ function add(id, alias, sizeX, sizeY, tint)
         },
         rot: 0,
         sprite: PIXI.Sprite.from(alias),
+        bitmapText: undefined
     }
         
     asset.sprite.anchor.set(0.5);
@@ -86,6 +87,12 @@ export function remove(id)
     {
         assetContainer.removeChild(foundObject.sprite);
         foundObject.sprite.destroy();
+        if (foundObject.bitmapText !== undefined)
+        {
+            assetContainer.removeChild(foundObject.bitmapText);
+            foundObject.bitmapText.destroy();
+        }
+
     
         assets = assets.filter(obj => obj.id !== id);
 
@@ -103,9 +110,9 @@ export function getBounds()
         assets.forEach((asset) => {
             if (asset.alias.includes('static') === true || asset.alias.includes('weak') === true)
             {
-                staticBounds.max.x = Math.max(staticBounds.max.x, asset.x + 50);
-                staticBounds.max.y = Math.max(staticBounds.max.y, asset.y + 50);
-                staticBounds.min.x = Math.min(staticBounds.min.x, asset.x - 50);
+                staticBounds.max.x = Math.max(staticBounds.max.x, asset.x + 15);
+                staticBounds.max.y = Math.max(staticBounds.max.y, asset.y + 15);
+                staticBounds.min.x = Math.min(staticBounds.min.x, asset.x - 15);
                 staticBounds.min.y = Math.min(staticBounds.min.y, asset.y - 5);
             }
         });
@@ -158,5 +165,36 @@ export function adjustAssetsView(scaleFactor, width, height)
 
         asset.sprite.width =  asset.size.x * scaleFactor; 
         asset.sprite.height =  asset.size.y * scaleFactor; 
+
+        if (asset.bitmapText !== undefined)
+        {
+            asset.bitmapText.x = asset.sprite.x - (1 * scaleFactor);;
+            asset.bitmapText.y = asset.sprite.y - (10 * scaleFactor);
+            asset.bitmapText.style.fontSize = 3 * scaleFactor;
+        }
     });
+}
+
+export function setScore(id, score)
+{
+    let foundObject = assets.find(obj => obj.id === id);
+
+    if (foundObject !== undefined)
+    {
+        if(foundObject.bitmapText === undefined)
+        {
+            foundObject.bitmapText = new PIXI.BitmapText({
+                text: '',
+                style: {
+                    fontFamily: 'Desyrel',
+                    fontSize: 25,
+                    align: 'center',
+                },
+            });
+
+            assetContainer.addChild(foundObject.bitmapText);
+        }
+
+        foundObject.bitmapText.text = score;
+    }
 }

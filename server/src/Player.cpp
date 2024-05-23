@@ -4,11 +4,12 @@
 
 using namespace Gameplay;
 
+constexpr float RESPAWN_HOLD_SENTINEL = -1.0;
+
 Player::Player(PlayerManager *playerManager, b2World *world, unsigned int tint)
-    : m_playerManager(playerManager), m_sledgeInput(0.0f), m_moveInput(0.0f), m_jumpInput(0.0f), m_pendingRemove(false),
-      m_respawnTimer(0.0f), m_tint(tint), m_wishToRestart(false)
+    : m_playerManager(playerManager), m_world(world), m_sledgeInput(0.0f), m_moveInput(0.0f), m_jumpInput(0.0f),
+      m_pendingRemove(false), m_respawnTimer(RESPAWN_HOLD_SENTINEL), m_tint(tint), m_score(0), m_wishToRestart(false)
 {
-    SpawnAvatar(world);
 }
 
 Player::~Player()
@@ -27,29 +28,45 @@ const float Player::GetY() const
 
 void Player::Update(float deltaTime)
 {
-    m_avatar->Update(deltaTime, m_sledgeInput, m_jumpInput, m_moveInput);
-
-    if (m_avatar->IsDead())
+    if (m_respawnTimer >= 0.0f)
     {
-        m_respawnTimer += deltaTime;
+        m_respawnTimer = std::max(0.0f, m_respawnTimer - deltaTime);
+        if (m_respawnTimer == 0.0f)
+        {
+            Respawn();
+        }
+    }
+
+    if (m_avatar != nullptr)
+    {
+        m_avatar->Update(deltaTime, m_sledgeInput, m_jumpInput, m_moveInput);
+
+        if (m_avatar->GetPosition().y < -50.0f)
+        {
+            m_avatar->Kill();
+        }
+
+        m_wishToRestart = m_avatar->GetWeaponRot() < -1.0f ? true : false;
     }
     else
     {
-        m_respawnTimer = 0.0f;
+        m_wishToRestart = true;
     }
+}
 
-    if (m_avatar->GetPosition().y < -50.0f || m_respawnTimer > 5.0f)
+void Player::Respawn(float time)
+{
+    if (m_respawnTimer == RESPAWN_HOLD_SENTINEL)
     {
-        Respawn();
+        m_respawnTimer = time;
     }
-
-    m_wishToRestart = m_avatar->GetWeaponRot() < -1.0f ? true : false;
 }
 
 void Player::Respawn()
 {
-    auto world = m_avatar->GetBody()->GetWorld();
-    SpawnAvatar(world);
+    SpawnAvatar(m_world);
+
+    m_respawnTimer = RESPAWN_HOLD_SENTINEL;
 }
 
 void Player::SetInputs(float sledgeInput, float moveInput, float jumpInput)
@@ -57,6 +74,16 @@ void Player::SetInputs(float sledgeInput, float moveInput, float jumpInput)
     m_sledgeInput = sledgeInput;
     m_moveInput = moveInput;
     m_jumpInput = jumpInput;
+}
+
+int Player::GetMainAssetId() const
+{
+    if (m_avatar != nullptr)
+    {
+        return m_avatar->GetBodyId();
+    }
+
+    return -1;
 }
 
 std::vector<std::shared_ptr<Asset>> Player::GetAssets() const
@@ -70,9 +97,29 @@ std::vector<std::shared_ptr<Asset>> Player::GetAssets() const
     return assets;
 }
 
+signed int Player::GetScore() const
+{
+    return m_score;
+}
+
+void Player::Score(signed int score)
+{
+    m_score += score;
+}
+
+void Player::ClearScore()
+{
+    m_score = 0;
+}
+
 bool Player::IsWishingToRestart() const
 {
     return m_wishToRestart;
+}
+
+bool Gameplay::Player::IsDead() const
+{
+    return m_avatar == nullptr || m_avatar->IsDead();
 }
 
 void Player::SpawnAvatar(b2World *world)

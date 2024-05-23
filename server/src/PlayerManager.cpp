@@ -11,8 +11,7 @@ std::vector<unsigned int> tintList = {
     0xFFFF00, 0x00FFFF, 0xFF00FF, 0x880000, 0x000088, 0x008800, 0x888800, 0x008888, 0x880088,
 };
 
-PlayerManager::PlayerManager(LevelManager *levelManager, b2World *world)
-    : m_levelManager(levelManager), m_world(world), m_playersSpawned(0), m_restartTimer(5.0f)
+PlayerManager::PlayerManager(b2World *world) : m_world(world), m_playersSpawned(0), m_restartTimer(5.0f)
 {
 }
 
@@ -23,6 +22,7 @@ PlayerManager::~PlayerManager()
 void PlayerManager::Update(float deltaTime)
 {
     unsigned int wishingToRestart = 0;
+    m_totalScore = 0;
     for (auto it = m_players.begin(); it != m_players.end();)
     {
         if ((*it)->m_pendingRemove)
@@ -32,6 +32,7 @@ void PlayerManager::Update(float deltaTime)
         else
         {
             (*it)->Update(deltaTime);
+            m_totalScore += (*it)->GetScore();
 
             if ((*it)->IsWishingToRestart() == true)
             {
@@ -45,14 +46,9 @@ void PlayerManager::Update(float deltaTime)
     if (wishingToRestart >= std::ceil(m_players.size() / 2.0f))
     {
         m_restartTimer -= deltaTime;
-        if (m_restartTimer <= 0.0f)
+        if (m_restartTimer <= 0.0f && m_levelManager != nullptr)
         {
             m_levelManager->NextLevel();
-            for (auto it = m_players.begin(); it != m_players.end(); ++it)
-            {
-                (*it)->Respawn();
-            }
-
             m_restartTimer = 10.0f;
         }
     }
@@ -79,6 +75,44 @@ std::shared_ptr<Player> PlayerManager::GetPlayer(size_t index)
     return nullptr;
 }
 
+size_t PlayerManager::GetNumPlayers() const
+{
+    return m_players.size();
+}
+
+std::vector<std::shared_ptr<Player>> PlayerManager::GetPlayers()
+{
+    return m_players;
+}
+
+std::vector<std::shared_ptr<Player>> PlayerManager::GetPlayersAlive()
+{
+    std::vector<std::shared_ptr<Player>> players;
+    for (const auto &player : m_players)
+    {
+        if (player->IsDead() == false)
+        {
+            players.emplace_back(player);
+        }
+    }
+
+    return players;
+}
+
+std::vector<std::shared_ptr<Player>> PlayerManager::GetPlayersDead()
+{
+    std::vector<std::shared_ptr<Player>> players;
+    for (const auto &player : m_players)
+    {
+        if (player->IsDead())
+        {
+            players.emplace_back(player);
+        }
+    }
+
+    return players;
+}
+
 std::vector<std::shared_ptr<Asset>> PlayerManager::GetAssets()
 {
     std::vector<std::shared_ptr<Asset>> assets;
@@ -93,34 +127,60 @@ std::vector<std::shared_ptr<Asset>> PlayerManager::GetAssets()
 
 std::pair<int, int> PlayerManager::GetOptimalSpawn() const
 {
-    auto spawns = m_levelManager->GetSpawns();
-
-    std::map<std::pair<int, int>, float> spawnDistances;
-    for (const auto &s : spawns)
+    if (m_levelManager != nullptr)
     {
-        auto spawnX = 2.0f * static_cast<float>(s.first);
-        auto spawnY = 2.0f * static_cast<float>(s.second);
+        auto spawns = m_levelManager->GetSpawns();
 
-        float spawnDistance = 100000.0f;
-        for (const auto &player : m_players)
+        std::map<std::pair<int, int>, float> spawnDistances;
+        for (const auto &s : spawns)
         {
-            spawnDistance = std::min(spawnDistance, std::abs(spawnX - player->GetX()));
-            spawnDistance = std::min(spawnDistance, std::abs(spawnY - player->GetY()));
+            auto spawnX = 2.0f * static_cast<float>(s.first);
+            auto spawnY = 2.0f * static_cast<float>(s.second);
+
+            float spawnDistance = 100000.0f;
+            for (const auto &player : m_players)
+            {
+                if (player->IsDead() == false)
+                {
+                    spawnDistance = std::min(spawnDistance, std::abs(spawnX - player->GetX()));
+                    spawnDistance = std::min(spawnDistance, std::abs(spawnY - player->GetY()));
+                }
+            }
+
+            spawnDistances.insert(std::make_pair(s, spawnDistance));
         }
 
-        spawnDistances.insert(std::make_pair(s, spawnDistance));
-    }
-
-    std::pair<int, int> spawn = {0, 0};
-    float distance = 0.0f;
-    for (const auto &s : spawnDistances)
-    {
-        if (distance < s.second)
+        std::pair<int, int> spawn = {0, 0};
+        float distance = 0.0f;
+        for (const auto &s : spawnDistances)
         {
-            spawn = s.first;
-            distance = s.second;
+            if (distance < s.second)
+            {
+                spawn = s.first;
+                distance = s.second;
+            }
         }
+
+        return spawn;
     }
 
-    return spawn;
+    return std::make_pair(50, 50);
+}
+
+signed int PlayerManager::GetScore() const
+{
+    return m_totalScore;
+}
+
+void PlayerManager::ClearScore()
+{
+    for (const auto &player : m_players)
+    {
+        player->ClearScore();
+    }
+}
+
+void PlayerManager::SetLevelManager(LevelManager *levelManager)
+{
+    m_levelManager = levelManager;
 }

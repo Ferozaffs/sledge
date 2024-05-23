@@ -68,6 +68,7 @@ async function preload()
     ];
 
     await PIXI.Assets.load(assets);
+    await PIXI.Assets.load('https://pixijs.com/assets/bitmap-font/desyrel.xml');
 }
 
 export async function updateData(json)
@@ -93,6 +94,19 @@ export async function removeData(json)
 
     assets.forEach((asset) => {
         ASSETS.remove(asset.id);
+    });
+}
+
+export async function scoreData(json)
+{
+    while (!initialized) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    const assets = json.assets;
+
+    assets.forEach((asset) => {
+        ASSETS.setScore(asset.id, asset.score);
     });
 }
 

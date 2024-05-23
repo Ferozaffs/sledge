@@ -155,7 +155,7 @@ class Network::Impl
 };
 
 ConnectionManager::ConnectionManager(PlayerManager *playerManager, Gameplay::LevelManager *levelManager)
-    : m_playerManager(playerManager), m_levelManager(levelManager), m_tickCounter(0.0f)
+    : m_playerManager(playerManager), m_levelManager(levelManager), m_tickCounter(0.0f), m_cachedScore(0)
 {
     m_impl = std::make_unique<Impl>();
 }
@@ -183,6 +183,13 @@ void ConnectionManager::Update(float deltaTime)
             auto player = m_playerManager->CreatePlayer();
             connection.second = player;
             playerJoined = true;
+
+            if (m_playerManager->GetNumPlayers() <= 2)
+            {
+                m_playerManager->ClearScore();
+                m_levelManager->NextLevel();
+                m_cachedScore = 0;
+            }
         }
     }
 
@@ -193,6 +200,12 @@ void ConnectionManager::Update(float deltaTime)
 
         assets.insert(assets.end(), playerAssets.begin(), playerAssets.end());
         SendAssets(assets, playerJoined);
+
+        if (playerJoined == false || m_playerManager->GetScore() != m_cachedScore)
+        {
+            SendScore();
+            m_cachedScore = m_playerManager->GetScore();
+        }
 
         RemoveAssets();
     }
@@ -243,6 +256,31 @@ void ConnectionManager::SendAssets(std::vector<std::shared_ptr<Asset>> assets, b
         }
 
         asset->Sent();
+    }
+
+    j["assets"] = assetArray;
+
+    for (auto &connection : m_impl->connections)
+    {
+        m_impl->Send(connection.first, j.dump());
+    }
+}
+
+void ConnectionManager::SendScore() const
+{
+    json j = {{"type", "scoreData"}};
+
+    json assetArray = json::array();
+
+    const auto &players = m_playerManager->GetPlayers();
+    for (const auto &player : players)
+    {
+        json assetData = {
+            {"id", player->GetMainAssetId()},
+            {"score", player->GetScore()},
+        };
+
+        assetArray.push_back(assetData);
     }
 
     j["assets"] = assetArray;

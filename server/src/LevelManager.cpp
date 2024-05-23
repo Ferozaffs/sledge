@@ -1,5 +1,6 @@
 #include "LevelManager.h"
 #include "Asset.h"
+#include "GameManager.h"
 #include "LevelBlock.h"
 
 #include <box2d/box2d.h>
@@ -36,7 +37,8 @@ struct BMPHeader
 std::map<unsigned int, std::string> assetMap = {
     {0x000000, "block_static"}, {0x7F7F7F, "block_tough"}, {0xB97A57, "block_weak"}, {0xED1C24, "spawn"}};
 
-LevelManager::LevelManager(b2World *world) : m_world(world), m_currentLevelIndex(0), m_reloaded(false)
+LevelManager::LevelManager(GameManager *gameManager, b2World *world)
+    : m_world(world), m_gameManager(gameManager), m_currentLevelIndex(0), m_reloaded(false)
 {
 }
 
@@ -162,6 +164,11 @@ void LevelManager::Update(float deltaTime)
             ++it;
         }
     }
+
+    if (m_gameManager->Finished())
+    {
+        NextLevel();
+    }
 }
 
 std::vector<std::shared_ptr<Asset>> LevelManager::GetAssets(bool allAssets)
@@ -217,6 +224,8 @@ bool LevelManager::BuildLevel(std::vector<std::vector<uint8_t>> rows)
     }
 
     Decorate();
+
+    m_gameManager->SetGameMode(GameManager::GameModeType::Brawl);
 
     return true;
 }
