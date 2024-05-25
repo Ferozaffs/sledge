@@ -13,7 +13,7 @@ class Asset;
 class Avatar
 {
   public:
-    Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint = 0xFFFFFF);
+    Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint = 0xFFFFFF, bool winner = false);
     ~Avatar();
 
     void AssignWeapon(WeaponType type);
@@ -36,14 +36,19 @@ class Avatar
     b2Body *GetHead() const;
     b2Body *GetLegs() const;
     void BreakJoints();
+    void BreakCrown();
+    void BreakHelm();
 
-    float m_spawnInvincibility;
+    float m_invincibilityTimer;
+    unsigned int m_health;
     bool m_dead;
 
     std::shared_ptr<Asset> m_bodyAsset;
-    std::shared_ptr<Asset> m_headAsset;
+    std::shared_ptr<Asset> m_headAsset[3];
+    std::shared_ptr<Asset> m_crownAsset;
     std::shared_ptr<Asset> m_legsAsset;
     b2Joint *m_headJoint;
+    b2Joint *m_crownJoint;
     b2Joint *m_legsJoint;
     std::shared_ptr<Weapon> m_weapon;
     b2RevoluteJoint *m_weaponJoint;

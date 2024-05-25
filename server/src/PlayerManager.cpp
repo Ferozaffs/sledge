@@ -48,6 +48,7 @@ void PlayerManager::Update(float deltaTime)
         m_restartTimer -= deltaTime;
         if (m_restartTimer <= 0.0f && m_levelManager != nullptr)
         {
+            ClearScore();
             m_levelManager->NextLevel();
             m_restartTimer = 10.0f;
         }
@@ -142,8 +143,8 @@ std::pair<int, int> PlayerManager::GetOptimalSpawn() const
             {
                 if (player->IsDead() == false)
                 {
-                    spawnDistance = std::min(spawnDistance, std::abs(spawnX - player->GetX()));
-                    spawnDistance = std::min(spawnDistance, std::abs(spawnY - player->GetY()));
+                    spawnDistance = std::min(
+                        spawnDistance, std::max(std::abs(spawnX - player->GetX()), std::abs(spawnY - player->GetY())));
                 }
             }
 
@@ -154,7 +155,7 @@ std::pair<int, int> PlayerManager::GetOptimalSpawn() const
         float distance = 0.0f;
         for (const auto &s : spawnDistances)
         {
-            if (distance < s.second)
+            if (distance <= s.second)
             {
                 spawn = s.first;
                 distance = s.second;

@@ -26,8 +26,8 @@ function setupJoystick(joystickId) {
         }
         
         joysticks[joystickId] = {
-            x: moveX / maxMove,
-            y: moveY / maxMove * -1.0
+            x: Math.pow(moveX / maxMove, 0.5),
+            y: Math.pow(moveY / maxMove, 0.5) * -1.0
         };
     }
 

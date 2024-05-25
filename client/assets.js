@@ -43,7 +43,7 @@ function add(id, alias, sizeX, sizeY, tint)
         },
         rot: 0,
         sprite: PIXI.Sprite.from(alias),
-        bitmapText: undefined
+        text: undefined
     }
         
     asset.sprite.anchor.set(0.5);
@@ -87,10 +87,10 @@ export function remove(id)
     {
         assetContainer.removeChild(foundObject.sprite);
         foundObject.sprite.destroy();
-        if (foundObject.bitmapText !== undefined)
+        if (foundObject.text !== undefined)
         {
-            assetContainer.removeChild(foundObject.bitmapText);
-            foundObject.bitmapText.destroy();
+            assetContainer.removeChild(foundObject.text);
+            foundObject.text.destroy();
         }
 
     
@@ -166,11 +166,11 @@ export function adjustAssetsView(scaleFactor, width, height)
         asset.sprite.width =  asset.size.x * scaleFactor; 
         asset.sprite.height =  asset.size.y * scaleFactor; 
 
-        if (asset.bitmapText !== undefined)
+        if (asset.text !== undefined)
         {
-            asset.bitmapText.x = asset.sprite.x - (1 * scaleFactor);;
-            asset.bitmapText.y = asset.sprite.y - (10 * scaleFactor);
-            asset.bitmapText.style.fontSize = 3 * scaleFactor;
+            asset.text.x = asset.sprite.x - (1 * scaleFactor);;
+            asset.text.y = asset.sprite.y - (10 * scaleFactor);
+            asset.text.style.fontSize = 3 * scaleFactor;
         }
     });
 }
@@ -181,20 +181,24 @@ export function setScore(id, score)
 
     if (foundObject !== undefined)
     {
-        if(foundObject.bitmapText === undefined)
+        if(foundObject.text === undefined)
         {
-            foundObject.bitmapText = new PIXI.BitmapText({
+            foundObject.text = new PIXI.Text({
                 text: '',
                 style: {
-                    fontFamily: 'Desyrel',
+                    fontFamily: 'ChakraPetch',
                     fontSize: 25,
                     align: 'center',
+                    dropShadow: true,
+                    dropShadowAlpha: 0.7,
+                    dropShadowDistance: 2,
+                    fill: "#ffd500"
                 },
             });
 
-            assetContainer.addChild(foundObject.bitmapText);
+            assetContainer.addChild(foundObject.text);
         }
 
-        foundObject.bitmapText.text = score;
+        foundObject.text.text = score;
     }
 }

@@ -83,6 +83,10 @@ bool LevelBlock::Update(float deltaTime)
 
                     m_health -= impact;
                 }
+                else if (m_type == BlockType::Tough)
+                {
+                    m_health -= (0.1 * deltaTime);
+                }
 
                 if (m_type != BlockType::Static && m_health <= 0.0f)
                 {

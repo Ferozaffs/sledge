@@ -6,8 +6,8 @@
 
 using namespace Gameplay;
 
-Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint)
-    : m_spawnInvincibility(2.0f), m_dead(false), m_weaponJoint(nullptr)
+Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint, bool winner)
+    : m_invincibilityTimer(2.0f), m_dead(false), m_weaponJoint(nullptr), m_health(3), m_crownJoint(nullptr)
 {
     static const b2Vec2 bodySize(2.0f, 2.0f);
     static const b2Vec2 legsSize(1.5f, 0.5f);
@@ -61,7 +61,9 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint)
     bodyDef.position.y += bodySize.y + headSize.y;
     bodyDef.fixedRotation = false;
     bodyDef.gravityScale = 1.0f;
-    m_headAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "avatar_head");
+    m_headAsset[m_health - 1] =
+        std::make_shared<Asset>(world->CreateBody(&bodyDef), "avatar_head_" + std::to_string(m_health));
+    m_headAsset[m_health - 1]->SetTint(0x7F7F7F);
 
     dynamicBox.SetAsBox(headSize.x, headSize.y);
     fixtureDef.friction = AvatarFriction;
@@ -71,10 +73,29 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint)
     fixtureDef.filter.maskBits &= ~static_cast<unsigned int>(CollisionFilter::Weapon_Shaft);
 
     GetHead()->CreateFixture(&fixtureDef);
-    m_headAsset->UpdateSize();
+    m_headAsset[m_health - 1]->UpdateSize();
 
     joint.Initialize(GetBody(), GetHead(), bodyDef.position);
     m_headJoint = world->CreateJoint(&joint);
+
+    if (winner == true)
+    {
+        bodyDef.type = b2_dynamicBody;
+        bodyDef.position = spawnPos;
+        bodyDef.position.y += bodySize.y + headSize.y + headSize.y / 3;
+        bodyDef.fixedRotation = false;
+        bodyDef.gravityScale = 1.0f;
+        m_crownAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "avatar_crown");
+
+        dynamicBox.SetAsBox(headSize.x, headSize.y / 3);
+        fixtureDef.filter.maskBits = 0;
+
+        m_crownAsset->GetBody()->CreateFixture(&fixtureDef);
+        m_crownAsset->UpdateSize();
+
+        joint.Initialize(GetHead(), m_crownAsset->GetBody(), bodyDef.position);
+        m_crownJoint = world->CreateJoint(&joint);
+    }
 
     int random = rand();
     if (random % 4 == 0)
@@ -119,8 +140,8 @@ void Avatar::AssignWeapon(WeaponType type)
 
 void Avatar::Update(const float &deltaTime, const float &sledgeInput, const float &jumpInput, const float &moveInput)
 {
-    m_spawnInvincibility = std::max(0.0f, m_spawnInvincibility - deltaTime);
-    if (m_dead == false && m_spawnInvincibility == 0.0f && GetHead()->GetContactList() != nullptr &&
+    m_invincibilityTimer = std::max(0.0f, m_invincibilityTimer - deltaTime);
+    if (m_dead == false && m_invincibilityTimer == 0.0f && GetHead()->GetContactList() != nullptr &&
         GetHead()->GetContactList()->contact->IsTouching())
     {
         auto contact = GetHead()->GetContactList()->contact;
@@ -137,7 +158,22 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
         constexpr float killThreshold = 1.0f;
         if (vel > killThreshold)
         {
-            Kill();
+            if (m_crownAsset != nullptr)
+            {
+                BreakCrown();
+            }
+            else
+            {
+                --m_health;
+                if (m_health == 0)
+                {
+                    Kill();
+                }
+                else
+                {
+                    BreakHelm();
+                }
+            }
         }
     }
 
@@ -187,7 +223,7 @@ b2Body *Avatar::GetBody() const
 
 b2Body *Avatar::GetHead() const
 {
-    return m_headAsset->GetBody();
+    return m_headAsset[m_health - 1]->GetBody();
 }
 
 b2Body *Gameplay::Avatar::GetLegs() const
@@ -219,8 +255,23 @@ std::vector<std::shared_ptr<Asset>> Avatar::GetAssets() const
 {
     std::vector<std::shared_ptr<Asset>> assets;
     assets.emplace_back(m_bodyAsset);
-    assets.emplace_back(m_headAsset);
     assets.emplace_back(m_legsAsset);
+    if (m_headAsset[0] != nullptr)
+    {
+        assets.emplace_back(m_headAsset[0]);
+    }
+    if (m_headAsset[1] != nullptr)
+    {
+        assets.emplace_back(m_headAsset[1]);
+    }
+    if (m_headAsset[2] != nullptr)
+    {
+        assets.emplace_back(m_headAsset[2]);
+    }
+    if (m_crownAsset != nullptr)
+    {
+        assets.emplace_back(m_legsAsset);
+    }
 
     auto weaponAssets = m_weapon->GetAssets();
     assets.insert(assets.end(), weaponAssets.begin(), weaponAssets.end());
@@ -249,15 +300,67 @@ void Avatar::BreakJoints()
         m_weaponJoint = nullptr;
     }
 
+    if (m_legsJoint != nullptr)
+    {
+        GetBody()->GetWorld()->DestroyJoint(m_legsJoint);
+        m_legsJoint = nullptr;
+    }
+
     if (m_headJoint != nullptr)
     {
         GetBody()->GetWorld()->DestroyJoint(m_headJoint);
         m_headJoint = nullptr;
     }
 
-    if (m_legsJoint != nullptr)
+    BreakCrown();
+}
+
+void Avatar::BreakCrown()
+{
+    if (m_crownJoint != nullptr)
     {
-        GetBody()->GetWorld()->DestroyJoint(m_legsJoint);
-        m_legsJoint = nullptr;
+        GetBody()->GetWorld()->DestroyJoint(m_crownJoint);
+        m_crownJoint = nullptr;
     }
+}
+
+void Avatar::BreakHelm()
+{
+    if (m_headJoint != nullptr)
+    {
+        GetBody()->GetWorld()->DestroyJoint(m_headJoint);
+        m_headJoint = nullptr;
+    }
+    m_headAsset[m_health]->GetBody()->ApplyLinearImpulse(b2Vec2((rand() % 2 - 1) * 50.0f, 50.0f),
+                                                         m_headAsset[m_health]->GetBody()->GetTransform().p, true);
+
+    b2BodyDef bodyDef;
+    bodyDef.type = b2_dynamicBody;
+    bodyDef.position = m_headAsset[m_health]->GetBody()->GetTransform().p;
+    bodyDef.position.y -= 0.05f;
+    bodyDef.fixedRotation = false;
+    bodyDef.gravityScale = 1.0f;
+    m_headAsset[m_health - 1] =
+        std::make_shared<Asset>(GetBody()->GetWorld()->CreateBody(&bodyDef), "avatar_head_" + std::to_string(m_health));
+    m_headAsset[m_health - 1]->SetTint(0x7F7F7F);
+
+    b2PolygonShape dynamicBox;
+    dynamicBox.SetAsBox(m_headAsset[m_health]->GetSizeX() * 0.45f, m_headAsset[m_health]->GetSizeY() * 0.45f);
+    b2FixtureDef fixtureDef;
+    fixtureDef.shape = &dynamicBox;
+    fixtureDef.density = 0.8f;
+    fixtureDef.friction = 0.01f;
+
+    fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Avatar_Head);
+    fixtureDef.filter.maskBits = 0xFFFF;
+    fixtureDef.filter.maskBits &= ~static_cast<unsigned int>(CollisionFilter::Weapon_Shaft);
+
+    GetHead()->CreateFixture(&fixtureDef);
+    m_headAsset[m_health - 1]->UpdateSize();
+
+    b2WeldJointDef joint;
+    joint.Initialize(GetBody(), GetHead(), bodyDef.position);
+    m_headJoint = GetBody()->GetWorld()->CreateJoint(&joint);
+
+    m_invincibilityTimer = 1.0f;
 }

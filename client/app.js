@@ -60,7 +60,10 @@ async function preload()
         { alias: 'block_floor_decor_3', src: './assets/block_floor_decor_3.png' },
         { alias: 'block_roof_decor_1', src: './assets/block_roof_decor_1.png' },
         { alias: 'block_roof_decor_2', src: './assets/block_roof_decor_2.png' },
-        { alias: 'avatar_head', src: './assets/avatar_head.png' },
+        { alias: 'avatar_head_1', src: './assets/avatar_head_1.png' },
+        { alias: 'avatar_head_2', src: './assets/avatar_head_2.png' },
+        { alias: 'avatar_head_3', src: './assets/avatar_head_3.png' },
+        { alias: 'avatar_crown', src: './assets/avatar_crown.png' },
         { alias: 'avatar_body', src: './assets/avatar_body.png' },
         { alias: 'avatar_legs', src: './assets/avatar_legs.png' },
         { alias: 'weapon_shaft', src: './assets/weapon_shaft.png' },
@@ -68,7 +71,7 @@ async function preload()
     ];
 
     await PIXI.Assets.load(assets);
-    await PIXI.Assets.load('https://pixijs.com/assets/bitmap-font/desyrel.xml');
+    await PIXI.Assets.load('./assets/ChakraPetch.ttf');
 }
 
 export async function updateData(json)
