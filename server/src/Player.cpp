@@ -48,10 +48,6 @@ void Player::Update(float deltaTime)
 
         m_wishToRestart = m_avatar->GetWeaponRot() < -1.0f ? true : false;
     }
-    else
-    {
-        m_wishToRestart = true;
-    }
 }
 
 void Player::Respawn(float time)
