@@ -87,6 +87,11 @@ bool LevelManager::LoadPlaylist(const std::string &path)
     }
 }
 
+bool LevelManager::NextLevel()
+{
+    return NextLevel(m_gameManager->GetCurrentGameMode());
+}
+
 bool LevelManager::LoadLevel(const std::string &filename)
 {
     std::ifstream file(filename, std::ios::binary);
@@ -128,7 +133,7 @@ bool LevelManager::LoadLevel(const std::string &filename)
     return BuildLevel(rows);
 }
 
-bool LevelManager::NextLevel()
+bool LevelManager::NextLevel(GameModeType gameMode)
 {
     if (m_playlist.size() == 0)
     {
@@ -145,6 +150,8 @@ bool LevelManager::NextLevel()
         ++m_currentLevelIndex;
         --numLevels;
     }
+
+    m_gameManager->SetGameMode(gameMode);
 
     m_reloaded = true;
 
@@ -224,8 +231,6 @@ bool LevelManager::BuildLevel(std::vector<std::vector<uint8_t>> rows)
     }
 
     Decorate();
-
-    m_gameManager->SetGameMode(GameManager::GameModeType::Brawl);
 
     return true;
 }

@@ -10,11 +10,12 @@ Sword::Sword(const Avatar *avatar) : Weapon(avatar)
     m_speed = 10.0f;
     m_torque = 20000.0f;
 
-    static const b2Vec2 shaftSize(5.0f, 0.25f);
+    static const b2Vec2 shaftSize(4.9f, 0.25f);
     static const b2Vec2 hiltSize(0.25f, 1.0f);
-    constexpr float shaftDensity = 0.01f;
+    static const b2Vec2 edgeSize(0.1f, 0.25f);
+    constexpr float shaftDensity = 0.025f;
     constexpr float shaftFriction = 0.3f;
-    constexpr float hiltDensity = 0.01f;
+    constexpr float hiltDensity = 0.025f;
     constexpr float hiltFriction = 0.5f;
 
     auto world = avatar->GetBody()->GetWorld();
@@ -36,14 +37,12 @@ Sword::Sword(const Avatar *avatar) : Weapon(avatar)
 
     fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Weapon_Shaft);
     fixtureDef.filter.maskBits = 0xFFFF;
-    fixtureDef.filter.maskBits &=
-        ~(static_cast<unsigned int>(CollisionFilter::Avatar_Head) | static_cast<unsigned int>(CollisionFilter::Avatar_Legs));
+    fixtureDef.filter.maskBits &= ~(static_cast<unsigned int>(CollisionFilter::Avatar_Head) |
+                                    static_cast<unsigned int>(CollisionFilter::Avatar_Legs));
 
     GetShaft()->CreateFixture(&fixtureDef);
     m_shaftAsset->UpdateSize();
 
-    bodyDef.type = b2_dynamicBody;
-    bodyDef.position.x += shaftSize.x * 0.1f;
     m_hiltAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "weapon_head");
 
     dynamicBox.SetAsBox(hiltSize.x, hiltSize.y);
@@ -62,8 +61,24 @@ Sword::Sword(const Avatar *avatar) : Weapon(avatar)
     joint.Initialize(GetShaft(), m_hiltAsset->GetBody(), bodyDef.position);
     m_joints.emplace_back(world->CreateJoint(&joint));
 
+    bodyDef.position.x += shaftSize.x;
+    m_edgeAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "weapon_head");
+
+    dynamicBox.SetAsBox(edgeSize.x, edgeSize.y);
+
+    fixtureDef.shape = &dynamicBox;
+    fixtureDef.density = shaftDensity;
+    fixtureDef.friction = shaftFriction;
+
+    m_edgeAsset->GetBody()->CreateFixture(&fixtureDef);
+    m_edgeAsset->UpdateSize();
+
+    joint.Initialize(GetShaft(), m_edgeAsset->GetBody(), bodyDef.position);
+    m_joints.emplace_back(world->CreateJoint(&joint));
+
     m_assets.emplace_back(m_shaftAsset);
     m_assets.emplace_back(m_hiltAsset);
+    m_assets.emplace_back(m_edgeAsset);
 }
 
 Sword::~Sword()

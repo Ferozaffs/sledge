@@ -1,4 +1,5 @@
 #include "GameModeBrawl.h"
+#include "GameManager.h"
 #include "Player.h"
 #include "PlayerManager.h"
 
@@ -16,6 +17,7 @@ GameModeBrawl::GameModeBrawl(PlayerManager *playerManager)
     auto players = m_playerManager->GetPlayers();
     for (const auto &player : players)
     {
+        player->SetTeamColors(false);
         player->Respawn(0.0);
     }
 }
@@ -40,16 +42,25 @@ void GameModeBrawl::Update(float deltaTime)
 
     if (m_numPlayers <= 1)
     {
+        if (m_numPlayers == 1)
+        {
+            players[0]->SetWinner();
+        }
         m_countDown -= deltaTime;
     }
 }
 
-bool GameModeBrawl::Finished()
+GameModeType GameModeBrawl::GetType() const
+{
+    return GameModeType::Brawl;
+}
+
+bool GameModeBrawl::Finished() const
 {
     return m_countDown <= 0.0f;
 }
 
-bool GameModeBrawl::IsValid()
+bool GameModeBrawl::IsValid() const
 {
     return m_valid;
 }

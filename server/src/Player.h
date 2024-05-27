@@ -10,11 +10,12 @@ namespace Gameplay
 class Avatar;
 class Asset;
 class PlayerManager;
+enum class GameModeType;
 
 class Player
 {
   public:
-    Player(PlayerManager *playerManager, b2World *world, unsigned int tint);
+    Player(PlayerManager *playerManager, b2World *world, unsigned int tint, unsigned int teamTint);
     ~Player();
 
     const float GetX() const;
@@ -31,9 +32,13 @@ class Player
     signed int GetScore() const;
     void Score(signed int score);
     void ClearScore();
+    void SetWinner();
 
-    bool IsWishingToRestart() const;
+    GameModeType GetGameModeWish() const;
     bool IsDead() const;
+
+    unsigned int GetTeamTint() const;
+    void SetTeamColors(bool useTeamColors);
 
     std::atomic<bool> m_pendingRemove;
 
@@ -49,9 +54,12 @@ class Player
     float m_jumpInput;
     float m_respawnTimer;
     unsigned int m_tint;
+    unsigned int m_teamTint;
     signed int m_score;
+    bool m_winner;
+    bool m_usingTeamColors;
 
-    bool m_wishToRestart;
+    GameModeType m_gameModeWish;
 };
 
 } // namespace Gameplay

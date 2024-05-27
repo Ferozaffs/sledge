@@ -1,5 +1,6 @@
 #include "ConnectionManager.h"
 #include "Asset.h"
+#include "GameManager.h"
 #include "LevelManager.h"
 #include "Player.h"
 #include "PlayerManager.h"
@@ -187,7 +188,7 @@ void ConnectionManager::Update(float deltaTime)
             if (m_playerManager->GetNumPlayers() <= 2)
             {
                 m_playerManager->ClearScore();
-                m_levelManager->NextLevel();
+                m_levelManager->NextLevel(GameModeType::Brawl);
                 m_cachedScore = 0;
             }
         }

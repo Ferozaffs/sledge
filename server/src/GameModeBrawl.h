@@ -12,9 +12,9 @@ class GameModeBrawl : public IGameMode
     ~GameModeBrawl();
 
     void Update(float deltaTime) override;
-    bool Finished() override;
-
-    bool IsValid() override;
+    bool Finished() const override;
+    bool IsValid() const override;
+    GameModeType GetType() const override;
 
   private:
     PlayerManager *m_playerManager;

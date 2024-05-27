@@ -81,13 +81,12 @@ Avatar::Avatar(b2World *world, const b2Vec2 &spawnPos, unsigned int tint, bool w
     if (winner == true)
     {
         bodyDef.type = b2_dynamicBody;
-        bodyDef.position = spawnPos;
-        bodyDef.position.y += bodySize.y + headSize.y + headSize.y / 3;
+        bodyDef.position.y += headSize.y + headSize.y;
         bodyDef.fixedRotation = false;
         bodyDef.gravityScale = 1.0f;
         m_crownAsset = std::make_shared<Asset>(world->CreateBody(&bodyDef), "avatar_crown");
 
-        dynamicBox.SetAsBox(headSize.x, headSize.y / 3);
+        dynamicBox.SetAsBox(headSize.x, headSize.y);
         fixtureDef.filter.maskBits = 0;
 
         m_crownAsset->GetBody()->CreateFixture(&fixtureDef);
@@ -158,7 +157,7 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
         constexpr float killThreshold = 1.0f;
         if (vel > killThreshold)
         {
-            if (m_crownAsset != nullptr)
+            if (m_crownAsset != nullptr && m_crownJoint != nullptr)
             {
                 BreakCrown();
             }
@@ -270,7 +269,7 @@ std::vector<std::shared_ptr<Asset>> Avatar::GetAssets() const
     }
     if (m_crownAsset != nullptr)
     {
-        assets.emplace_back(m_legsAsset);
+        assets.emplace_back(m_crownAsset);
     }
 
     auto weaponAssets = m_weapon->GetAssets();
@@ -317,10 +316,20 @@ void Avatar::BreakJoints()
 
 void Avatar::BreakCrown()
 {
-    if (m_crownJoint != nullptr)
+    if (m_crownAsset != nullptr)
     {
-        GetBody()->GetWorld()->DestroyJoint(m_crownJoint);
-        m_crownJoint = nullptr;
+        if (m_crownJoint != nullptr)
+        {
+            GetBody()->GetWorld()->DestroyJoint(m_crownJoint);
+            m_crownJoint = nullptr;
+        }
+
+        m_crownAsset->GetBody()->ApplyLinearImpulse(b2Vec2((rand() % 2 - 1) * 50.0f, 50.0f),
+                                                    m_crownAsset->GetBody()->GetTransform().p, true);
+
+        m_crownAsset->GetBody()->GetFixtureList()->SetFilterData(b2Filter());
+
+        m_invincibilityTimer = 1.0f;
     }
 }
 
@@ -333,6 +342,8 @@ void Avatar::BreakHelm()
     }
     m_headAsset[m_health]->GetBody()->ApplyLinearImpulse(b2Vec2((rand() % 2 - 1) * 50.0f, 50.0f),
                                                          m_headAsset[m_health]->GetBody()->GetTransform().p, true);
+
+    m_headAsset[m_health]->GetBody()->GetFixtureList()->SetFilterData(b2Filter());
 
     b2BodyDef bodyDef;
     bodyDef.type = b2_dynamicBody;

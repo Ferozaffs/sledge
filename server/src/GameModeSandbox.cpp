@@ -1,4 +1,5 @@
 #include "GameModeSandbox.h"
+#include "GameManager.h"
 #include "Player.h"
 #include "PlayerManager.h"
 
@@ -9,6 +10,7 @@ GameModeSandbox::GameModeSandbox(PlayerManager *playerManager) : m_playerManager
     auto players = m_playerManager->GetPlayersDead();
     for (const auto &player : players)
     {
+        player->SetTeamColors(false);
         player->Respawn(0.0);
     }
 }
@@ -26,12 +28,17 @@ void GameModeSandbox::Update(float deltaTime)
     }
 }
 
-bool GameModeSandbox::Finished()
+GameModeType GameModeSandbox::GetType() const
+{
+    return GameModeType::Sandbox;
+}
+
+bool GameModeSandbox::Finished() const
 {
     return false;
 }
 
-bool GameModeSandbox::IsValid()
+bool GameModeSandbox::IsValid() const
 {
     return true;
 }

@@ -1,7 +1,7 @@
 body {
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow: hidden;  
     background: linear-gradient(#1ca1ca, #177fc5);
 }
 
@@ -19,4 +19,19 @@ body {
     #joystickRight {
         right: 0px;
     }
+}
+
+#content {
+    position: absolute;
+    right: 0px;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+}
+
+#fullScreenImg {
+    display: none;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
 }

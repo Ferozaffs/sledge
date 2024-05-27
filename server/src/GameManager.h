@@ -7,17 +7,20 @@ class LevelManager;
 class PlayerManager;
 class IGameMode;
 
+enum class GameModeType
+{
+    Sandbox,
+    Brawl,
+    TeamBrawl,
+    Race,
+    KotH,
+
+    None,
+};
+
 class GameManager
 {
   public:
-    enum class GameModeType
-    {
-        Sandbox,
-        Brawl,
-        Race,
-        KotH,
-    };
-
     GameManager(PlayerManager *playerManager);
     ~GameManager();
 
@@ -25,6 +28,7 @@ class GameManager
 
     bool Finished() const;
 
+    GameModeType GetCurrentGameMode() const;
     void SetGameMode(GameModeType type);
 
   private:

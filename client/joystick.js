@@ -24,10 +24,24 @@ function setupJoystick(joystickId) {
             moveX = Math.cos(angle) * maxMove;
             moveY = Math.sin(angle) * maxMove;
         }
+
+        if (moveX >= 0) {
+            moveX = Math.pow(moveX / maxMove, 0.5);
+        }
+        else {
+            moveX = -Math.pow(-moveX / maxMove, 0.5);
+        }
+
+        if (moveY >= 0) {
+            moveY = Math.pow(moveY / maxMove, 0.5);
+        }
+        else {
+            moveY = -Math.pow(-moveY / maxMove, 0.5);
+        }
         
         joysticks[joystickId] = {
-            x: Math.pow(moveX / maxMove, 0.5),
-            y: Math.pow(moveY / maxMove, 0.5) * -1.0
+            x: moveX,
+            y: moveY * -1.0
         };
     }
 

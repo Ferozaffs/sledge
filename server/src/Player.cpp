@@ -1,14 +1,16 @@
 #include "Player.h"
 #include "Avatar.h"
+#include "GameManager.h"
 #include "PlayerManager.h"
 
 using namespace Gameplay;
 
 constexpr float RESPAWN_HOLD_SENTINEL = -1.0;
 
-Player::Player(PlayerManager *playerManager, b2World *world, unsigned int tint)
+Player::Player(PlayerManager *playerManager, b2World *world, unsigned int tint, unsigned int teamTint)
     : m_playerManager(playerManager), m_world(world), m_sledgeInput(0.0f), m_moveInput(0.0f), m_jumpInput(0.0f),
-      m_pendingRemove(false), m_respawnTimer(RESPAWN_HOLD_SENTINEL), m_tint(tint), m_score(0), m_wishToRestart(false)
+      m_pendingRemove(false), m_respawnTimer(RESPAWN_HOLD_SENTINEL), m_tint(tint), m_teamTint(teamTint), m_score(0),
+      m_winner(false), m_gameModeWish(GameModeType::None)
 {
 }
 
@@ -37,6 +39,7 @@ void Player::Update(float deltaTime)
         }
     }
 
+    m_gameModeWish = GameModeType::None;
     if (m_avatar != nullptr)
     {
         m_avatar->Update(deltaTime, m_sledgeInput, m_jumpInput, m_moveInput);
@@ -46,7 +49,10 @@ void Player::Update(float deltaTime)
             m_avatar->Kill();
         }
 
-        m_wishToRestart = m_avatar->GetWeaponRot() < -1.0f ? true : false;
+        m_gameModeWish = (m_avatar->GetWeaponRot() < -1.5f && m_avatar->GetWeaponRot() > -1.7f) ? GameModeType::Brawl
+                                                                                                : m_gameModeWish;
+        m_gameModeWish = (m_avatar->GetWeaponRot() > 1.5f && m_avatar->GetWeaponRot() < 1.7f) ? GameModeType::TeamBrawl
+                                                                                              : m_gameModeWish;
     }
 }
 
@@ -95,7 +101,7 @@ std::vector<std::shared_ptr<Asset>> Player::GetAssets() const
 
 signed int Player::GetScore() const
 {
-    return m_score;
+    return m_usingTeamColors == true ? m_playerManager->GetTeamScore(m_teamTint) : m_score;
 }
 
 void Player::Score(signed int score)
@@ -108,14 +114,29 @@ void Player::ClearScore()
     m_score = 0;
 }
 
-bool Player::IsWishingToRestart() const
+void Player::SetWinner()
 {
-    return m_wishToRestart;
+    m_winner = true;
 }
 
-bool Gameplay::Player::IsDead() const
+GameModeType Player::GetGameModeWish() const
+{
+    return m_gameModeWish;
+}
+
+bool Player::IsDead() const
 {
     return m_avatar == nullptr || m_avatar->IsDead();
+}
+
+unsigned int Player::GetTeamTint() const
+{
+    return m_teamTint;
+}
+
+void Player::SetTeamColors(bool useTeamColors)
+{
+    m_usingTeamColors = useTeamColors;
 }
 
 void Player::SpawnAvatar(b2World *world)
@@ -125,5 +146,7 @@ void Player::SpawnAvatar(b2World *world)
     spawnVec.x = 2.0f * static_cast<float>(spawn.first);
     spawnVec.y = 2.0f * static_cast<float>(spawn.second);
 
-    m_avatar = std::make_unique<Gameplay::Avatar>(world, spawnVec, m_tint);
+    m_avatar = std::make_unique<Avatar>(world, spawnVec, m_usingTeamColors == true ? m_teamTint : m_tint, m_winner);
+
+    m_winner = false;
 }

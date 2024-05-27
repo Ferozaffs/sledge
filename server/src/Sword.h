@@ -18,6 +18,7 @@ class Sword : public Weapon
 
   private:
     std::shared_ptr<Asset> m_hiltAsset;
+    std::shared_ptr<Asset> m_edgeAsset;
 };
 
 } // namespace Gameplay

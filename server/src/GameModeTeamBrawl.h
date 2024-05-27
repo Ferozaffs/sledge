@@ -5,11 +5,11 @@ namespace Gameplay
 {
 class PlayerManager;
 
-class GameModeSandbox : public IGameMode
+class GameModeTeamBrawl : public IGameMode
 {
   public:
-    GameModeSandbox(PlayerManager *playerManager);
-    ~GameModeSandbox();
+    GameModeTeamBrawl(PlayerManager *playerManager);
+    ~GameModeTeamBrawl();
 
     void Update(float deltaTime) override;
     bool Finished() const override;
@@ -18,6 +18,11 @@ class GameModeSandbox : public IGameMode
 
   private:
     PlayerManager *m_playerManager;
+    int m_numPlayersTeamRed;
+    int m_numPlayersTeamBlue;
+    bool m_valid;
+
+    float m_countDown;
 };
 
 } // namespace Gameplay
