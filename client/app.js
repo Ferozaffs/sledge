@@ -111,6 +111,8 @@ export async function scoreData(json)
     assets.forEach((asset) => {
         ASSETS.setScore(asset.id, asset.score);
     });
+
+    UI.UpdateScore(json)
 }
 
 function updateView()
