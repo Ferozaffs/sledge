@@ -1,6 +1,8 @@
 services:
   sledge:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-Standalone
     ports:
       - "5000:5500"
       - "9002:9002"

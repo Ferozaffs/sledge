@@ -52,6 +52,7 @@ bool LevelManager::LoadPlaylist(const std::string &path)
 
     if (fs::exists(p))
     {
+        printf("Loaded playlist from: %s\n", path.c_str());
         if (fs::is_directory(p))
         {
             for (const auto &entry : fs::directory_iterator(p))
@@ -83,6 +84,7 @@ bool LevelManager::LoadPlaylist(const std::string &path)
     }
     else
     {
+        printf("Playlist not found!\n");
         return false;
     }
 }

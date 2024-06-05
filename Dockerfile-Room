@@ -1,0 +1,31 @@
+FROM ubuntu:latest AS build
+
+RUN apt-get update
+RUN apt-get -y install \
+    git \
+    cmake \
+    g++
+
+WORKDIR /src
+
+RUN git clone https://github.com/Ferozaffs/sledge
+
+WORKDIR /src/sledge/server
+
+RUN mkdir build
+WORKDIR /src/sledge/server/build
+
+RUN cmake ..
+RUN make
+
+#---------------------------------------
+FROM ubuntu:latest
+
+COPY --from=build /src/sledge/server/build/sledge /app/server/sledge
+COPY --from=build /src/sledge/server/data /app/server/data  
+
+EXPOSE 9002
+
+WORKDIR /app/server
+
+CMD ["./sledge"]

@@ -1,0 +1,7 @@
+services:
+  room:
+    build:
+      context: .
+      dockerfile: Dockerfile-Room
+    ports:
+      - "9002:9002"

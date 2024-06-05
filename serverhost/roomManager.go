@@ -30,7 +30,7 @@ var activeRooms []room
 func CreateRoom() (room, error) {
 	roomName := GetRandomName(3)
 
-	cmd := exec.Command("docker-compose", "-f", "../docker-compose-dummy.yml", "-p", roomName, "up", "-d")
+	cmd := exec.Command("docker-compose", "-f", "../docker-compose-room.yml", "-p", roomName, "up", "-d")
 
 	_, err := cmd.CombinedOutput()
 	if err != nil {

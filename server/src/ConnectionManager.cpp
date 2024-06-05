@@ -53,6 +53,7 @@ class Network::Impl
     {
         if (connection->get_state() == websocketpp::session::state::open)
         {
+            printf("Data sent\n");
             endpoint.send(connection, message.c_str(), websocketpp::frame::opcode::text);
         }
     }
@@ -206,6 +207,8 @@ void ConnectionManager::Update(float deltaTime)
 
     if (tick == true || playerJoined)
     {
+        printf("Sending data\n");
+
         auto assets = m_levelManager->GetAssets(playerJoined);
         auto playerAssets = m_playerManager->GetAssets();
 
