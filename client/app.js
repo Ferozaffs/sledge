@@ -1,7 +1,7 @@
-import * as CONNECTION from './connection.js'
 import * as PIXI from 'https://cdn.skypack.dev/pixi.js';
 import * as ASSETS from './assets.js';
-import * as JOYSTICKS from './joystick.js'
+import { sendInput } from './connection.js';
+import { getJoystickValues } from './joystick.js'
 
 const app = new PIXI.Application();
 let initialized = false;
@@ -111,8 +111,6 @@ export async function scoreData(json)
     assets.forEach((asset) => {
         ASSETS.setScore(asset.id, asset.score);
     });
-
-    UI.UpdateScore(json)
 }
 
 function updateView()
@@ -132,8 +130,8 @@ function sendData()
     let jumpInput = 0.0;
     let moveInput = 0.0;
 
-    const joystickInputLeft = JOYSTICKS.getJoystickValues('joystickLeft');
-    const joystickInputRight = JOYSTICKS.getJoystickValues('joystickRight');
+    const joystickInputLeft = getJoystickValues('joystickLeft');
+    const joystickInputRight = getJoystickValues('joystickRight');
 
     let joystickInput = false;
     if (joystickInputLeft !== undefined && joystickInputRight !== undefined )
@@ -180,5 +178,5 @@ function sendData()
         jump: jumpInput 
     }
 
-    CONNECTION.sendInput(input);
+    sendInput(input);
 }

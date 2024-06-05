@@ -99,6 +99,16 @@ class Network::Impl
 
                     ConnectionManager::m_impl->CompleteConnection(s->get_con_from_hdl(hdl));
                 }
+                if (j["type"] == "statusreq")
+                {
+                    int numConnection = 0;
+                    connectionMutex.lock();
+                    numConnection = ConnectionManager::m_impl->connections.size();
+                    connectionMutex.unlock();
+
+                    s->send(hdl, ConnectionManager::CreateStatusMessage(numConnection > 0 ? "good" : "empty"),
+                            websocketpp::frame::opcode::text);
+                }
                 else if (j["type"] == "input")
                 {
                     ConnectionManager::m_impl->SetInput(s->get_con_from_hdl(hdl), j);

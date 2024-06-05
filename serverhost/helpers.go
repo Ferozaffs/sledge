@@ -3,11 +3,9 @@ package main
 import (
 	"math/rand"
 	"strings"
-	"time"
 )
 
-func GetRandomName() string {
-	rand.Seed(time.Now().UnixNano())
+func GetRandomName(num int) string {
 
 	words := []string{
 		"cat", "dog", "bird", "fish", "horse", "lion", "tiger", "bear", "frog", "deer",
@@ -22,7 +20,7 @@ func GetRandomName() string {
 		words[i], words[j] = words[j], words[i]
 	})
 
-	selectedWords := words[:3]
+	selectedWords := words[:num]
 
 	randomString := strings.Join(selectedWords, "")
 

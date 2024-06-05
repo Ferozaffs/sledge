@@ -6,7 +6,11 @@ To install only the dockerfile and docker-compose file is needed.
 Run ```docker-compose up --build``` to setup a linux based server and frontend.
 
 ## Dependencies
-### Backend
+
+### Frontend
+* PixiJS - https://pixijs.com/
+
+### Gamer server
 * Box2D - https://github.com/erincatto/box2d
 * GLFW - https://github.com/glfw/glfw
 * linmath - https://github.com/datenwolf/linmath.h
@@ -14,5 +18,5 @@ Run ```docker-compose up --build``` to setup a linux based server and frontend.
 * nlohmann json - https://github.com/nlohmann/json
 * websocketpp - https://github.com/zaphoyd/websocketpp
 
-### Frontend
-*PixiJS - https://pixijs.com/
+### Server host
+* Gorilla WebSocket - https://github.com/gorilla/websocket
