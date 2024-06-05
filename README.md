@@ -3,7 +3,10 @@
 
 ## Install
 To install only the dockerfile and docker-compose file is needed.
-Run ```docker-compose up --build``` to setup a linux based server and frontend.
+Run ```docker-compose -f Dockerfile-Standalone up --build``` to setup a linux based server and frontend.
+
+### WIP
+Currently working on splitting application into frontend/host and seperate game rooms.
 
 ## Dependencies
 
