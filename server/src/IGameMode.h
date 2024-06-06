@@ -7,6 +7,8 @@ enum class GameModeType;
 class IGameMode
 {
   public:
+    virtual ~IGameMode() = default;
+
     virtual void Update(float deltaTime) = 0;
     virtual bool Finished() const = 0;
     virtual bool IsValid() const = 0;

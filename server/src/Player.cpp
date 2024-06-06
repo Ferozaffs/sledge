@@ -7,10 +7,11 @@ using namespace Gameplay;
 
 constexpr float RESPAWN_HOLD_SENTINEL = -1.0;
 
-Player::Player(PlayerManager *playerManager, b2World *world, unsigned int tint, unsigned int teamTint)
-    : m_playerManager(playerManager), m_world(world), m_sledgeInput(0.0f), m_moveInput(0.0f), m_jumpInput(0.0f),
-      m_pendingRemove(false), m_respawnTimer(RESPAWN_HOLD_SENTINEL), m_tint(tint), m_teamTint(teamTint), m_score(0),
-      m_winner(false), m_gameModeWish(GameModeType::None)
+Player::Player(const GameManager &gameManager, const PlayerManager &playerManager, std::weak_ptr<b2World> world,
+               unsigned int tint, unsigned int teamTint)
+    : m_gameManager(gameManager), m_playerManager(playerManager), m_world(world), m_sledgeInput(0.0f),
+      m_moveInput(0.0f), m_jumpInput(0.0f), m_pendingRemove(false), m_respawnTimer(RESPAWN_HOLD_SENTINEL), m_tint(tint),
+      m_teamTint(teamTint), m_score(0), m_winner(false), m_usingTeamColors(false), m_gameModeWish(GameModeType::None)
 {
 }
 
@@ -88,9 +89,9 @@ int Player::GetMainAssetId() const
     return -1;
 }
 
-std::vector<std::shared_ptr<Asset>> Player::GetAssets() const
+std::vector<std::weak_ptr<Asset>> Player::GetAssets() const
 {
-    std::vector<std::shared_ptr<Asset>> assets;
+    std::vector<std::weak_ptr<Asset>> assets;
     if (m_avatar != nullptr)
     {
         assets = m_avatar->GetAssets();
@@ -101,7 +102,7 @@ std::vector<std::shared_ptr<Asset>> Player::GetAssets() const
 
 signed int Player::GetScore() const
 {
-    return m_usingTeamColors == true ? m_playerManager->GetTeamScore(m_teamTint) : m_score;
+    return m_usingTeamColors == true ? m_playerManager.GetTeamScore(m_teamTint) : m_score;
 }
 
 void Player::Score(signed int score)
@@ -139,9 +140,9 @@ void Player::SetTeamColors(bool useTeamColors)
     m_usingTeamColors = useTeamColors;
 }
 
-void Player::SpawnAvatar(b2World *world)
+void Player::SpawnAvatar(std::weak_ptr<b2World> world)
 {
-    auto spawn = m_playerManager->GetOptimalSpawn();
+    auto spawn = m_gameManager.GetOptimalSpawn();
     b2Vec2 spawnVec;
     spawnVec.x = 2.0f * static_cast<float>(spawn.first);
     spawnVec.y = 2.0f * static_cast<float>(spawn.second);

@@ -8,30 +8,28 @@ namespace Gameplay
 {
 class Player;
 class Asset;
-class LevelManager;
+class GameManager;
 
 class PlayerManager
 {
   public:
-    PlayerManager(b2World *world);
-    ~PlayerManager();
+    PlayerManager(GameManager &gameManager, std::weak_ptr<b2World> world);
+    ~PlayerManager() = default;
 
     void Update(float deltaTime);
 
-    const std::shared_ptr<Player> &CreatePlayer();
-    std::shared_ptr<Player> GetPlayer(size_t index);
+    std::weak_ptr<Player> CreatePlayer();
+    std::shared_ptr<Player> GetPlayer(size_t index) const;
 
     size_t GetNumPlayers() const;
-    std::vector<std::shared_ptr<Player>> GetPlayers();
-    std::vector<std::shared_ptr<Player>> GetPlayersAlive();
-    std::vector<std::shared_ptr<Player>> GetPlayersDead();
+    const std::vector<std::shared_ptr<Player>> &GetPlayers() const;
+    std::vector<std::shared_ptr<Player>> GetPlayersAlive() const;
+    std::vector<std::shared_ptr<Player>> GetPlayersDead() const;
 
-    std::vector<std::shared_ptr<Player>> GetRedPlayers();
-    std::vector<std::shared_ptr<Player>> GetBluePlayers();
+    std::vector<std::shared_ptr<Player>> GetRedPlayers() const;
+    std::vector<std::shared_ptr<Player>> GetBluePlayers() const;
 
-    std::vector<std::shared_ptr<Asset>> GetAssets();
-
-    std::pair<int, int> GetOptimalSpawn() const;
+    std::vector<std::shared_ptr<Asset>> GetAssets() const;
 
     signed int GetScore() const;
     signed int GetTeamScore(unsigned int teamTint) const;
@@ -39,11 +37,10 @@ class PlayerManager
     void ScoreBlue(signed int score);
     void ClearScore();
 
-    void SetLevelManager(LevelManager *levelManager);
-
   private:
-    LevelManager *m_levelManager;
-    b2World *m_world;
+    GameManager &m_gameManager;
+    std::weak_ptr<b2World> m_world;
+
     std::vector<std::shared_ptr<Player>> m_players;
     unsigned int m_playersSpawned;
     float m_restartTimer;

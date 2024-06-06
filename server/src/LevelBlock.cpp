@@ -6,52 +6,51 @@
 
 using namespace Gameplay;
 
-LevelBlock::LevelBlock(b2World *world, int x, int y, std::string alias)
+LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const std::string &alias)
 {
-    if (alias.find("decor") != std::string::npos)
+    if (auto w = world.lock())
     {
-        m_type = BlockType::Decor;
-        m_health = 0.0f;
-    }
-    else if (alias.find("weak") != std::string::npos)
-    {
-        m_type = BlockType::Weak;
-        m_health = 0.2f;
-    }
-    else if (alias.find("tough") != std::string::npos)
-    {
-        m_type = BlockType::Tough;
-        m_health = 1.0f;
-    }
-    else if (alias.find("static") != std::string::npos)
-    {
-        m_type = BlockType::Static;
-        m_health = -1.0f;
-    }
+        if (alias.find("decor") != std::string::npos)
+        {
+            m_type = BlockType::Decor;
+            m_health = 0.0f;
+        }
+        else if (alias.find("weak") != std::string::npos)
+        {
+            m_type = BlockType::Weak;
+            m_health = 0.2f;
+        }
+        else if (alias.find("tough") != std::string::npos)
+        {
+            m_type = BlockType::Tough;
+            m_health = 1.0f;
+        }
+        else if (alias.find("static") != std::string::npos)
+        {
+            m_type = BlockType::Static;
+            m_health = -1.0f;
+        }
 
-    b2BodyDef blockDef;
-    blockDef.position.Set(2.0f * static_cast<float>(x), 2.0f * static_cast<float>(y));
-    m_asset = std::make_shared<Asset>(world->CreateBody(&blockDef), alias);
-    b2PolygonShape block;
-    block.SetAsBox(1.0f, 1.0f);
+        b2BodyDef blockDef;
+        blockDef.position.Set(2.0f * static_cast<float>(x), 2.0f * static_cast<float>(y));
+        m_asset = std::make_shared<Asset>(w->CreateBody(&blockDef), alias);
+        b2PolygonShape block;
+        block.SetAsBox(1.0f, 1.0f);
 
-    b2FixtureDef fixtureDef;
-    fixtureDef.shape = &block;
+        b2FixtureDef fixtureDef;
+        fixtureDef.shape = &block;
 
-    if (m_type == BlockType::Decor)
-    {
-        fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Block_Decor);
-        fixtureDef.filter.maskBits = 0xFFFF;
-        fixtureDef.filter.maskBits &= ~(static_cast<unsigned int>(CollisionFilter::Avatar_Body) |
-                                        static_cast<unsigned int>(CollisionFilter::Avatar_Legs));
+        if (m_type == BlockType::Decor)
+        {
+            fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Block_Decor);
+            fixtureDef.filter.maskBits = 0xFFFF;
+            fixtureDef.filter.maskBits &= ~(static_cast<unsigned int>(CollisionFilter::Avatar_Body) |
+                                            static_cast<unsigned int>(CollisionFilter::Avatar_Legs));
+        }
+
+        m_asset->GetBody()->CreateFixture(&fixtureDef);
+        m_asset->UpdateSize();
     }
-
-    m_asset->GetBody()->CreateFixture(&fixtureDef);
-    m_asset->UpdateSize();
-}
-
-LevelBlock::~LevelBlock()
-{
 }
 
 bool LevelBlock::Update(float deltaTime)
@@ -85,7 +84,8 @@ bool LevelBlock::Update(float deltaTime)
                 }
                 else if (m_type == BlockType::Tough)
                 {
-                    m_health -= (0.1 * deltaTime);
+                    constexpr float deteriorationRate = 0.1f;
+                    m_health -= (deteriorationRate * deltaTime);
                 }
 
                 if (m_type != BlockType::Static && m_health <= 0.0f)
@@ -112,12 +112,12 @@ bool LevelBlock::Update(float deltaTime)
     return true;
 }
 
-const std::shared_ptr<Asset> &LevelBlock::GetAsset() const
+std::weak_ptr<Asset> LevelBlock::GetAsset() const
 {
     return m_asset;
 }
 
-bool LevelBlock::InMotion()
+bool LevelBlock::InMotion() const
 {
     return m_asset->GetBody()->GetLinearVelocity().Length() > 0.0f;
 }

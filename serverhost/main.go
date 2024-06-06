@@ -24,9 +24,10 @@ func CreateRoomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(response{
-		Status: "success",
-		Room:   room.Name,
-		Url:    room.Url,
+		Status:  "success",
+		Room:    room.Name,
+		Url:     room.Url,
+		Message: "Room is now ready!",
 	})
 }
 
@@ -50,9 +51,10 @@ func RoomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(response{
-		Status: "success",
-		Room:   name,
-		Url:    u,
+		Status:  "success",
+		Room:    name,
+		Url:     u,
+		Message: "Room found!",
 	})
 
 }

@@ -37,12 +37,7 @@ struct BMPHeader
 std::map<unsigned int, std::string> assetMap = {
     {0x000000, "block_static"}, {0x7F7F7F, "block_tough"}, {0xB97A57, "block_weak"}, {0xED1C24, "spawn"}};
 
-LevelManager::LevelManager(GameManager *gameManager, b2World *world)
-    : m_world(world), m_gameManager(gameManager), m_currentLevelIndex(0), m_reloaded(false)
-{
-}
-
-LevelManager::~LevelManager()
+LevelManager::LevelManager(std::weak_ptr<b2World> world) : m_world(world), m_currentLevelIndex(0), m_reloaded(false)
 {
 }
 
@@ -68,6 +63,7 @@ bool LevelManager::LoadPlaylist(const std::string &path)
                 return LoadLevel(m_playlist.back());
             }
 
+            printf("No files of type .bmp in directory\n");
             return false;
         }
         else if (fs::is_regular_file(p))
@@ -77,21 +73,80 @@ bool LevelManager::LoadPlaylist(const std::string &path)
                 m_playlist.emplace_back(p.generic_string());
                 return LoadLevel(m_playlist.back());
             }
+            printf("File is not of type .bmp\n");
             return false;
         }
 
+        printf("Path is neither file or directory\n");
         return false;
     }
     else
     {
-        printf("Playlist not found!\n");
+        printf("File or directory %s does not exist\n", p.generic_string().c_str());
         return false;
     }
 }
 
-bool LevelManager::NextLevel()
+void LevelManager::Update(float deltaTime)
 {
-    return NextLevel(m_gameManager->GetCurrentGameMode());
+    for (auto it = m_blocks.begin(); it != m_blocks.end();)
+    {
+        if (it->second->Update(deltaTime) == false)
+        {
+            it = m_blocks.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
+std::vector<std::weak_ptr<Asset>> LevelManager::GetAssets(bool allAssets)
+{
+    std::vector<std::weak_ptr<Asset>> assets;
+    for (const auto &block : m_blocks)
+    {
+        if (auto b = block.second->GetAsset().lock())
+        {
+            if (allAssets || m_reloaded || block.second->InMotion() || b->ShouldSendFull())
+            {
+                assets.emplace_back(b);
+            }
+        }
+    }
+
+    m_reloaded = false;
+
+    return assets;
+}
+
+const std::vector<std::pair<int, int>> &Gameplay::LevelManager::GetSpawns() const
+{
+    return m_spawns;
+}
+
+bool LevelManager::NextLevel(GameModeType /*gameMode*/)
+{
+    if (m_playlist.size() == 0)
+    {
+        return false;
+    }
+
+    m_blocks.clear();
+    m_spawns.clear();
+
+    ++m_currentLevelIndex;
+    auto numLevels = m_playlist.size();
+    while (LoadLevel(m_playlist[m_currentLevelIndex % m_playlist.size()]) == false && numLevels > 0)
+    {
+        ++m_currentLevelIndex;
+        --numLevels;
+    }
+
+    m_reloaded = true;
+
+    return true;
 }
 
 bool LevelManager::LoadLevel(const std::string &filename)
@@ -108,13 +163,13 @@ bool LevelManager::LoadLevel(const std::string &filename)
 
     if (header.signature[0] != 'B' || header.signature[1] != 'M')
     {
-        printf("Not a valid BMP file\n");
+        printf("Not a valid .bmp file\n");
         return false;
     }
 
     if (header.bitsPerPixel != 24)
     {
-        printf("Only 24-bit BMP files are supported\n");
+        printf("Only 24-bit .bmp files are supported\n");
         return false;
     }
     file.seekg(header.pixelDataOffset);
@@ -133,74 +188,6 @@ bool LevelManager::LoadLevel(const std::string &filename)
     }
 
     return BuildLevel(rows);
-}
-
-bool LevelManager::NextLevel(GameModeType gameMode)
-{
-    if (m_playlist.size() == 0)
-    {
-        return false;
-    }
-
-    m_blocks.clear();
-    m_spawns.clear();
-
-    ++m_currentLevelIndex;
-    auto numLevels = m_playlist.size();
-    while (LoadLevel(m_playlist[m_currentLevelIndex % m_playlist.size()]) == false && numLevels > 0)
-    {
-        ++m_currentLevelIndex;
-        --numLevels;
-    }
-
-    m_gameManager->SetGameMode(gameMode);
-
-    m_reloaded = true;
-
-    return true;
-}
-
-void LevelManager::Update(float deltaTime)
-{
-    for (auto it = m_blocks.begin(); it != m_blocks.end();)
-    {
-        if (it->second->Update(deltaTime) == false)
-        {
-            it = m_blocks.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
-
-    if (m_gameManager->Finished())
-    {
-        NextLevel();
-    }
-}
-
-std::vector<std::shared_ptr<Asset>> LevelManager::GetAssets(bool allAssets)
-{
-    std::vector<std::shared_ptr<Asset>> assets;
-    for (const auto &block : m_blocks)
-    {
-        const auto &blockAsset = block.second->GetAsset();
-        if (blockAsset != nullptr &&
-            (allAssets || m_reloaded || block.second->InMotion() || block.second->GetAsset()->ShouldSendFull()))
-        {
-            assets.emplace_back(blockAsset);
-        }
-    }
-
-    m_reloaded = false;
-
-    return assets;
-}
-
-const std::vector<std::pair<int, int>> &Gameplay::LevelManager::GetSpawns() const
-{
-    return m_spawns;
 }
 
 bool LevelManager::BuildLevel(std::vector<std::vector<uint8_t>> rows)

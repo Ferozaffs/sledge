@@ -1,24 +1,21 @@
 #pragma once
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
 namespace Gameplay
 {
-class PlayerManager;
-class Player;
+class GameManager;
 class Asset;
-class LevelManager;
 } // namespace Gameplay
 
 namespace Network
 {
-class Impl;
-
 class ConnectionManager
 {
   public:
-    ConnectionManager(Gameplay::PlayerManager *playerManager, Gameplay::LevelManager *levelManager);
+    ConnectionManager(Gameplay::GameManager &gameManager);
     ~ConnectionManager();
 
     void Update(float deltaTime);
@@ -26,21 +23,16 @@ class ConnectionManager
     static void RemoveAsset(int id);
 
   private:
-    friend class Impl;
+    static std::mutex removalMutex;
+    static std::vector<int> m_assetsToRemove;
 
-    static std::string CreateStatusMessage(std::string message);
-    static std::string CreateErrorMessage(std::string message);
-
-    void SendAssets(std::vector<std::shared_ptr<Gameplay::Asset>> assets, bool playerJoined);
+  private:
+    void SendAssets(std::vector<std::weak_ptr<Gameplay::Asset>> assets, bool playerJoined);
     void SendScore() const;
 
     void RemoveAssets();
 
-    static std::unique_ptr<Impl> m_impl;
-    static std::vector<int> m_assetsToRemove;
-
-    Gameplay::PlayerManager *m_playerManager;
-    Gameplay::LevelManager *m_levelManager;
+    Gameplay::GameManager &m_gameManager;
 
     float m_tickCounter;
     signed int m_cachedScore;

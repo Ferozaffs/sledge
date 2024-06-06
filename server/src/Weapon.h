@@ -13,17 +13,16 @@ class Asset;
 class Weapon
 {
   public:
-    Weapon(const Avatar *avatar);
+    Weapon();
     virtual ~Weapon();
 
-    virtual void Update(const float & /*deltaTime*/)
+    virtual void Update(float /*deltaTime*/)
     {
     }
 
     b2Body *GetShaft() const;
-    const float &GetSpeed() const;
-    const float &GetTorque() const;
-    const Avatar *GetAvatar() const;
+    float GetSpeed() const;
+    float GetTorque() const;
 
     std::vector<std::shared_ptr<Asset>> GetAssets() const;
 
@@ -35,9 +34,6 @@ class Weapon
     std::shared_ptr<Asset> m_shaftAsset;
     float m_speed;
     float m_torque;
-
-  private:
-    const Avatar *m_avatar;
 };
 
 } // namespace Gameplay

@@ -2,8 +2,7 @@
 #include "Weapon.h"
 #include <memory>
 
-class b2Body;
-class b2Joint;
+class b2World;
 
 namespace Gameplay
 {
@@ -13,8 +12,7 @@ class Asset;
 class Sledge : public Weapon
 {
   public:
-    Sledge(const Avatar *avatar);
-    virtual ~Sledge();
+    Sledge(std::weak_ptr<b2World> world, const Avatar& avatar);
 
   private:
     std::shared_ptr<Asset> m_sledgeHeadAsset;

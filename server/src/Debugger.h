@@ -32,7 +32,6 @@ class Debugger
   private:
     void UpdateShapes();
     void CreateDefaultProgram();
-    void CreateTriangleVertices();
     void CreateBoxVertices();
 
     GLFWwindow *m_window;
@@ -40,9 +39,6 @@ class Debugger
     unsigned int m_defaultProgram;
     unsigned int m_vpUniform;
     unsigned int m_colorUniform;
-
-    unsigned int m_triangles;
-    unsigned int m_triangleInstances;
 
     unsigned int m_boxes;
     unsigned int m_boxInstances;

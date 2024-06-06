@@ -8,8 +8,8 @@ class PlayerManager;
 class GameModeBrawl : public IGameMode
 {
   public:
-    GameModeBrawl(PlayerManager *playerManager);
-    ~GameModeBrawl();
+    GameModeBrawl(PlayerManager &playerManager);
+    ~GameModeBrawl() = default;
 
     void Update(float deltaTime) override;
     bool Finished() const override;
@@ -17,7 +17,7 @@ class GameModeBrawl : public IGameMode
     GameModeType GetType() const override;
 
   private:
-    PlayerManager *m_playerManager;
+    PlayerManager &m_playerManager;
     int m_numPlayers;
     bool m_valid;
 

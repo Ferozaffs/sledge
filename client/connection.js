@@ -1,85 +1,80 @@
-import * as APP from './app.js';
+import * as APP from "./app.js";
 
-let socket
+let socket;
 
-connectToServer(window.location.hostname + ':9002')
+connectToServer(window.location.hostname + ":9002");
 
-export function connectToServer(url)
-{
-  socket = new WebSocket('ws://' + url);
-  window.addEventListener('beforeunload', closeWebSocket);
-  window.addEventListener('unload', closeWebSocket);
+export function connectToServer(url) {
+  socket = new WebSocket("ws://" + url);
+  window.addEventListener("beforeunload", closeWebSocket);
+  window.addEventListener("unload", closeWebSocket);
 
-  socket.onopen = function(event) {
-    console.log('WebSocket connection established.');
+  socket.onopen = function (event) {
+    console.log("WebSocket connection established.");
 
     const message = {
-      type: "conreq"
+      type: "conreq",
     };
     socket.send(JSON.stringify(message));
-  }
+  };
 
-  socket.onclose = function(event) {
-    console.log('WebSocket connection closed.');
-  }
+  socket.onclose = function (event) {
+    console.log("WebSocket connection closed.");
+  };
 
-  socket.onmessage = function(event) {
+  socket.onmessage = function (event) {
     const message = JSON.parse(event.data);
 
     // Check the type of the message
     if (message && message.type) {
       switch (message.type) {
-        case 'status':
-          console.log('SERVER - ' + message.status);
+        case "status":
+          console.log("SERVER - " + message.status);
           break;
-        case 'error':
-            console.log('SERVER - ' + message.error);
+        case "error":
+          console.log("SERVER - " + message.error);
           break;
-        case 'updateData':
+        case "updateData":
           updateData(message);
           break;
-        case 'removeData':
+        case "removeData":
           removeData(message);
           break;
-        case 'scoreData':
+        case "scoreData":
           scoreData(message);
           break;
         default:
-          console.error('Unknown message type:', message.type);
+          console.error("Unknown message type:", message.type);
       }
     } else {
-      console.error('Invalid message:', message);
+      console.error("Invalid message:", message);
     }
-  }
+  };
 }
-
-
 
 function closeWebSocket() {
-  if (socket !== undefined)
-  {
-    const code = 1000; // Normal closure
-    const reason = 'Client closing connection';
-  
-    // Check if the socket is already closed or closing
-    if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
-        socket.close(code, reason);
+  if (socket !== undefined) {
+    const code = 1000;
+    const reason = "Client closing connection";
+
+    if (
+      socket.readyState === WebSocket.OPEN ||
+      socket.readyState === WebSocket.CONNECTING
+    ) {
+      socket.close(code, reason);
     }
   }
-
 }
 
-export function sendInput(input)
-{
-  if (socket !== undefined)
-  {
+export function sendInput(input) {
+  if (socket !== undefined) {
     const message = {
       type: "input",
       input: {
         sledge: input.sledge,
         move: input.move,
-        jump: input.jump
-      }
+        jump: input.jump,
+      },
     };
 
     if (socket.readyState === WebSocket.OPEN) {
@@ -88,17 +83,14 @@ export function sendInput(input)
   }
 }
 
-function removeData(message)
-{
-    APP.removeData(message);
+function removeData(message) {
+  APP.removeData(message);
 }
 
-function updateData(message)
-{
-    APP.updateData(message);
+function updateData(message) {
+  APP.updateData(message);
 }
 
-function scoreData(message)
-{
-    APP.scoreData(message);
+function scoreData(message) {
+  APP.scoreData(message);
 }

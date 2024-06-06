@@ -8,8 +8,8 @@ class PlayerManager;
 class GameModeSandbox : public IGameMode
 {
   public:
-    GameModeSandbox(PlayerManager *playerManager);
-    ~GameModeSandbox();
+    GameModeSandbox(PlayerManager &playerManager);
+    ~GameModeSandbox() = default;
 
     void Update(float deltaTime) override;
     bool Finished() const override;
@@ -17,7 +17,7 @@ class GameModeSandbox : public IGameMode
     GameModeType GetType() const override;
 
   private:
-    PlayerManager *m_playerManager;
+    PlayerManager &m_playerManager;
 };
 
 } // namespace Gameplay

@@ -8,7 +8,7 @@ class PlayerManager;
 class GameModeTeamBrawl : public IGameMode
 {
   public:
-    GameModeTeamBrawl(PlayerManager *playerManager);
+    GameModeTeamBrawl(PlayerManager &playerManager);
     ~GameModeTeamBrawl();
 
     void Update(float deltaTime) override;
@@ -17,7 +17,7 @@ class GameModeTeamBrawl : public IGameMode
     GameModeType GetType() const override;
 
   private:
-    PlayerManager *m_playerManager;
+    PlayerManager &m_playerManager;
     int m_numPlayersTeamRed;
     int m_numPlayersTeamBlue;
     bool m_valid;

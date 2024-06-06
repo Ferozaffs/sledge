@@ -30,14 +30,10 @@ static Debug::Debugger::ShapeType GetRenderType(b2Shape::Type type)
 B2Manager::B2Manager() : m_accumelatedTime(0.0f)
 {
     b2Vec2 gravity(0.0f, -9.81f);
-    m_world = std::make_unique<b2World>(gravity);
+    m_world = std::make_shared<b2World>(gravity);
 }
 
-B2Manager::~B2Manager()
-{
-}
-
-void B2Manager::Update(const float &deltaTime)
+void B2Manager::Update(float deltaTime)
 {
     m_accumelatedTime += deltaTime;
     while (m_accumelatedTime > timeStep)
@@ -48,39 +44,42 @@ void B2Manager::Update(const float &deltaTime)
     }
 }
 
-b2World *Physics::B2Manager::GetWorld()
+std::weak_ptr<b2World> Physics::B2Manager::GetWorld()
 {
-    return m_world.get();
+    return m_world;
 }
 
 #ifdef WIN32
-void B2Manager::DbgRender(Debug::Debugger *debugger)
+void B2Manager::DbgRender(std::weak_ptr<Debug::Debugger> debugger)
 {
-    for (auto b = m_world->GetBodyList(); b; b = b->GetNext())
+    if (auto dbg = debugger.lock())
     {
-        auto transform = b->GetTransform();
-        for (auto f = b->GetFixtureList(); f; f = f->GetNext())
+        for (auto b = m_world->GetBodyList(); b; b = b->GetNext())
         {
-            auto shape = static_cast<b2PolygonShape *>(f->GetShape());
-            b2Vec2 min;
-            b2Vec2 max;
-            min = max = shape->m_vertices[0];
-            for (int i = 1; i < shape->m_count; i++)
+            auto transform = b->GetTransform();
+            for (auto f = b->GetFixtureList(); f; f = f->GetNext())
             {
-                min.x = std::min(min.x, shape->m_vertices[i].x);
-                min.y = std::min(min.y, shape->m_vertices[i].y);
-                max.x = std::max(max.x, shape->m_vertices[i].x);
-                max.y = std::max(max.y, shape->m_vertices[i].y);
+                auto shape = static_cast<b2PolygonShape *>(f->GetShape());
+                b2Vec2 min;
+                b2Vec2 max;
+                min = max = shape->m_vertices[0];
+                for (int i = 1; i < shape->m_count; i++)
+                {
+                    min.x = std::min(min.x, shape->m_vertices[i].x);
+                    min.y = std::min(min.y, shape->m_vertices[i].y);
+                    max.x = std::max(max.x, shape->m_vertices[i].x);
+                    max.y = std::max(max.y, shape->m_vertices[i].y);
+                }
+
+                mat4x4 pose;
+                mat4x4_identity(pose);
+
+                mat4x4_translate(pose, transform.p.x, transform.p.y, 0.0f);
+                mat4x4_rotate_Z(pose, pose, transform.q.GetAngle());
+                mat4x4_scale_aniso(pose, pose, max.x - min.x, max.y - min.y, 1.0f);
+
+                dbg->AddShape(pose, GetRenderType(f->GetType()));
             }
-
-            mat4x4 pose;
-            mat4x4_identity(pose);
-
-            mat4x4_translate(pose, transform.p.x, transform.p.y, 0.0f);
-            mat4x4_rotate_Z(pose, pose, transform.q.GetAngle());
-            mat4x4_scale_aniso(pose, pose, max.x - min.x, max.y - min.y, 1.0f);
-
-            debugger->AddShape(pose, GetRenderType(f->GetType()));
         }
     }
 }

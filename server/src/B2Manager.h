@@ -16,18 +16,18 @@ class B2Manager
 {
   public:
     B2Manager();
-    ~B2Manager();
+    ~B2Manager() = default;
 
-    void Update(const float &deltaTime);
+    void Update(float deltaTime);
 
-    b2World *GetWorld();
+    std::weak_ptr<b2World> GetWorld();
 
 #ifdef WIN32
-    void DbgRender(Debug::Debugger *debugger);
+    void DbgRender(std::weak_ptr<Debug::Debugger> debugger);
 #endif
 
   private:
-    std::unique_ptr<b2World> m_world;
+    std::shared_ptr<b2World> m_world;
     float m_accumelatedTime;
 };
 

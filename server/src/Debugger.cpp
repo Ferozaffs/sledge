@@ -18,8 +18,6 @@ typedef struct Vertex
     vec3 col;
 } Vertex;
 
-static const Vertex triangleVertices[3] = {{-0.6f, -0.4f}, {0.6f, -0.4f}, {0.f, 0.6f}};
-
 static const Vertex boxVertices[6] = {{0.5f, 0.5f},  {0.5f, -0.5f},  {-0.5f, 0.5f},
                                       {0.5f, -0.5f}, {-0.5f, -0.5f}, {-0.5f, 0.5f}};
 
@@ -159,7 +157,6 @@ Debugger::Debugger()
 
     CreateDefaultProgram();
 
-    CreateTriangleVertices();
     CreateBoxVertices();
 }
 
@@ -192,14 +189,6 @@ void Debugger::UpdateShapes()
         memcpy(ptr, &m_shapes[ShapeType::Box][0], sizeof(mat4x4) * m_shapes[ShapeType::Box].size());
         glUnmapBuffer(GL_ARRAY_BUFFER);
     }
-
-    if (m_shapes[ShapeType::Triangle].size() > 0)
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, m_triangleInstances);
-        void *ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-        memcpy(ptr, &m_shapes[ShapeType::Triangle][0], sizeof(mat4x4) * m_shapes[ShapeType::Triangle].size());
-        glUnmapBuffer(GL_ARRAY_BUFFER);
-    }
 }
 
 void Debugger::Render()
@@ -223,17 +212,12 @@ void Debugger::Render()
     mat4x4_mul(vp, p, v);
 
     vec4 colorBox = {1.0f, 0.5f, 0.0f, 1.0f};
-    vec4 colorTriangle = {1.0f, 1.0f, 0.0f, 1.0f};
 
     glUseProgram(m_defaultProgram);
     glUniformMatrix4fv(m_vpUniform, 1, GL_FALSE, (const GLfloat *)&vp);
     glUniform4fv(m_colorUniform, 1, (const GLfloat *)&colorBox);
     glBindVertexArray(m_boxes);
     glDrawArraysInstanced(GL_TRIANGLES, 0, 6, static_cast<GLsizei>(m_shapes[ShapeType::Box].size()));
-
-    glUniform4fv(m_colorUniform, 1, (const GLfloat *)&colorTriangle);
-    glBindVertexArray(m_triangles);
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, static_cast<GLsizei>(m_shapes[ShapeType::Triangle].size()));
 
     glfwSwapBuffers(m_window);
     glfwPollEvents();
@@ -290,41 +274,6 @@ void Debugger::CreateDefaultProgram()
 
     m_vpUniform = glGetUniformLocation(m_defaultProgram, "uViewProj");
     m_colorUniform = glGetUniformLocation(m_defaultProgram, "uColor");
-}
-
-void Debugger::CreateTriangleVertices()
-{
-    GLuint vertex_buffer;
-    glGenBuffers(1, &vertex_buffer);
-    glGenBuffers(1, &m_triangleInstances);
-
-    glGenVertexArrays(1, &m_triangles);
-    glBindVertexArray(m_triangles);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, m_triangleInstances);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(mat4x4) * MaxNumInstances, nullptr, GL_DYNAMIC_DRAW);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (void *)0);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (void *)(1 * sizeof(vec4)));
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (void *)(2 * sizeof(vec4)));
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (void *)(3 * sizeof(vec4)));
-
-    glVertexAttribDivisor(1, 1);
-    glVertexAttribDivisor(2, 1);
-    glVertexAttribDivisor(3, 1);
-    glVertexAttribDivisor(4, 1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 }
 
 void Debugger::CreateBoxVertices()

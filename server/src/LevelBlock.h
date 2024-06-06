@@ -19,13 +19,13 @@ class LevelBlock
     };
 
   public:
-    LevelBlock(b2World *world, int x, int y, std::string alias);
-    ~LevelBlock();
+    LevelBlock(std::weak_ptr<b2World> world, int x, int y, const std::string &alias);
+    ~LevelBlock() = default;
 
     bool Update(float deltaTime);
 
-    const std::shared_ptr<Asset> &GetAsset() const;
-    bool InMotion();
+    std::weak_ptr<Asset> GetAsset() const;
+    bool InMotion() const;
 
   private:
     void ConvertToDynamic();

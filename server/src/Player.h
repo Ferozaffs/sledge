@@ -9,13 +9,15 @@ namespace Gameplay
 {
 class Avatar;
 class Asset;
+class GameManager;
 class PlayerManager;
 enum class GameModeType;
 
 class Player
 {
   public:
-    Player(PlayerManager *playerManager, b2World *world, unsigned int tint, unsigned int teamTint);
+    Player(const GameManager &gameManager, const PlayerManager &playerManager, std::weak_ptr<b2World> world,
+           unsigned int tint, unsigned int teamTint);
     ~Player();
 
     const float GetX() const;
@@ -27,7 +29,7 @@ class Player
     void SetInputs(float sledgeInput, float moveInput, float jumpInput);
 
     int GetMainAssetId() const;
-    std::vector<std::shared_ptr<Asset>> GetAssets() const;
+    std::vector<std::weak_ptr<Asset>> GetAssets() const;
 
     signed int GetScore() const;
     void Score(signed int score);
@@ -44,11 +46,13 @@ class Player
 
   private:
     void Respawn();
-    void SpawnAvatar(b2World *world);
+    void SpawnAvatar(std::weak_ptr<b2World> world);
 
-    PlayerManager *m_playerManager;
-    b2World *m_world;
-    std::shared_ptr<Avatar> m_avatar;
+    const GameManager &m_gameManager;
+    const PlayerManager &m_playerManager;
+    std::weak_ptr<b2World> m_world;
+
+    std::unique_ptr<Avatar> m_avatar;
     float m_sledgeInput;
     float m_moveInput;
     float m_jumpInput;
@@ -58,7 +62,6 @@ class Player
     signed int m_score;
     bool m_winner;
     bool m_usingTeamColors;
-
     GameModeType m_gameModeWish;
 };
 

@@ -5,17 +5,17 @@
 
 using namespace Gameplay;
 
-GameModeTeamBrawl::GameModeTeamBrawl(PlayerManager *playerManager)
+GameModeTeamBrawl::GameModeTeamBrawl(PlayerManager &playerManager)
     : m_playerManager(playerManager), m_valid(true), m_countDown(5.0f)
 {
-    m_numPlayersTeamRed = m_playerManager->GetRedPlayers().size();
-    m_numPlayersTeamBlue = m_playerManager->GetBluePlayers().size();
+    m_numPlayersTeamRed = m_playerManager.GetRedPlayers().size();
+    m_numPlayersTeamBlue = m_playerManager.GetBluePlayers().size();
     if (m_numPlayersTeamRed + m_numPlayersTeamBlue <= 1)
     {
         m_valid = false;
     }
 
-    auto players = m_playerManager->GetPlayers();
+    auto players = m_playerManager.GetPlayers();
     for (const auto &player : players)
     {
         player->SetTeamColors(true);
@@ -29,8 +29,8 @@ GameModeTeamBrawl::~GameModeTeamBrawl()
 
 void GameModeTeamBrawl::Update(float deltaTime)
 {
-    auto redPlayers = m_playerManager->GetRedPlayers();
-    auto bluePlayers = m_playerManager->GetBluePlayers();
+    auto redPlayers = m_playerManager.GetRedPlayers();
+    auto bluePlayers = m_playerManager.GetBluePlayers();
 
     int numRedPlayersAlive = 0;
     for (auto &player : redPlayers)
@@ -43,7 +43,7 @@ void GameModeTeamBrawl::Update(float deltaTime)
 
     if (numRedPlayersAlive < m_numPlayersTeamRed)
     {
-        m_playerManager->ScoreBlue(1);
+        m_playerManager.ScoreBlue(1);
 
         m_numPlayersTeamRed = numRedPlayersAlive;
     }
@@ -59,7 +59,7 @@ void GameModeTeamBrawl::Update(float deltaTime)
 
     if (numBluePlayersAlive < m_numPlayersTeamBlue)
     {
-        m_playerManager->ScoreRed(1);
+        m_playerManager.ScoreRed(1);
 
         m_numPlayersTeamBlue = numBluePlayersAlive;
     }

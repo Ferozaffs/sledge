@@ -5,16 +5,16 @@
 
 using namespace Gameplay;
 
-GameModeBrawl::GameModeBrawl(PlayerManager *playerManager)
+GameModeBrawl::GameModeBrawl(PlayerManager &playerManager)
     : m_playerManager(playerManager), m_valid(true), m_countDown(5.0f)
 {
-    m_numPlayers = m_playerManager->GetNumPlayers();
+    m_numPlayers = m_playerManager.GetNumPlayers();
     if (m_numPlayers <= 1)
     {
         m_valid = false;
     }
 
-    auto players = m_playerManager->GetPlayers();
+    auto players = m_playerManager.GetPlayers();
     for (const auto &player : players)
     {
         player->SetTeamColors(false);
@@ -22,13 +22,9 @@ GameModeBrawl::GameModeBrawl(PlayerManager *playerManager)
     }
 }
 
-GameModeBrawl::~GameModeBrawl()
-{
-}
-
 void GameModeBrawl::Update(float deltaTime)
 {
-    auto players = m_playerManager->GetPlayersAlive();
+    auto players = m_playerManager.GetPlayersAlive();
     int numPlayers = players.size();
     if (numPlayers < m_numPlayers)
     {
