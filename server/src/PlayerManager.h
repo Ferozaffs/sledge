@@ -29,7 +29,7 @@ class PlayerManager
     std::vector<std::shared_ptr<Player>> GetRedPlayers() const;
     std::vector<std::shared_ptr<Player>> GetBluePlayers() const;
 
-    std::vector<std::shared_ptr<Asset>> GetAssets() const;
+    std::vector<std::weak_ptr<Asset>> GetAssets() const;
 
     signed int GetScore() const;
     signed int GetTeamScore(unsigned int teamTint) const;

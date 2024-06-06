@@ -162,9 +162,9 @@ std::vector<std::shared_ptr<Player>> PlayerManager::GetBluePlayers() const
     return players;
 }
 
-std::vector<std::shared_ptr<Asset>> PlayerManager::GetAssets() const
+std::vector<std::weak_ptr<Asset>> PlayerManager::GetAssets() const
 {
-    std::vector<std::shared_ptr<Asset>> assets;
+    std::vector<std::weak_ptr<Asset>> assets;
     for (const auto &player : m_players)
     {
         auto playerAssets = player->GetAssets();
