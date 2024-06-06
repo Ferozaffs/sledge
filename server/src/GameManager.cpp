@@ -23,6 +23,12 @@ void GameManager::Update(float deltaTime)
     if (m_currentGameMode != nullptr)
     {
         m_currentGameMode->Update(deltaTime);
+
+        if (m_currentGameMode->Finished())
+        {
+            SetGameMode(GetCurrentGameMode());
+            m_levelManager.NextLevel(GetCurrentGameMode());
+        }
     }
 }
 
