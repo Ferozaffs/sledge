@@ -1,6 +1,9 @@
 # Sledge
 2D PvP brawler
 
+<img src="https://github.com/Ferozaffs/sledge/assets/114532257/d03c8d4c-92c3-494e-bde8-976e571f4601" width="512">
+
+
 ## Install
 To install only the dockerfile and docker-compose file is needed.
 Run ```docker-compose -f Dockerfile-Standalone up --build``` to setup a linux based server and frontend.
