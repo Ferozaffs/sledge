@@ -1,0 +1,1 @@
+export const APPTYPE = "STANDALONE";

@@ -4,4 +4,4 @@ services:
       context: .
       dockerfile: Dockerfile-Room
     ports:
-      - "9002:9002"
+      - "${HOST_PORT:-9002}:9002"

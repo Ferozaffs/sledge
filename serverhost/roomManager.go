@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/url"
+	"os"
 	"os/exec"
+	"strconv"
 
 	"github.com/gorilla/websocket"
 )
@@ -21,7 +24,7 @@ type roomResponse struct {
 
 type room struct {
 	Name   string
-	Url    string
+	Port   int
 	Health int
 }
 
@@ -30,37 +33,49 @@ var activeRooms []room
 const roomhealth int = 3
 
 func CreateRoom() (room, error) {
+
+	l, err := net.Listen("tcp", ":0")
+	if err != nil {
+		panic(err)
+	}
+
+	port := l.Addr().(*net.TCPAddr).Port
+	l.Close()
+
 	roomName := GetRandomName(3)
 
+	os.Setenv("HOST_PORT", strconv.Itoa(port))
 	cmd := exec.Command("docker-compose", "-f", "../docker-compose-room.yml", "-p", roomName, "up", "-d")
 
-	_, err := cmd.CombinedOutput()
+	_, err = cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error:", err)
 		return room{}, errors.New("failed to start server")
 	}
 
 	fmt.Println("Creating room:", roomName)
-	room := room{roomName, "localhost:9002", roomhealth}
+	room := room{roomName, port, roomhealth}
 	activeRooms = append(activeRooms, room)
+
+	port++
 	return room, nil
 }
 
-func GetRoomUrl(name string) (string, error) {
+func GetRoomPort(name string) (int, error) {
 	for _, room := range activeRooms {
 		if room.Name == name {
-			return room.Url, nil
+			return room.Port, nil
 		}
 	}
 
-	return "", errors.New("room not found")
+	return -1, errors.New("room not found")
 }
 
 func UpdateRooms() {
 
 	var removal []string
 	for idx := range activeRooms {
-		status, err := checkRoomHealth(activeRooms[idx].Url)
+		status, err := checkRoomHealth(activeRooms[idx].Port)
 
 		fmt.Printf("Room: %s\tStatus: %s\n", activeRooms[idx].Name, status)
 		if status != "good" {
@@ -89,9 +104,10 @@ func UpdateRooms() {
 
 }
 
-func checkRoomHealth(roomUrl string) (string, error) {
-	u := url.URL{Scheme: "ws", Host: roomUrl, Path: ""}
-	fmt.Println("Connecting to:", roomUrl, u.String())
+func checkRoomHealth(port int) (string, error) {
+	host := "localhost:" + strconv.Itoa(port)
+	u := url.URL{Scheme: "ws", Host: host, Path: ""}
+	fmt.Println("Connecting to:", host, u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {

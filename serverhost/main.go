@@ -9,7 +9,7 @@ import (
 type response struct {
 	Status  string `json:"status"`
 	Room    string `json:"room,omitempty"`
-	Url     string `json:"url,omitempty"`
+	Port    int    `json:"url,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
@@ -26,7 +26,7 @@ func CreateRoomHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response{
 		Status:  "success",
 		Room:    room.Name,
-		Url:     room.Url,
+		Port:    room.Port,
 		Message: "Room is now ready!",
 	})
 }
@@ -43,7 +43,7 @@ func RoomHandler(w http.ResponseWriter, r *http.Request) {
 
 	name := r.Form.Get("name")
 
-	u, err := GetRoomUrl(name)
+	port, err := GetRoomPort(name)
 
 	if err != nil {
 		http.Error(w, "Room not found", http.StatusBadRequest)
@@ -53,7 +53,7 @@ func RoomHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response{
 		Status:  "success",
 		Room:    name,
-		Url:     u,
+		Port:    port,
 		Message: "Room found!",
 	})
 

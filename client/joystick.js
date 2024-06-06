@@ -1,3 +1,7 @@
+function isMobile() {
+  return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 const joysticks = {};
 
 function setupJoystick(joystickId) {
@@ -62,11 +66,25 @@ document.addEventListener(
   { passive: false }
 );
 
-setupJoystick("joystickLeft");
-setupJoystick("joystickRight");
+if (isMobile()) {
+  setupJoystick("joystickLeft");
+  setupJoystick("joystickRight");
+} else {
+  disableJoysticks();
+}
 
 export function getJoystickValues(joystickId) {
   return joysticks.hasOwnProperty(joystickId)
     ? joysticks[joystickId]
     : undefined;
+}
+
+export function enableJoysticks() {
+  document.getElementById("joystickLeft").classList.add("pointer-events");
+  document.getElementById("joystickRight").classList.add("pointer-events");
+}
+
+export function disableJoysticks() {
+  document.getElementById("joystickLeft").classList.add("no-pointer-events");
+  document.getElementById("joystickRight").classList.add("no-pointer-events");
 }

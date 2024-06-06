@@ -5,20 +5,25 @@ body {
     background: linear-gradient(#1ca1ca, #177fc5);
 }
 
-@media (max-width: 1024px) {
-    .joystick-container {
-        position: absolute;
-        width: 50%;
-        height: 100%;
-    }
+.no-pointer-events {
+    pointer-events: none;
+  }
+.pointer-events {
+pointer-events: auto;
+}
 
-    #joystickLeft {
-        left: 0px;
-    }
+.joystick-container {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+}
 
-    #joystickRight {
-        right: 0px;
-    }
+#joystickLeft {
+    left: 0px;
+}
+
+#joystickRight {
+    right: 0px;
 }
 
 #content {

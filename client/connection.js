@@ -1,8 +1,11 @@
+import { APPTYPE } from "./constants.js";
 import * as APP from "./app.js";
 
 let socket;
 
-connectToServer(window.location.hostname + ":9002");
+if (APPTYPE === "STANDALONE") {
+  connectToServer(window.location.hostname + ":9002");
+}
 
 export function connectToServer(url) {
   socket = new WebSocket("ws://" + url);
