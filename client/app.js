@@ -1,7 +1,5 @@
 import * as PIXI from "https://cdn.skypack.dev/pixi.js";
 import * as ASSETS from "./assets.js";
-import * as UI from "./ui.js";
-import { APPTYPE } from "./constants.js";
 import { sendInput } from "./connection.js";
 import { getJoystickValues } from "./joystick.js";
 
@@ -13,10 +11,6 @@ let tickCounter = 0.0;
 (async () => {
   await init();
   await preload();
-
-  if (APPTYPE === "HOST") {
-    UI.showMainMenu();
-  }
 
   initialized = true;
 
@@ -53,7 +47,6 @@ async function init() {
   });
 
   ASSETS.init(app);
-  UI.init(app);
 }
 
 async function preload() {

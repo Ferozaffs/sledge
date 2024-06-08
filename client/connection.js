@@ -15,6 +15,10 @@ export function connectToServer(url) {
   socket.onopen = function (event) {
     console.log("WebSocket connection established.");
 
+    //Disable main menu
+    var div = document.getElementById("mainMenu");
+    div.style.display = "none";
+
     const message = {
       type: "conreq",
     };

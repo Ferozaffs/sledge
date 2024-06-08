@@ -9,11 +9,12 @@ import (
 type response struct {
 	Status  string `json:"status"`
 	Room    string `json:"room,omitempty"`
-	Port    int    `json:"url,omitempty"`
+	Port    int    `json:"port,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
 func CreateRoomHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 
 	room, err := CreateRoom()
@@ -32,6 +33,7 @@ func CreateRoomHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RoomHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 
 	err := r.ParseForm()
