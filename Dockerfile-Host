@@ -12,7 +12,7 @@ WORKDIR /src
 RUN git clone https://github.com/Ferozaffs/sledge
 
 WORKDIR /src/sledge/
-RUN docker -f 'Dockerfile-Room' build -t sledge/room:latest .
+RUN docker build -f 'Dockerfile-Room' -t sledge/room:latest .
 RUN docker save -o room.tar sledge/room:latest
 
 WORKDIR /src/sledge/serverhost
