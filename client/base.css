@@ -1,11 +1,5 @@
-.no-pointer-events {
-    pointer-events: none;
-  }
-.pointer-events {
-pointer-events: auto;
-}
-
 .joystick-container {
+    display: none;
     position: absolute;
     width: 50%;
     height: 100%;

@@ -1,4 +1,5 @@
 import { APPTYPE } from "./constants.js";
+import { enableJoysticks } from "./joystick.js";
 import * as APP from "./app.js";
 
 let socket;
@@ -18,6 +19,8 @@ export function connectToServer(url) {
     //Disable main menu
     var div = document.getElementById("mainMenu");
     div.style.display = "none";
+
+    enableJoysticks();
 
     const message = {
       type: "conreq",
