@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"net/url"
-	"os"
 	"os/exec"
 	"strconv"
 
@@ -44,12 +43,12 @@ func CreateRoom() (room, error) {
 	}
 
 	port := l.Addr().(*net.TCPAddr).Port
+	fmt.Println("Found port:", strconv.Itoa(port))
 	l.Close()
 
 	roomName := GetRandomName(3)
 
-	os.Setenv("HOST_PORT", strconv.Itoa(port))
-	cmd := exec.Command("docker-compose", "-f", "../docker-compose-room.yml", "-p", roomName, "up", "-d")
+	cmd := exec.Command("docker", "run", "--name", roomName, "-p", strconv.Itoa(port)+":9002", "-d", "sledge/room:latest")
 
 	_, err = cmd.CombinedOutput()
 	if err != nil {
