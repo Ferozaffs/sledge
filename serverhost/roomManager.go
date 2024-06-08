@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net"
 	"net/url"
 	"os/exec"
 	"strconv"
@@ -28,29 +27,17 @@ type room struct {
 }
 
 var activeRooms []room
+var port int = 56000
 
 const roomhealth int = 3
 
 func CreateRoom() (room, error) {
-	var l net.Listener
-	var err error
-
-	for port := 56000; port <= 57000; port++ {
-		l, err = net.Listen("tcp", ":"+strconv.Itoa(port))
-		if err == nil {
-			break
-		}
-	}
-
-	port := l.Addr().(*net.TCPAddr).Port
-	fmt.Println("Found port:", strconv.Itoa(port))
-	l.Close()
-
 	roomName := GetRandomName(3)
 
 	cmd := exec.Command("docker", "run", "--name", roomName, "-p", strconv.Itoa(port)+":9002", "-d", "sledge/room:latest")
+	port++
 
-	_, err = cmd.CombinedOutput()
+	_, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error:", err)
 		return room{}, errors.New("failed to start server")

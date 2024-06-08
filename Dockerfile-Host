@@ -30,8 +30,8 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=build /src/sledge/client /app/client 
 COPY --from=build /src/sledge/serverhost/serverhost /app/serverhost 
-COPY --from=build /src/sledge/docker-compose-room /app/docker-compose-room
-COPY --from=build /src/sledge/start_host.sh /start_host.sh
+COPY --from=build /src/sledge/docker-compose-room.yml /app/docker-compose-room.yml
+COPY start_host.sh /start_host.sh
 RUN chmod +x /start_host.sh
 
 EXPOSE 5500

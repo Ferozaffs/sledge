@@ -1,8 +1,0 @@
-services:
-  room:
-    build:
-      context: .
-      dockerfile: Dockerfile-Room
-    image: sledge/room:latest
-    ports:
-      - "${HOST_PORT:-9002}:9002"
