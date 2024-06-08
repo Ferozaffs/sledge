@@ -5,3 +5,4 @@ services:
       dockerfile: Dockerfile-Host
     ports:
       - "5000:5500"
+      - "5501:5501"

@@ -1,11 +1,43 @@
-FROM nginx:latest
+FROM ubuntu:latest AS build
 
-COPY ./client /app/client
+RUN apt-get update && apt-get install -y \
+    docker.io \
+    golang-go \
+    git \
+    build-essential \
+    && apt-get clean
+
+WORKDIR /src
+
+RUN git clone https://github.com/Ferozaffs/sledge
+
+WORKDIR /src/sledge/
+RUN docker -f 'Dockerfile-Room' build -t sledge/room:latest .
+RUN docker save -o room.tar sledge/room:latest
+
+WORKDIR /src/sledge/serverhost
+RUN go build .
 
 RUN sed -i 's/STANDALONE/HOST/g' /app/client/app.js
 
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+#---------------------------------------
+FROM ubuntu:latest
+
+RUN apt-get update && apt-get install -y \
+    nginx \
+    docker.io \
+    && apt-get clean
+
+RUN rm /etc/nginx/sites-enabled/default
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY --from=build /src/sledge/client /app/client 
+COPY --from=build /src/sledge/serverhost/serverhost /app/serverhost 
+COPY --from=build /src/room.tar /app/room.tar 
+
+RUN docker load /app/room.tar 
 
 EXPOSE 5500
+EXPOSE 5501
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["nginx", "-g", "daemon off;", "&", "/app/serverhost"]

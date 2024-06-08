@@ -33,10 +33,14 @@ var activeRooms []room
 const roomhealth int = 3
 
 func CreateRoom() (room, error) {
+	var l net.Listener
+	var err error
 
-	l, err := net.Listen("tcp", ":0")
-	if err != nil {
-		panic(err)
+	for port := 56000; port <= 57000; port++ {
+		l, err = net.Listen("tcp", ":"+strconv.Itoa(port))
+		if err == nil {
+			break
+		}
 	}
 
 	port := l.Addr().(*net.TCPAddr).Port

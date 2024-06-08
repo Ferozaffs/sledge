@@ -1,7 +1,7 @@
 import { connectToServer } from "./connection.js";
 
 function createRoom() {
-  fetch("http://" + window.location.hostname + ":8080/create_room")
+  fetch("http://" + window.location.hostname + ":5501/create_room")
     .then((response) => {
       if (!response.ok) {
         throw new Error("Error: " + response.statusText);
@@ -17,7 +17,7 @@ function createRoom() {
 
 function joinRoom() {
   var roomName = document.getElementById("room-input").value;
-  fetch("http://" + window.location.hostname + ":8080/room?name=" + roomName)
+  fetch("http://" + window.location.hostname + ":5501/room?name=" + roomName)
     .then((response) => {
       if (!response.ok) {
         throw new Error("Error: " + response.statusText);
