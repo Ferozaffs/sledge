@@ -8,9 +8,9 @@
 
 using namespace Physics;
 
-constexpr float timeStep = 1.0f / 60.0f;
-constexpr int32 velocityIterations = 6;
-constexpr int32 positionIterations = 2;
+constexpr float timeStep = 1.0f / 120.0f;
+constexpr int32 velocityIterations = 20;
+constexpr int32 positionIterations = 8;
 
 #ifdef WIN32
 static Debug::Debugger::ShapeType GetRenderType(b2Shape::Type type)

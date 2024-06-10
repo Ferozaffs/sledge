@@ -30,18 +30,11 @@ std::vector<std::shared_ptr<Asset>> Weapon::GetAssets() const
     return m_assets;
 }
 
-b2Body *Weapon::GetShaft() const
-{
-    assert(m_shaftAsset != nullptr && "Weapon not implemented");
-
-    return m_shaftAsset->GetBody();
-}
-
 void Weapon::BreakJoints()
 {
     while (m_joints.empty() == false)
     {
-        m_shaftAsset->GetBody()->GetWorld()->DestroyJoint(m_joints.back());
+        m_joints.back()->GetBodyA()->GetWorld()->DestroyJoint(m_joints.back());
         m_joints.pop_back();
     };
 }

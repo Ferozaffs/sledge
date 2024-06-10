@@ -1,12 +1,11 @@
 #include "B2Manager.h"
 #include "ConnectionManager.h"
+#include "FPSCounter.h"
+#include "GameManager.h"
+
 #ifdef WIN32
 #include "Debugger.h"
 #endif
-#include "GameManager.h"
-#include "LevelManager.h"
-#include "Player.h"
-#include "PlayerManager.h"
 
 #include <chrono>
 #include <cstring>
@@ -39,11 +38,20 @@ int main(int argc, char *argv[])
     auto startTime = std::chrono::high_resolution_clock::now();
     auto endTime = std::chrono::high_resolution_clock::now();
 
+    Metrics::FPSCounter frameCounter;
     while (true)
     {
         endTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> deltaTime = endTime - startTime;
         startTime = std::chrono::high_resolution_clock::now();
+
+        static auto printTimer = std::chrono::high_resolution_clock::now();
+        if (std::chrono::duration_cast<std::chrono::seconds>(startTime - printTimer).count() >= 60)
+        {
+            frameCounter.PrintFrameData();
+            printTimer = startTime;
+        }
+        frameCounter.Frame();
 
         {
             gameManager.Update(deltaTime.count());

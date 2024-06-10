@@ -141,7 +141,7 @@ std::weak_ptr<Player> GameManager::AddPlayer()
     if (m_playerManager.GetNumPlayers() <= 2)
     {
         m_playerManager.ClearScore();
-        SetGameMode(GameModeType::Brawl);
+        SetGameMode(GameModeType::TeamBrawl);
         m_levelManager.NextLevel(GetCurrentGameMode());
     }
 

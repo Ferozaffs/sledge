@@ -8,8 +8,8 @@
 using namespace Gameplay;
 
 std::vector<unsigned int> tintList = {
-    0xAA0000, 0x0000AA, 0x00AA00, 0xAAAA00, 0x00AAAA, 0xAA00AA, 0xFF0000, 0x0000FF, 0x00FF00,
-    0xFFFF00, 0x00FFFF, 0xFF00FF, 0x880000, 0x000088, 0x008800, 0x888800, 0x008888, 0x880088,
+    0xAA0000, 0x0000AA, 0x00AA00, 0xAAAA00, 0x00AAAA, 0xAA00AA, 0x00FF00,
+    0xFFFF00, 0x00FFFF, 0xFF00FF, 0x008800, 0x888800, 0x008888, 0x880088,
 };
 
 PlayerManager::PlayerManager(GameManager &gameManager, std::weak_ptr<b2World> world)
@@ -80,8 +80,8 @@ std::weak_ptr<Player> PlayerManager::CreatePlayer()
         team = 1;
     }
 
-    m_players.emplace_back(std::make_shared<Player>(m_gameManager, *this, m_world,
-                                                    tintList[m_playersSpawned++ % tintList.size()], tintList[team]));
+    m_players.emplace_back(std::make_shared<Player>(
+        m_gameManager, *this, m_world, tintList[(m_playersSpawned++ % (tintList.size() - 2)) + 2], tintList[team]));
 
     return m_players.back();
 }

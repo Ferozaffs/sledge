@@ -7,7 +7,7 @@ using namespace Gameplay;
 
 Sledge::Sledge(std::weak_ptr<b2World> world, const Avatar &avatar) : Weapon()
 {
-    static const b2Vec2 shaftSize(5.0f, 0.25f);
+    static const b2Vec2 shaftSize(2.5f, 0.25f);
     static const b2Vec2 headSize(0.75f, 2.0f);
     constexpr float shaftDensity = 0.1f;
     constexpr float shaftFriction = 0.3f;
@@ -22,9 +22,9 @@ Sledge::Sledge(std::weak_ptr<b2World> world, const Avatar &avatar) : Weapon()
         b2BodyDef bodyDef;
         bodyDef.type = b2_dynamicBody;
         bodyDef.position = avatar.GetPosition();
-        bodyDef.position.x += shaftSize.x;
+        bodyDef.position.x += avatar.GetShaftLength() * 2.0f + shaftSize.x * 0.9f;
         bodyDef.fixedRotation = false;
-        m_shaftAsset = std::make_shared<Asset>(w->CreateBody(&bodyDef), "weapon_shaft");
+        m_extendedShaftAsset = std::make_shared<Asset>(w->CreateBody(&bodyDef), "weapon_head");
 
         b2PolygonShape dynamicBox;
         dynamicBox.SetAsBox(shaftSize.x, shaftSize.y);
@@ -39,11 +39,15 @@ Sledge::Sledge(std::weak_ptr<b2World> world, const Avatar &avatar) : Weapon()
         fixtureDef.filter.maskBits &= ~(static_cast<unsigned int>(CollisionFilter::Avatar_Head) |
                                         static_cast<unsigned int>(CollisionFilter::Avatar_Legs));
 
-        GetShaft()->CreateFixture(&fixtureDef);
-        m_shaftAsset->UpdateSize();
+        m_extendedShaftAsset->GetBody()->CreateFixture(&fixtureDef);
+        m_extendedShaftAsset->UpdateSize();
+
+        b2WeldJointDef joint;
+        joint.Initialize(avatar.GetShaft(), m_extendedShaftAsset->GetBody(), bodyDef.position);
+        m_joints.emplace_back(w->CreateJoint(&joint));
 
         bodyDef.type = b2_dynamicBody;
-        bodyDef.position.x += shaftSize.x;
+        bodyDef.position.x += shaftSize.x * 0.9f;
         m_sledgeHeadAsset = std::make_shared<Asset>(w->CreateBody(&bodyDef), "weapon_head");
 
         dynamicBox.SetAsBox(headSize.x, headSize.y);
@@ -58,11 +62,10 @@ Sledge::Sledge(std::weak_ptr<b2World> world, const Avatar &avatar) : Weapon()
         m_sledgeHeadAsset->GetBody()->CreateFixture(&fixtureDef);
         m_sledgeHeadAsset->UpdateSize();
 
-        b2WeldJointDef joint;
-        joint.Initialize(GetShaft(), m_sledgeHeadAsset->GetBody(), bodyDef.position);
+        joint.Initialize(m_extendedShaftAsset->GetBody(), m_sledgeHeadAsset->GetBody(), bodyDef.position);
         m_joints.emplace_back(w->CreateJoint(&joint));
 
-        m_assets.emplace_back(m_shaftAsset);
+        m_assets.emplace_back(m_extendedShaftAsset);
         m_assets.emplace_back(m_sledgeHeadAsset);
     }
 }

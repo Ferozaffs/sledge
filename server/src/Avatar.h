@@ -13,7 +13,8 @@ class Asset;
 class Avatar
 {
   public:
-    Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned int tint = 0xFFFFFF, bool winner = false);
+    Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned int tint, unsigned int teamTint,
+           bool winner = false);
     ~Avatar();
 
     void AssignWeapon(WeaponType type);
@@ -25,6 +26,9 @@ class Avatar
     const float GetX() const;
     const float GetY() const;
     const float GetWeaponRot() const;
+
+    b2Body *GetShaft() const;
+    float GetShaftLength() const;
 
     std::vector<std::weak_ptr<Asset>> GetAssets() const;
 
@@ -48,11 +52,12 @@ class Avatar
     std::shared_ptr<Asset> m_headAsset[3];
     std::shared_ptr<Asset> m_crownAsset;
     std::shared_ptr<Asset> m_legsAsset;
+    std::shared_ptr<Asset> m_shaftAsset;
     b2Joint *m_headJoint;
     b2Joint *m_crownJoint;
     b2Joint *m_legsJoint;
+    b2RevoluteJoint *m_shaftJoint;
     std::unique_ptr<Weapon> m_weapon;
-    b2RevoluteJoint *m_weaponJoint;
 };
 
 } // namespace Gameplay

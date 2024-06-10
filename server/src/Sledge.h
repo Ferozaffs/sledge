@@ -15,6 +15,7 @@ class Sledge : public Weapon
     Sledge(std::weak_ptr<b2World> world, const Avatar& avatar);
 
   private:
+    std::shared_ptr<Asset> m_extendedShaftAsset;
     std::shared_ptr<Asset> m_sledgeHeadAsset;
 };
 

@@ -147,7 +147,7 @@ void Player::SpawnAvatar(std::weak_ptr<b2World> world)
     spawnVec.x = 2.0f * static_cast<float>(spawn.first);
     spawnVec.y = 2.0f * static_cast<float>(spawn.second);
 
-    m_avatar = std::make_unique<Avatar>(world, spawnVec, m_usingTeamColors == true ? m_teamTint : m_tint, m_winner);
+    m_avatar = std::make_unique<Avatar>(world, spawnVec, m_tint, m_usingTeamColors == true ? m_teamTint : 0, m_winner);
 
     m_winner = false;
 }

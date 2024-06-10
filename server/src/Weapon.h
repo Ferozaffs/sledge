@@ -20,7 +20,6 @@ class Weapon
     {
     }
 
-    b2Body *GetShaft() const;
     float GetSpeed() const;
     float GetTorque() const;
 
@@ -31,7 +30,6 @@ class Weapon
   protected:
     std::vector<std::shared_ptr<Asset>> m_assets;
     std::vector<b2Joint *> m_joints;
-    std::shared_ptr<Asset> m_shaftAsset;
     float m_speed;
     float m_torque;
 };
