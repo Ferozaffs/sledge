@@ -1,5 +1,7 @@
 #include "FPSCounter.h"
+#include <algorithm>
 #include <numeric>
+#include <stdio.h>
 
 using namespace Metrics;
 using namespace std::chrono;
