@@ -1,8 +1,7 @@
 #include "Avatar.h"
 #include "Asset.h"
 #include "B2Filters.h"
-#include "Sledge.h"
-#include "Sword.h"
+#include "Weapon.h"
 
 using namespace Gameplay;
 
@@ -146,13 +145,13 @@ void Avatar::AssignWeapon(WeaponType type)
     switch (type)
     {
     case WeaponType::Sledge:
-        m_weapon = std::make_unique<Sledge>(m_world, *this);
+        m_weapon = std::make_unique<Weapon>("data/weapons/wpn_sledge.json", m_world, *this);
         break;
     case WeaponType::Sword:
-        m_weapon = std::make_unique<Sword>(m_world, *this);
+        m_weapon = std::make_unique<Weapon>("data/weapons/wpn_sword.json", m_world, *this);
         break;
     default:
-        m_weapon = std::make_unique<Sledge>(m_world, *this);
+        m_weapon = std::make_unique<Weapon>("data/weapons/wpn_sledge.json", m_world, *this);
         break;
     }
 

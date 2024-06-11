@@ -1,9 +1,12 @@
 #pragma once
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 class b2Body;
 class b2Joint;
+class b2World;
 
 namespace Gameplay
 {
@@ -12,13 +15,33 @@ class Asset;
 
 class Weapon
 {
-  public:
-    Weapon();
-    virtual ~Weapon();
-
-    virtual void Update(float /*deltaTime*/)
+    struct WeaponShape
     {
-    }
+        float sizeX;
+        float sizeY;
+        float offsetX;
+        float offsetY;
+        float anchorX;
+        float anchorY;
+        std::string anchorType;
+        float density;
+        float friction;
+        bool canDamage;
+        std::string texture;
+        unsigned int tint;
+    };
+    struct WeaponData
+    {
+        float speed;
+        float torque;
+        std::vector<WeaponShape> shapes;
+    };
+
+  public:
+    Weapon(const std::string &jsonFile, std::weak_ptr<b2World> world, const Avatar &avatar);
+    ~Weapon();
+
+    void Update(float deltaTime);
 
     float GetSpeed() const;
     float GetTorque() const;
@@ -27,11 +50,16 @@ class Weapon
 
     void BreakJoints();
 
-  protected:
+  private:
+    WeaponData LoadWeaponFromJson(const std::string &jsonFile);
+    void CreateWeapon(const WeaponData &wpnData, std::weak_ptr<b2World> world, const Avatar &avatar);
+
     std::vector<std::shared_ptr<Asset>> m_assets;
     std::vector<b2Joint *> m_joints;
     float m_speed;
     float m_torque;
+
+    static std::unordered_map<std::string, WeaponData> WeaponCache;
 };
 
 } // namespace Gameplay
