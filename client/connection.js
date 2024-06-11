@@ -5,10 +5,10 @@ import * as APP from "./app.js";
 let socket;
 
 if (APPTYPE === "STANDALONE") {
-  connectToServer(window.location.hostname + ":9002");
+  connectToServer("", window.location.hostname + ":9002");
 }
 
-export function connectToServer(url) {
+export function connectToServer(rn, url) {
   socket = new WebSocket("ws://" + url);
   window.addEventListener("beforeunload", closeWebSocket);
   window.addEventListener("unload", closeWebSocket);
@@ -19,6 +19,9 @@ export function connectToServer(url) {
     //Disable main menu
     var div = document.getElementById("mainMenu");
     div.style.display = "none";
+
+    const textElement = document.getElementById("roomName");
+    textElement.textContent = rn;
 
     enableJoysticks();
 

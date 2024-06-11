@@ -10,7 +10,10 @@ function createRoom() {
     })
     .then((data) => {
       console.log(data);
-      connectToServer(window.location.hostname + ":" + data.port);
+      data.connectToServer(
+        data.roomName,
+        window.location.hostname + ":" + data.port
+      );
     })
     .catch((error) => console.error("Error: ", error));
 }

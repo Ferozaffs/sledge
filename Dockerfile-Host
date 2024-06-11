@@ -15,7 +15,7 @@ WORKDIR /src/sledge/
 WORKDIR /src/sledge/serverhost
 RUN go build .
 
-RUN sed -i 's/STANDALONE/HOST/g' /src/sledge/client/app.js
+RUN sed -i 's/STANDALONE/HOST/g' /src/sledge/client/constants.js
 
 #---------------------------------------
 FROM ubuntu:latest
@@ -30,7 +30,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=build /src/sledge/client /app/client 
 COPY --from=build /src/sledge/serverhost/serverhost /app/serverhost 
-COPY --from=build /src/sledge/docker-compose-room.yml /app/docker-compose-room.yml
 COPY start_host.sh /start_host.sh
 RUN chmod +x /start_host.sh
 
