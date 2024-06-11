@@ -148,8 +148,8 @@ func checkRoomHealth(port int) (string, error) {
 func closeRoom(r *room) error {
 	fmt.Println("Closing room:", r.Name)
 
-	cmd := exec.Command("docker-compose", "-p", r.Name, "down")
-
+	cmd := exec.Command("docker", "rm", "-f", r.Name)
+	
 	_, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error:", err)
