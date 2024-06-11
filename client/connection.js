@@ -20,8 +20,9 @@ export function connectToServer(rn, url) {
     var div = document.getElementById("mainMenu");
     div.style.display = "none";
 
-    const textElement = document.getElementById("roomName");
-    textElement.textContent = rn;
+    //Display room name
+    div = document.getElementById("roomName");
+    div.textContent = rn;
 
     enableJoysticks();
 

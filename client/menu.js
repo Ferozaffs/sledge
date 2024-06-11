@@ -10,10 +10,7 @@ function createRoom() {
     })
     .then((data) => {
       console.log(data);
-      data.connectToServer(
-        data.roomName,
-        window.location.hostname + ":" + data.port
-      );
+      connectToServer(data.room, window.location.hostname + ":" + data.port);
     })
     .catch((error) => console.error("Error: ", error));
 }
@@ -29,7 +26,7 @@ function joinRoom() {
     })
     .then((data) => {
       console.log(data);
-      connectToServer(window.location.hostname + ":" + data.port);
+      connectToServer(roomName, window.location.hostname + ":" + data.port);
     })
     .catch((error) => console.error("Error: ", error));
 }
