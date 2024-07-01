@@ -123,15 +123,7 @@ Avatar::Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned in
         GetShaft()->CreateFixture(&fixtureDef);
         m_shaftAsset->UpdateSize();
 
-        int random = rand();
-        if (random % 4 == 0)
-        {
-            AssignWeapon(WeaponType::Sword);
-        }
-        else
-        {
-            AssignWeapon(WeaponType::Sledge);
-        }
+        AssignWeapon();
     }
 }
 
@@ -140,20 +132,9 @@ Avatar::~Avatar()
     BreakJoints();
 }
 
-void Avatar::AssignWeapon(WeaponType type)
+void Avatar::AssignWeapon()
 {
-    switch (type)
-    {
-    case WeaponType::Sledge:
-        m_weapon = std::make_unique<Weapon>("data/weapons/wpn_sledge.json", m_world, *this);
-        break;
-    case WeaponType::Sword:
-        m_weapon = std::make_unique<Weapon>("data/weapons/wpn_sword.json", m_world, *this);
-        break;
-    default:
-        m_weapon = std::make_unique<Weapon>("data/weapons/wpn_sledge.json", m_world, *this);
-        break;
-    }
+    m_weapon = Weapon::GetWeaponFromPool(m_world, *this);
 
     b2RevoluteJointDef jd;
     jd.Initialize(GetBody(), GetShaft(), GetPosition());

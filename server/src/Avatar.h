@@ -1,6 +1,4 @@
 #pragma once
-#include "WeaponTypes.h"
-
 #include <box2d/box2d.h>
 #include <memory>
 #include <vector>
@@ -16,8 +14,6 @@ class Avatar
     Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned int tint, unsigned int teamTint,
            bool winner = false);
     ~Avatar();
-
-    void AssignWeapon(WeaponType type);
 
     void Update(const float &deltaTime, const float &sledgeInput, const float &jumpInput, const float &moveInput);
 
@@ -42,6 +38,7 @@ class Avatar
     void BreakJoints();
     void BreakCrown();
     void BreakHelm();
+    void AssignWeapon();
 
     float m_invincibilityTimer;
     unsigned int m_health;

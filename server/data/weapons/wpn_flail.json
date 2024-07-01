@@ -1,17 +1,17 @@
 {
-    "torque": 10000.0,
-    "speed": 5.0,
-    "rarity": 1,
+    "torque": 12000.0,
+    "speed": 4.0,
+    "rarity": 10,
     "shapes": [
         {
             "_comment": "Shaft",
             "links": 1,
             "size": {
-                "x": 2.5, 
+                "x": 1.0, 
                 "y": 0.25
             },
             "offset": {
-                "x": 2.5, 
+                "x": 1.0, 
                 "y": 0.0
             },
             "anchor": {
@@ -20,9 +20,32 @@
                 "limit": 0.0,
                 "type": "weld"
             },
-            "density": 0.1,
+            "density": 0.5,
             "friction": 0.3,
-            "candamage": false,
+            "candamage": true,
+            "texture": "weapon_head", 
+            "tint": "0xFFFFFF"
+        },
+        {
+            "_comment": "Chain",
+            "links": 4,
+            "size": {
+                "x": 1.0, 
+                "y": 0.25
+            },
+            "offset": {
+                "x": 1.0, 
+                "y": 0.0
+            },
+            "anchor": {
+                "x": 0.0,
+                "y": 0.0,
+                "limit": 1.0,
+                "type": "revolute"
+            },
+            "density": 0.1,
+            "friction": 1.0,
+            "candamage": true,
             "texture": "weapon_head", 
             "tint": "0xFFFFFF"
         },
@@ -30,11 +53,11 @@
             "_comment": "Head",
             "links": 1,
             "size": {
-                "x": 0.75, 
+                "x": 0.25, 
                 "y": 2.0
             },
             "offset": {
-                "x": 0.75, 
+                "x": 0.25, 
                 "y": 0.0
             },
             "anchor": {
@@ -43,8 +66,8 @@
                 "limit": 0.0,
                 "type": "weld"
             },
-            "density": 0.1,
-            "friction": 0.5,
+            "density": 1.0,
+            "friction": 1.0,
             "candamage": true,
             "texture": "weapon_head", 
             "tint": "0xFFFFFF"
