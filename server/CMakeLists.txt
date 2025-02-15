@@ -10,7 +10,7 @@ endif()
 
 include(ExternalProject)
 
-set(BOOST_URL "https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_1_85_0.tar.gz")
+set(BOOST_URL "https://archives.boost.io/release/1.85.0/source/boost_1_85_0.tar.gz")
 set(BOOST_ROOT "${CMAKE_BINARY_DIR}/boost")
 
 ExternalProject_Add(
