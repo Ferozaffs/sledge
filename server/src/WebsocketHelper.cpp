@@ -1,5 +1,6 @@
 #include "WebsocketHelper.h"
 #include "ConnectionManager.h"
+#include "Packet.h"
 #include "Player.h"
 
 using websocketpp::lib::bind;
@@ -13,7 +14,7 @@ std::mutex WebSocketHelper::connectionMutex;
 
 WebSocketHelper::WebSocketHelper()
 {
-    m_thread = std::thread(&websocketThread);
+    m_thread = std::thread(&WebsocketThread);
 }
 
 WebSocketHelper &WebSocketHelper::GetInstance()
@@ -26,11 +27,24 @@ WebSocketHelper &WebSocketHelper::GetInstance()
     return *m_instance;
 }
 
-void WebSocketHelper::SendAll(std::string message)
+void WebSocketHelper::SendAll(const Packet &packet)
 {
+    std::vector<unsigned char> buffer;
+    buffer.reserve(1 + 4 + packet.m_data.size());
+
+    buffer.emplace_back(static_cast<unsigned char>(packet.m_type));
+
+    unsigned int size = static_cast<unsigned int>(packet.m_size);
+    for (size_t i = 0; i < sizeof(size); ++i)
+    {
+        buffer.emplace_back((size >> (i * 8)) & 0xFF);
+    }
+
+    buffer.insert(buffer.end(), packet.m_data.begin(), packet.m_data.end());
+
     for (const auto &connection : m_connections)
     {
-        Send(connection.first, message);
+        Send(connection.first, buffer);
     }
 }
 
@@ -59,15 +73,15 @@ void WebSocketHelper::InsertPlayerHandle(std::weak_ptr<Gameplay::Player> player)
     }
 }
 
-void WebSocketHelper::Send(const std::shared_ptr<ws_connection> &connection, std::string message)
+void WebSocketHelper::Send(const std::shared_ptr<ws_connection> &connection, std::vector<unsigned char> buffer)
 {
     if (connection->get_state() == websocketpp::session::state::open)
     {
-        m_endpoint.send(connection, message.c_str(), websocketpp::frame::opcode::text);
+        m_endpoint.send(connection, buffer.data(), buffer.size(), websocketpp::frame::opcode::binary);
     }
 }
 
-void WebSocketHelper::websocketThread()
+void WebSocketHelper::WebsocketThread()
 {
     auto &endpoint = GetInstance().m_endpoint;
 
@@ -75,8 +89,8 @@ void WebSocketHelper::websocketThread()
     endpoint.set_access_channels(websocketpp::log::alevel::connect | websocketpp::log::alevel::disconnect);
     endpoint.init_asio();
 
-    endpoint.set_close_handler(bind(&on_close, &endpoint, ::_1));
-    endpoint.set_message_handler(bind(&on_message, &endpoint, ::_1, ::_2));
+    endpoint.set_close_handler(bind(&OnClose, &endpoint, ::_1));
+    endpoint.set_message_handler(bind(&OnMessage, &endpoint, ::_1, ::_2));
 
     endpoint.listen(9002);
     endpoint.start_accept();
@@ -84,12 +98,12 @@ void WebSocketHelper::websocketThread()
     endpoint.run();
 }
 
-void WebSocketHelper::on_close(ws_server *s, websocketpp::connection_hdl hdl)
+void WebSocketHelper::OnClose(ws_server *s, websocketpp::connection_hdl hdl)
 {
     m_instance->CloseConnection(s->get_con_from_hdl(hdl));
 }
 
-void WebSocketHelper::on_message(ws_server *s, websocketpp::connection_hdl hdl, ws_server::message_ptr msg)
+void WebSocketHelper::OnMessage(ws_server *s, websocketpp::connection_hdl handle, ws_server::message_ptr msg)
 {
     try
     {
@@ -99,9 +113,10 @@ void WebSocketHelper::on_message(ws_server *s, websocketpp::connection_hdl hdl, 
         {
             if (j["type"] == "conreq")
             {
-                s->send(hdl, CreateStatusMessage("Pending connection"), websocketpp::frame::opcode::text);
+                auto packet = Packet::CreateStatusPacket(Packet::Status::PendingConnection);
+                s->send(handle, static_cast<void *>(&packet), packet.GetSize(), websocketpp::frame::opcode::binary);
 
-                m_instance->CompleteConnection(s->get_con_from_hdl(hdl));
+                m_instance->CompleteConnection(s->get_con_from_hdl(handle));
             }
             if (j["type"] == "statusreq")
             {
@@ -110,17 +125,19 @@ void WebSocketHelper::on_message(ws_server *s, websocketpp::connection_hdl hdl, 
                 numConnection = GetInstance().m_connections.size();
                 connectionMutex.unlock();
 
-                s->send(hdl, CreateStatusMessage(numConnection > 0 ? "good" : "empty"),
-                        websocketpp::frame::opcode::text);
+                auto packet =
+                    Packet::CreateStatusPacket(numConnection > 0 ? Packet::Status::Good : Packet::Status::Empty);
+                s->send(handle, static_cast<void *>(&packet), packet.GetSize(), websocketpp::frame::opcode::binary);
             }
             else if (j["type"] == "input")
             {
-                GetInstance().SetInput(s->get_con_from_hdl(hdl), j);
+                GetInstance().SetInput(s->get_con_from_hdl(handle), j);
             }
         }
         else
         {
-            s->send(hdl, CreateErrorMessage("Unknown request"), websocketpp::frame::opcode::text);
+            auto packet = Packet::CreateErrorPacket(Packet::Error::UnknownRequest);
+            s->send(handle, static_cast<void *>(&packet), packet.GetSize(), websocketpp::frame::opcode::binary);
         }
     }
     catch (nlohmann::json::parse_error &e)
@@ -153,7 +170,8 @@ void WebSocketHelper::CompleteConnection(const std::shared_ptr<ws_connection> &h
     connectionMutex.lock();
     m_connections.insert({handle, std::weak_ptr<Gameplay::Player>()});
 
-    m_endpoint.send(handle, CreateStatusMessage("Connection established"), websocketpp::frame::opcode::text);
+    auto packet = Packet::CreateStatusPacket(Packet::Status::ConnectionEstablished);
+    m_endpoint.send(handle, static_cast<void *>(&packet), packet.GetSize(), websocketpp::frame::opcode::binary);
     connectionMutex.unlock();
 }
 
@@ -170,24 +188,4 @@ void WebSocketHelper::SetInput(const std::shared_ptr<ws_connection> &handle, con
         }
     }
     connectionMutex.unlock();
-}
-
-std::string WebSocketHelper::CreateStatusMessage(std::string message)
-{
-    nlohmann::json j = {
-        {"type", "status"},
-        {"status", message},
-    };
-
-    return j.dump();
-}
-
-std::string WebSocketHelper::CreateErrorMessage(std::string message)
-{
-    nlohmann::json j = {
-        {"type", "error"},
-        {"error", message},
-    };
-
-    return j.dump();
 }

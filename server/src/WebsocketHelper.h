@@ -19,6 +19,8 @@ class Player;
 
 namespace Network
 {
+class Packet;
+
 class WebSocketHelper
 {
   public:
@@ -26,20 +28,17 @@ class WebSocketHelper
 
     static WebSocketHelper &GetInstance();
 
-    void SendAll(std::string message);
+    void SendAll(const Packet &packet);
 
     bool HasPendingConnections();
     void InsertPlayerHandle(std::weak_ptr<Gameplay::Player> player);
 
   private:
-    static void websocketThread();
+    static void WebsocketThread();
 
-    static void on_close(ws_server *s, websocketpp::connection_hdl hdl);
+    static void OnClose(ws_server *s, websocketpp::connection_hdl hdl);
 
-    static void on_message(ws_server *s, websocketpp::connection_hdl hdl, ws_server::message_ptr msg);
-
-    static std::string CreateStatusMessage(std::string message);
-    static std::string CreateErrorMessage(std::string message);
+    static void OnMessage(ws_server *s, websocketpp::connection_hdl hdl, ws_server::message_ptr msg);
 
     static std::unique_ptr<WebSocketHelper> m_instance;
 
@@ -51,7 +50,7 @@ class WebSocketHelper
 
     void CompleteConnection(const std::shared_ptr<ws_connection> &handle);
 
-    void Send(const std::shared_ptr<ws_connection> &connection, std::string message);
+    void Send(const std::shared_ptr<ws_connection> &connection, std::vector<unsigned char> buffer);
 
     void SetInput(const std::shared_ptr<ws_connection> &handle, const nlohmann::json &j);
 

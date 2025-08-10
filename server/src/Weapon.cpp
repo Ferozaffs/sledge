@@ -105,7 +105,7 @@ Weapon::WeaponData Weapon::LoadWeaponFromJson(const std::string &jsonFile)
     nlohmann::json j;
 
     std::ifstream inputFile(jsonFile);
-    if (!inputFile.is_open())
+    if (inputFile.is_open() == false)
     {
         printf("Could not open weapon file: %s\n", jsonFile.c_str());
         return WeaponData();

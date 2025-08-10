@@ -11,7 +11,7 @@ Player::Player(const GameManager &gameManager, const PlayerManager &playerManage
                unsigned int tint, unsigned int teamTint)
     : m_gameManager(gameManager), m_playerManager(playerManager), m_world(world), m_sledgeInput(0.0f),
       m_moveInput(0.0f), m_jumpInput(0.0f), m_pendingRemove(false), m_respawnTimer(RESPAWN_HOLD_SENTINEL), m_tint(tint),
-      m_teamTint(teamTint), m_score(0), m_winner(false), m_usingTeamColors(false), m_gameModeWish(GameModeType::None)
+      m_teamTint(teamTint), m_score(0), m_winner(false), m_usingTeamColors(false), m_gameModeWish(GameModeWish::None)
 {
 }
 
@@ -40,7 +40,7 @@ void Player::Update(float deltaTime)
         }
     }
 
-    m_gameModeWish = GameModeType::None;
+    m_gameModeWish = GameModeWish::None;
     if (m_avatar != nullptr)
     {
         m_avatar->Update(deltaTime, m_sledgeInput, m_jumpInput, m_moveInput);
@@ -50,10 +50,19 @@ void Player::Update(float deltaTime)
             m_avatar->Kill();
         }
 
-        m_gameModeWish = (m_avatar->GetWeaponRot() < -1.5f && m_avatar->GetWeaponRot() > -1.7f) ? GameModeType::Brawl
-                                                                                                : m_gameModeWish;
-        m_gameModeWish = (m_avatar->GetWeaponRot() > 1.5f && m_avatar->GetWeaponRot() < 1.7f) ? GameModeType::TeamBrawl
-                                                                                              : m_gameModeWish;
+        m_gameModeWish = (m_avatar->GetWeaponRot() < -1.5f && m_avatar->GetWeaponRot() > -1.7f) ? GameModeWish::Solo
+                                                                                                : GameModeWish::None;
+        m_gameModeWish = (m_avatar->GetWeaponRot() > 1.5f && m_avatar->GetWeaponRot() < 1.7f) ? GameModeWish::Team
+                                                                                              : GameModeWish::None;
+    }
+}
+
+void Player::UpdateSettings(const GameSettings &settings)
+{
+    m_levelSettings = settings;
+    if (m_avatar != nullptr)
+    {
+        m_avatar->UpdateSettings(settings);
     }
 }
 
@@ -102,7 +111,7 @@ std::vector<std::weak_ptr<Asset>> Player::GetAssets() const
 
 signed int Player::GetScore() const
 {
-    return m_usingTeamColors == true ? m_playerManager.GetTeamScore(m_teamTint) : m_score;
+    return m_score;
 }
 
 void Player::Score(signed int score)
@@ -120,7 +129,7 @@ void Player::SetWinner()
     m_winner = true;
 }
 
-GameModeType Player::GetGameModeWish() const
+GameModeWish Player::GetGameModeWish() const
 {
     return m_gameModeWish;
 }
@@ -148,6 +157,7 @@ void Player::SpawnAvatar(std::weak_ptr<b2World> world)
     spawnVec.y = 2.0f * static_cast<float>(spawn.second);
 
     m_avatar = std::make_unique<Avatar>(world, spawnVec, m_tint, m_usingTeamColors == true ? m_teamTint : 0, m_winner);
+    m_avatar->UpdateSettings(m_levelSettings);
 
     m_winner = false;
 }

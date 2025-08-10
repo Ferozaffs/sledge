@@ -2,6 +2,7 @@ import * as PIXI from "https://cdn.skypack.dev/pixi.js";
 import * as ASSETS from "./assets.js";
 import { sendInput } from "./connection.js";
 import { getJoystickValues } from "./joystick.js";
+import * as BYTEREADER from "./bytereader.js";
 
 const app = new PIXI.Application();
 let initialized = false;
@@ -74,49 +75,90 @@ async function preload() {
   await PIXI.Assets.load("./assets/ChakraPetch.ttf");
 }
 
-export async function updateData(json) {
+export async function createAsset(bytes, offset, size) {
   while (!initialized) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  const assets = json.assets;
+  while (size > 0) {
+    let id = BYTEREADER.readInt32(bytes, offset);
+    offset += 4;
+    size -= 4;
+    let x = BYTEREADER.readFloat32(bytes, offset);
+    offset += 4;
+    size -= 4;
+    let y = BYTEREADER.readFloat32(bytes, offset);
+    offset += 4;
+    size -= 4;
+    let rot = BYTEREADER.readFloat32(bytes, offset);
+    offset += 4;
+    size -= 4;
+    let sizeX = BYTEREADER.readFloat32(bytes, offset);
+    offset += 4;
+    size -= 4;
+    let sizeY = BYTEREADER.readFloat32(bytes, offset);
+    offset += 4;
+    size -= 4;
+    let tint = BYTEREADER.readUInt32(bytes, offset);
+    offset += 4;
+    size -= 4;
+    let aliasLength = BYTEREADER.readUInt16(bytes, offset);
+    offset += 2;
+    size -= 2;
+    let alias = BYTEREADER.readString(bytes, offset, aliasLength);
+    offset += aliasLength;
+    size -= aliasLength;
 
-  assets.forEach((asset) => {
-    ASSETS.update(
-      asset.id,
-      asset.alias,
-      asset.x,
-      asset.y,
-      asset.sizeX,
-      asset.sizeY,
-      asset.rot,
-      asset.tint
-    );
-  });
+    ASSETS.create(id, alias, x, y, sizeX, sizeY, rot, tint);
+  }
 }
 
-export async function removeData(json) {
+export async function updateAsset(bytes, offset, size) {
   while (!initialized) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
+  const count = size / 16;
+  for (let i = 0; i < count; i++) {
+    let id = BYTEREADER.readUInt32(bytes, offset);
+    offset += 4;
+    let x = BYTEREADER.readFloat32(bytes, offset);
+    offset += 4;
+    let y = BYTEREADER.readFloat32(bytes, offset);
+    offset += 4;
+    let rot = BYTEREADER.readFloat32(bytes, offset);
+    offset += 4;
 
-  const assets = json.assets;
-
-  assets.forEach((asset) => {
-    ASSETS.remove(asset.id);
-  });
+    ASSETS.update(id, x, y, rot);
+  }
 }
 
-export async function scoreData(json) {
+export async function removeAsset(bytes, offset, size) {
+  while (!initialized) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  const count = size / 4;
+  for (let i = 0; i < count; i++) {
+    let id = BYTEREADER.readUInt32(bytes, offset);
+    offset += 4;
+
+    ASSETS.remove(id);
+  }
+}
+
+export async function updateScore(bytes, offset, size) {
   while (!initialized) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  const assets = json.assets;
+  const count = size / 8;
+  for (let i = 0; i < count; i++) {
+    let id = BYTEREADER.readUInt32(bytes, offset);
+    offset += 4;
+    let score = BYTEREADER.readUInt16(bytes, offset);
+    offset += 2;
 
-  assets.forEach((asset) => {
-    ASSETS.setScore(asset.id, asset.score);
-  });
+    ASSETS.setScore(id, score);
+  }
 }
 
 function updateView() {
@@ -163,6 +205,10 @@ function sendData() {
 
     if (keysPressed["w"]) {
       jumpInput = 1.0;
+    }
+
+    if (keysPressed["s"]) {
+      jumpInput = -1.0;
     }
 
     if (keysPressed["a"]) {

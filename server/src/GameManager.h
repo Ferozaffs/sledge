@@ -4,19 +4,26 @@
 #include <memory>
 #include <unordered_map>
 
+namespace Physics
+{
+class B2Manager;
+};
+
 namespace Gameplay
 {
 class IGameMode;
 
+enum class GameModeWish
+{
+    None,
+    Solo,
+    Team,
+};
+
 enum class GameModeType
 {
     Sandbox,
-    Brawl,
-    TeamBrawl,
-    Race,
-    KotH,
-
-    None,
+    Custom,
 };
 
 class GameManager
@@ -36,15 +43,16 @@ class GameManager
     int GetScore() const;
     std::unordered_map<int, int> GetScoreMap() const;
 
-    GameModeType GetCurrentGameMode() const;
-    void SetGameMode(GameModeType type);
+    GameModeWish GetCurrentGameModeWish() const;
+    void SetGameMode(GameModeType type, const GameModeConfiguration &configuration);
 
     std::weak_ptr<Player> AddPlayer();
 
-    void NextLevelWish(GameModeType mode);
+    void NextLevel(GameModeWish wish);
 
   private:
     std::unique_ptr<IGameMode> m_currentGameMode;
+    GameModeWish m_currentGameModeWish;
     PlayerManager m_playerManager;
     LevelManager m_levelManager;
 };

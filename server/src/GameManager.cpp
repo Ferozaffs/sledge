@@ -1,14 +1,19 @@
 #include "GameManager.h"
-#include "GameModeBrawl.h"
+#include "B2Manager.h"
+#include "GameMode.h"
 #include "GameModeSandbox.h"
-#include "GameModeTeamBrawl.h"
 #include "Player.h"
+#include <random>
 
 using namespace Gameplay;
 
-GameManager::GameManager(std::weak_ptr<b2World> world) : m_levelManager(world), m_playerManager(*this, world)
+GameManager::GameManager(std::weak_ptr<b2World> world)
+    : m_levelManager(world), m_playerManager(*this, world), m_currentGameModeWish(GameModeWish::None)
 {
-    m_levelManager.LoadPlaylist("data/levels");
+    if (m_levelManager.LoadPlaylist("data/levels"))
+    {
+        m_playerManager.SetSettings(m_levelManager.GetSettings());
+    }
 }
 
 GameManager::~GameManager()
@@ -26,8 +31,7 @@ void GameManager::Update(float deltaTime)
 
         if (m_currentGameMode->Finished())
         {
-            SetGameMode(GetCurrentGameMode());
-            m_levelManager.NextLevel(GetCurrentGameMode());
+            NextLevel(GetCurrentGameModeWish());
         }
     }
 }
@@ -105,24 +109,16 @@ std::unordered_map<int, int> GameManager::GetScoreMap() const
     return scoreMap;
 }
 
-GameModeType GameManager::GetCurrentGameMode() const
+GameModeWish GameManager::GetCurrentGameModeWish() const
 {
-    return m_currentGameMode != nullptr ? m_currentGameMode->GetType() : GameModeType::None;
+    return m_currentGameModeWish;
 }
 
-void GameManager::SetGameMode(GameModeType type)
+void GameManager::SetGameMode(GameModeType type, const GameModeConfiguration &configuration)
 {
-    if (type == GameModeType::Brawl)
+    if (type == GameModeType::Custom)
     {
-        m_currentGameMode = std::make_unique<GameModeBrawl>(m_playerManager);
-        if (m_currentGameMode->IsValid() == false)
-        {
-            m_currentGameMode = std::make_unique<GameModeSandbox>(m_playerManager);
-        }
-    }
-    else if (type == GameModeType::TeamBrawl)
-    {
-        m_currentGameMode = std::make_unique<GameModeTeamBrawl>(m_playerManager);
+        m_currentGameMode = std::make_unique<GameMode>(m_playerManager, configuration);
         if (m_currentGameMode->IsValid() == false)
         {
             m_currentGameMode = std::make_unique<GameModeSandbox>(m_playerManager);
@@ -141,14 +137,49 @@ std::weak_ptr<Player> GameManager::AddPlayer()
     if (m_playerManager.GetNumPlayers() <= 2)
     {
         m_playerManager.ClearScore();
-        SetGameMode(GameModeType::TeamBrawl);
-        m_levelManager.NextLevel(GetCurrentGameMode());
+        NextLevel(GetCurrentGameModeWish());
     }
 
     return player;
 }
 
-void GameManager::NextLevelWish(GameModeType mode)
+void GameManager::NextLevel(GameModeWish wish)
 {
-    m_levelManager.NextLevel(mode);
+    if (m_levelManager.NextLevel())
+    {
+        m_playerManager.SetSettings(m_levelManager.GetSettings());
+
+        std::vector<GameModeConfiguration> configurations;
+        if (wish == GameModeWish::Team)
+        {
+            for (const auto &mode : m_levelManager.GetSettings().gameModeConfigurations)
+            {
+                if (mode.teams)
+                {
+                    configurations.emplace_back(mode);
+                }
+            }
+        }
+        else if (wish == GameModeWish::Solo)
+        {
+            for (const auto &mode : m_levelManager.GetSettings().gameModeConfigurations)
+            {
+                if (mode.teams == false)
+                {
+                    configurations.emplace_back(mode);
+                }
+            }
+        }
+
+        if (configurations.empty())
+        {
+            configurations = m_levelManager.GetSettings().gameModeConfigurations;
+        }
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dist(0, configurations.size() - 1);
+
+        SetGameMode(GameModeType::Custom, configurations[dist(gen)]);
+    }
 }

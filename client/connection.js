@@ -1,5 +1,6 @@
 import { APPTYPE } from "./constants.js";
 import { enableJoysticks } from "./joystick.js";
+import { readUInt32 } from "./bytereader.js";
 import * as APP from "./app.js";
 
 let socket;
@@ -37,32 +38,67 @@ export function connectToServer(rn, url) {
   };
 
   socket.onmessage = function (event) {
-    const message = JSON.parse(event.data);
+    const reader = new FileReader();
+    reader.onload = function () {
+      const bytes = new Uint8Array(reader.result);
 
-    // Check the type of the message
-    if (message && message.type) {
-      switch (message.type) {
-        case "status":
+      let type = bytes[0];
+      switch (type) {
+        case 0:
+          switch (bytes[5]) {
+            case 0:
+              console.log("SERVER - Unknown request");
+              break;
+            default:
+              console.log("SERVER - Unknown");
+          }
+          break;
+        case 1:
+          switch (bytes[5]) {
+            case 0:
+              console.log("SERVER - Empty");
+              break;
+            case 0:
+              console.log("SERVER - Good");
+              break;
+            case 0:
+              console.log("SERVER - PendingConnection");
+              break;
+            case 0:
+              console.log("SERVER - ConnectionEstablished");
+              break;
+            default:
+              console.log("SERVER - Unknown");
+          }
           console.log("SERVER - " + message.status);
           break;
-        case "error":
-          console.log("SERVER - " + message.error);
+        case 2:
+          let assetSize = readUInt32(bytes, 1);
+          assetSize -= 1;
+          let command = bytes[5];
+          switch (command) {
+            case 0:
+              createAsset(bytes, 6, assetSize);
+              break;
+            case 1:
+              removeAsset(bytes, 6, assetSize);
+              break;
+            case 2:
+              updateAsset(bytes, 6, assetSize);
+              break;
+            default:
+              console.error("Unknown asset command:", command);
+          }
           break;
-        case "updateData":
-          updateData(message);
-          break;
-        case "removeData":
-          removeData(message);
-          break;
-        case "scoreData":
-          scoreData(message);
+        case 3:
+          let scoreSize = readUInt32(bytes, 1);
+          updateScore(bytes, 5, scoreSize);
           break;
         default:
-          console.error("Unknown message type:", message.type);
+          console.error("Unknown message type:", type);
       }
-    } else {
-      console.error("Invalid message:", message);
-    }
+    };
+    reader.readAsArrayBuffer(event.data);
   };
 }
 
@@ -97,14 +133,18 @@ export function sendInput(input) {
   }
 }
 
-function removeData(message) {
-  APP.removeData(message);
+function createAsset(bytes, offset, size) {
+  APP.createAsset(bytes, offset, size);
 }
 
-function updateData(message) {
-  APP.updateData(message);
+function removeAsset(bytes, offset, size) {
+  APP.removeAsset(bytes, offset, size);
 }
 
-function scoreData(message) {
-  APP.scoreData(message);
+function updateAsset(bytes, offset, size) {
+  APP.updateAsset(bytes, offset, size);
+}
+
+function updateScore(bytes, offset, size) {
+  APP.updateScore(bytes, offset, size);
 }

@@ -1,6 +1,7 @@
 #include "Avatar.h"
 #include "Asset.h"
 #include "B2Filters.h"
+#include "GameSettings.h"
 #include "Weapon.h"
 
 using namespace Gameplay;
@@ -8,7 +9,8 @@ using namespace Gameplay;
 Avatar::Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned int tint, unsigned int teamTint,
                bool winner)
     : m_world(world), m_invincibilityTimer(2.0f), m_dead(false), m_shaftJoint(nullptr), m_health(3),
-      m_crownJoint(nullptr)
+      m_crownJoint(nullptr), m_invincibility(false), m_groundControl(PlayerControl::Full),
+      m_airControl(PlayerControl::Semi)
 {
     static const b2Vec2 bodySize(2.0f, 2.0f);
     static const b2Vec2 legsSize(1.5f, 0.5f);
@@ -149,8 +151,8 @@ void Avatar::AssignWeapon()
 void Avatar::Update(const float &deltaTime, const float &sledgeInput, const float &jumpInput, const float &moveInput)
 {
     m_invincibilityTimer = std::max(0.0f, m_invincibilityTimer - deltaTime);
-    if (m_dead == false && m_invincibilityTimer == 0.0f && GetHead()->GetContactList() != nullptr &&
-        GetHead()->GetContactList()->contact->IsTouching())
+    if (m_invincibility == false && m_dead == false && m_invincibilityTimer == 0.0f &&
+        GetHead()->GetContactList() != nullptr && GetHead()->GetContactList()->contact->IsTouching())
     {
         auto contact = GetHead()->GetContactList()->contact;
         auto vel = 0.0f;
@@ -203,19 +205,53 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
         }
 
         // Air control movement
-        auto movement = 30000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
-        if (abs(GetBody()->GetLinearVelocity().y) < 10.0f && hasGroundContact == true)
+
+        float horizontalMovement = 0.0f;
+        float verticalMovement = 0.0f;
+        if (m_airControl != PlayerControl::Off && hasGroundContact == false)
         {
-            if (jumpInput > 0.5f)
+            horizontalMovement = 30000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
+            if (m_airControl != PlayerControl::Full)
+            {
+                verticalMovement = 30000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().y * 0.05f)));
+            }
+        }
+
+        if (m_groundControl != PlayerControl::Off && abs(GetBody()->GetLinearVelocity().y) < 10.0f &&
+            hasGroundContact == true)
+        {
+            if (m_groundControl == PlayerControl::Full && jumpInput > 0.5f)
             {
                 GetBody()->ApplyLinearImpulse(b2Vec2(0.0f, 300.0f), GetBody()->GetTransform().p, true);
             }
-
-            // Ground control movement
-            movement = 180000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
+            horizontalMovement = 180000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
         }
 
-        GetBody()->ApplyForce(b2Vec2(movement * moveInput * deltaTime, 0.0f), GetBody()->GetTransform().p, true);
+        GetBody()->ApplyForce(
+            b2Vec2(horizontalMovement * moveInput * deltaTime, verticalMovement * jumpInput * deltaTime),
+            GetBody()->GetTransform().p, true);
+    }
+}
+
+void Avatar::UpdateSettings(const GameSettings &settings)
+{
+    m_invincibility = settings.invincibility;
+    m_groundControl = settings.groundControl;
+    m_airControl = settings.airControl;
+
+    auto assets = GetAssets();
+    for (auto &asset : assets)
+    {
+        if (auto a = asset.lock())
+        {
+            a->GetBody()->SetGravityScale(settings.gravityModifier);
+            a->GetBody()->SetLinearDamping(settings.dampingModifier);
+
+            for (auto f = a->GetBody()->GetFixtureList(); f; f = f->GetNext())
+            {
+                f->SetFriction(f->GetFriction() * settings.frictionModifier);
+            }
+        }
     }
 }
 

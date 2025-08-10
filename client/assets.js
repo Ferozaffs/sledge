@@ -53,7 +53,7 @@ function add(id, alias, sizeX, sizeY, tint) {
   return asset;
 }
 
-export function update(id, alias, x, y, sizeX, sizeY, rot, tint) {
+export function create(id, alias, x, y, sizeX, sizeY, rot, tint) {
   let foundObject = assets.find((obj) => obj.id === id);
 
   if (foundObject === undefined) {
@@ -68,6 +68,14 @@ export function update(id, alias, x, y, sizeX, sizeY, rot, tint) {
     bounds.min.x = 10000.0;
     bounds.min.y = 10000.0;
   }
+
+  foundObject.smoothX = foundObject.x = x;
+  foundObject.smoothY = foundObject.y = y;
+  foundObject.sprite.rotation = -rot;
+}
+
+export function update(id, x, y, rot) {
+  let foundObject = assets.find((obj) => obj.id === id);
 
   foundObject.smoothX = foundObject.x = x;
   foundObject.smoothY = foundObject.y = y;

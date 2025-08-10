@@ -1,52 +1,33 @@
 #include "LevelBlock.h"
 #include "Asset.h"
 #include "B2Filters.h"
+#include "ContactListener.h"
 
 #include <box2d/box2d.h>
 
 using namespace Gameplay;
 
-LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const std::string &alias)
+LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const BlockConfiguration &configuration)
+    : m_configuration(configuration)
 {
+    m_health = std::max(0.000001f, m_configuration.toughness);
+
     if (auto w = world.lock())
     {
-        if (alias.find("decor") != std::string::npos)
-        {
-            m_type = BlockType::Decor;
-            m_health = 0.0f;
-        }
-        else if (alias.find("weak") != std::string::npos)
-        {
-            m_type = BlockType::Weak;
-            m_health = 0.2f;
-        }
-        else if (alias.find("tough") != std::string::npos)
-        {
-            m_type = BlockType::Tough;
-            m_health = 1.0f;
-        }
-        else if (alias.find("static") != std::string::npos)
-        {
-            m_type = BlockType::Static;
-            m_health = -1.0f;
-        }
-
         b2BodyDef blockDef;
         blockDef.position.Set(2.0f * static_cast<float>(x), 2.0f * static_cast<float>(y));
-        m_asset = std::make_shared<Asset>(w->CreateBody(&blockDef), alias);
+        blockDef.enabled = m_configuration.collision;
+        m_asset = std::make_shared<Asset>(w->CreateBody(&blockDef), m_configuration.assetName);
+        Physics::PhysicsObjectUserData *data = new Physics::PhysicsObjectUserData{Physics::BodyType::LevelBlock, this};
+        m_asset->GetBody()->GetUserData().pointer = reinterpret_cast<uintptr_t>(data);
+
         b2PolygonShape block;
         block.SetAsBox(1.0f, 1.0f);
 
         b2FixtureDef fixtureDef;
         fixtureDef.shape = &block;
-
-        if (m_type == BlockType::Decor)
-        {
-            fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Block_Decor);
-            fixtureDef.filter.maskBits = 0xFFFF;
-            fixtureDef.filter.maskBits &= ~(static_cast<unsigned int>(CollisionFilter::Avatar_Body) |
-                                            static_cast<unsigned int>(CollisionFilter::Avatar_Legs));
-        }
+        fixtureDef.friction = configuration.friction;
+        fixtureDef.density = configuration.density;
 
         m_asset->GetBody()->CreateFixture(&fixtureDef);
         m_asset->UpdateSize();
@@ -55,50 +36,47 @@ LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const std::st
 
 bool LevelBlock::Update(float deltaTime)
 {
-    if (m_asset->GetBody()->GetType() != b2_dynamicBody && m_asset->GetBody()->GetContactList() != nullptr)
+    if (m_configuration.type == BlockType::Static)
     {
-        for (auto c = m_asset->GetBody()->GetContactList(); c; c = c->next)
+        return true;
+    }
+
+    if (m_contacts.empty() == false)
+    {
+        for (auto body : m_contacts)
         {
-            if (c->contact != nullptr && c->contact->IsTouching())
+            if (body == false)
+                continue;
+
+            auto velocity = body->GetLinearVelocity();
+            float impact = velocity.Length() * body->GetMass() * deltaTime;
+
+            auto fixture = body->GetFixtureList();
+            if (fixture == false)
+                continue;
+
+            auto category = fixture->GetFilterData().categoryBits;
+
+            if (category != static_cast<uint16_t>(CollisionFilter::Avatar_Body) &&
+                category != static_cast<uint16_t>(CollisionFilter::Avatar_Legs))
             {
-                b2Fixture *contactFixture = nullptr;
-                if (c->contact->GetFixtureA()->GetBody() == m_asset->GetBody())
+                m_health -= impact;
+            }
+            else if (m_configuration.destructable == false)
+            {
+                m_health -= 0.1f * deltaTime;
+            }
+
+            if (m_health <= 0.0f)
+            {
+                if (m_configuration.destructable == false)
                 {
-                    contactFixture = c->contact->GetFixtureB();
+                    ConvertToDynamic();
+                    break;
                 }
                 else
                 {
-                    contactFixture = c->contact->GetFixtureA();
-                }
-
-                auto impact = 0.0f;
-                if (contactFixture->GetFilterData().categoryBits !=
-                        static_cast<unsigned int>(CollisionFilter::Avatar_Body) &&
-                    contactFixture->GetFilterData().categoryBits !=
-                        static_cast<unsigned int>(CollisionFilter::Avatar_Legs))
-                {
-                    impact = contactFixture->GetBody()->GetLinearVelocity().Length() *
-                             contactFixture->GetBody()->GetMass() * deltaTime;
-
-                    m_health -= impact;
-                }
-                else if (m_type == BlockType::Tough)
-                {
-                    constexpr float deteriorationRate = 0.1f;
-                    m_health -= (deteriorationRate * deltaTime);
-                }
-
-                if (m_type != BlockType::Static && m_health <= 0.0f)
-                {
-                    if (m_type == BlockType::Tough)
-                    {
-                        ConvertToDynamic();
-                        break;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
         }
@@ -139,9 +117,21 @@ void LevelBlock::ConvertToDynamic()
 
     b2FixtureDef fixtureDef;
     fixtureDef.shape = &block;
-    fixtureDef.density = 1.0f;
-    fixtureDef.friction = 0.1f;
+    fixtureDef.density = m_configuration.density;
+    fixtureDef.friction = m_configuration.friction;
 
     m_asset->GetBody()->CreateFixture(&fixtureDef);
     m_asset->UpdateSize();
+}
+
+void LevelBlock::OnContact(b2Body *otherBody, b2Fixture *otherFixture, bool contact)
+{
+    if (contact)
+    {
+        m_contacts.insert(otherBody);
+    }
+    else
+    {
+        m_contacts.erase(otherBody);
+    }
 }
