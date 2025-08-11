@@ -1,0 +1,181 @@
+{
+  "gameModeConfigurations": [
+    {
+      "name": "Last man standing",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "teams": false,
+      "respawnsEnabled": false,
+      "respawnTime": 0,
+      "scoringType": 0,
+      "pointsToWin": 0
+    },
+    {
+      "name": "Team last man standing",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "teams": true,
+      "respawnsEnabled": false,
+      "respawnTime": 0,
+      "scoringType": 0,
+      "pointsToWin": 0
+    },
+    {
+      "name": "Deathmatch",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "teams": false,
+      "respawnsEnabled": true,
+      "respawnTime": 3.0,
+      "scoringType": 1,
+      "pointsToWin": 10
+    },
+    {
+      "name": "Team deathmatch",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "teams": true,
+      "respawnsEnabled": true,
+      "respawnTime": 3.0,
+      "scoringType": 1,
+      "pointsToWin": 25
+    },
+    {
+      "name": "King of the hill",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "teams": false,
+      "respawnsEnabled": true,
+      "respawnTime": 3.0,
+      "scoringType": 2,
+      "pointsToWin": 15,
+      "scoreObjective": [
+        {
+          "objectCode": 6750054,
+          "triggerCode": 2882343476,
+          "objectiveType": 0,
+          "triggerType": 0,
+          "affectedPlayers": 0,
+          "scoreTickRate": 2.0,
+          "resetObject": false
+        }
+    ]
+    },
+    {
+      "name": "Team king of the hill",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "teams": true,
+      "respawnsEnabled": true,
+      "respawnTime": 3.0,
+      "scoringType": 2,
+      "pointsToWin": 100,
+      "scoreObjective": [
+        {
+          "objectCode": 16737894,
+          "triggerCode": 0,
+          "objectiveType": 0,
+          "triggerType": 0,
+          "affectedPlayers": 1,
+          "scoreTickRate": 2.0,
+          "resetObject": false
+        },
+        {
+          "objectCode": 6711039,
+          "triggerCode": 0,
+          "objectiveType": 0,
+          "triggerType": 0,
+          "affectedPlayers": 2,
+          "scoreTickRate": 2.0,
+          "resetObject": false
+        }
+      ]
+    }
+  ],
+  "blockConfigurations": [
+    {
+      "blockCode": 3552903,
+      "assetName": "",
+      "type": 2,
+      "spawnType": 1,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 0,
+      "allowPickup": false
+    },
+    {
+      "blockCode": 9714491,
+      "assetName": "",
+      "type": 2,
+      "spawnType": 2,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 0,
+      "allowPickup": false
+    },
+        {
+      "blockCode": 16737894,
+      "assetName": "",
+      "type": 0,
+      "spawnType": 0,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 0,
+      "allowPickup": false
+    },
+        {
+      "blockCode": 6711039,
+      "assetName": "",
+      "type": 0,
+      "spawnType": 0,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 0,
+      "allowPickup": false
+    },
+        {
+      "blockCode": 6750054,
+      "assetName": "",
+      "type": 0,
+      "spawnType": 0,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 0,
+      "allowPickup": false
+    }
+]
+}

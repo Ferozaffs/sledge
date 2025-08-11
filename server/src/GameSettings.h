@@ -36,6 +36,12 @@ enum class AffectedPlayers : unsigned int
     Red,
 };
 
+enum class Team : unsigned int
+{
+    Blue,
+    Red,
+};
+
 struct GameScoreObjective
 {
     unsigned int objectCode;
@@ -49,6 +55,13 @@ struct GameScoreObjective
 
 struct GameModeConfiguration
 {
+    bool invincibility;
+    float gravityModifier;
+    float dampingModifier;
+    float frictionModifier;
+    PlayerControl airControl;
+    PlayerControl groundControl;
+
     bool teams;
     bool respawnsEnabled;
     float respawnTime;
@@ -63,6 +76,7 @@ enum class BlockType : unsigned int
     Static,
     Dynamic,
     Spawn,
+    Decor,
 };
 
 struct BlockConfiguration
@@ -81,13 +95,6 @@ struct BlockConfiguration
 
 struct GameSettings
 {
-    bool invincibility;
-    float gravityModifier;
-    float dampingModifier;
-    float frictionModifier;
-    PlayerControl airControl;
-    PlayerControl groundControl;
-
     std::vector<GameModeConfiguration> gameModeConfigurations;
     std::vector<BlockConfiguration> blockConfigurations;
     bool autoDecorate;

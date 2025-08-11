@@ -48,7 +48,7 @@ bool LevelManager::LoadPlaylist(const std::string &path)
 
             if (m_playlist.empty() == false)
             {
-                return LoadLevel(m_playlist.back());
+                return true;
             }
 
             printf("No files of type .bmp in directory\n");
@@ -59,7 +59,7 @@ bool LevelManager::LoadPlaylist(const std::string &path)
             if (p.extension() == ".bmp")
             {
                 m_playlist.emplace_back(p.generic_string(), "");
-                return LoadLevel(m_playlist.back());
+                return true;
             }
             printf("File is not of type .bmp\n");
             return false;
@@ -102,9 +102,24 @@ std::vector<std::weak_ptr<Asset>> LevelManager::GetAssets(bool allAssets)
     return assets;
 }
 
-std::vector<std::pair<int, int>> Gameplay::LevelManager::GetSpawns() const
+const std::weak_ptr<Level> LevelManager::GetCurrentLevel() const
+{
+    return m_currentLevel;
+}
+
+std::vector<std::pair<int, int>> LevelManager::GetSpawns() const
 {
     return m_currentLevel != nullptr ? m_currentLevel->GetSpawns() : std::vector<std::pair<int, int>>();
+}
+
+std::vector<std::pair<int, int>> LevelManager::GetRedSpawns() const
+{
+    return m_currentLevel != nullptr ? m_currentLevel->GetRedSpawns() : std::vector<std::pair<int, int>>();
+}
+
+std::vector<std::pair<int, int>> LevelManager::GetBlueSpawns() const
+{
+    return m_currentLevel != nullptr ? m_currentLevel->GetBlueSpawns() : std::vector<std::pair<int, int>>();
 }
 
 GameSettings LevelManager::GetSettings() const
@@ -114,7 +129,7 @@ GameSettings LevelManager::GetSettings() const
 
 bool LevelManager::LoadLevel(const std::pair<std::string, std::string> &files)
 {
-    m_currentLevel = std::make_unique<Level>(m_world, m_playlist.back());
+    m_currentLevel = std::make_shared<Level>(m_world, files);
     return m_currentLevel->IsValid();
 }
 

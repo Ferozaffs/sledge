@@ -8,7 +8,7 @@
 using namespace Gameplay;
 
 LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const BlockConfiguration &configuration)
-    : m_configuration(configuration)
+    : m_configuration(configuration), m_originalX(x), m_originalY(y)
 {
     m_health = std::max(0.000001f, m_configuration.toughness);
 
@@ -29,8 +29,24 @@ LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const BlockCo
         fixtureDef.friction = configuration.friction;
         fixtureDef.density = configuration.density;
 
+        if (m_configuration.type == BlockType::Decor)
+        {
+            fixtureDef.filter.categoryBits = static_cast<unsigned int>(CollisionFilter::Block_Decor);
+            fixtureDef.filter.maskBits = 0xFFFF;
+            fixtureDef.filter.maskBits &= ~(static_cast<unsigned int>(CollisionFilter::Avatar_Body) |
+                                            static_cast<unsigned int>(CollisionFilter::Avatar_Legs));
+        }
+
         m_asset->GetBody()->CreateFixture(&fixtureDef);
         m_asset->UpdateSize();
+    }
+}
+
+LevelBlock::~LevelBlock()
+{
+    if (m_destroyCallback)
+    {
+        m_destroyCallback(this);
     }
 }
 
@@ -57,7 +73,7 @@ bool LevelBlock::Update(float deltaTime)
 
             auto category = fixture->GetFilterData().categoryBits;
 
-            if (category != static_cast<uint16_t>(CollisionFilter::Avatar_Body) &&
+            if (impact > 0.0f && category != static_cast<uint16_t>(CollisionFilter::Avatar_Body) &&
                 category != static_cast<uint16_t>(CollisionFilter::Avatar_Legs))
             {
                 m_health -= impact;
@@ -88,6 +104,11 @@ bool LevelBlock::Update(float deltaTime)
     }
 
     return true;
+}
+
+void LevelBlock::Reset()
+{
+    m_asset->GetBody()->SetTransform(b2Vec2(m_originalX, m_originalY), 0.0f);
 }
 
 std::weak_ptr<Asset> LevelBlock::GetAsset() const
@@ -134,4 +155,14 @@ void LevelBlock::OnContact(b2Body *otherBody, b2Fixture *otherFixture, bool cont
     {
         m_contacts.erase(otherBody);
     }
+}
+
+unsigned int LevelBlock::GetCode() const
+{
+    return m_configuration.blockCode;
+}
+
+bool LevelBlock::HasCollision()
+{
+    return m_configuration.collision;
 }

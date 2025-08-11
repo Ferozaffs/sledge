@@ -18,7 +18,7 @@ class Avatar
     ~Avatar();
 
     void Update(const float &deltaTime, const float &sledgeInput, const float &jumpInput, const float &moveInput);
-    void UpdateSettings(const GameSettings &settings);
+    void UpdateSettings(const GameModeConfiguration &configuration);
 
     unsigned int GetBodyId() const;
     const b2Vec2 &GetPosition() const;

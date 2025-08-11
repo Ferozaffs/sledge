@@ -25,7 +25,7 @@ class Player
     const float GetY() const;
 
     void Update(float deltaTime);
-    void UpdateSettings(const GameSettings &settings);
+    void SetGameModeConfiguration(const GameModeConfiguration &configuration);
     void Respawn(float time);
 
     void SetInputs(float sledgeInput, float moveInput, float jumpInput);
@@ -41,6 +41,7 @@ class Player
     GameModeWish GetGameModeWish() const;
     bool IsDead() const;
 
+    Team GetTeam() const;
     unsigned int GetTeamTint() const;
     void SetTeamColors(bool useTeamColors);
 
@@ -65,7 +66,7 @@ class Player
     bool m_winner;
     bool m_usingTeamColors;
     GameModeWish m_gameModeWish;
-    GameSettings m_levelSettings;
+    GameModeConfiguration m_gameModeConfiguration;
 };
 
 } // namespace Gameplay

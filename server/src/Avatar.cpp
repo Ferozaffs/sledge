@@ -211,9 +211,9 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
         if (m_airControl != PlayerControl::Off && hasGroundContact == false)
         {
             horizontalMovement = 30000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
-            if (m_airControl != PlayerControl::Full)
+            if (m_airControl == PlayerControl::Full)
             {
-                verticalMovement = 30000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().y * 0.05f)));
+                verticalMovement = 20000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().y * 0.05f)));
             }
         }
 
@@ -233,24 +233,19 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
     }
 }
 
-void Avatar::UpdateSettings(const GameSettings &settings)
+void Avatar::UpdateSettings(const GameModeConfiguration &configuration)
 {
-    m_invincibility = settings.invincibility;
-    m_groundControl = settings.groundControl;
-    m_airControl = settings.airControl;
+    m_invincibility = configuration.invincibility;
+    m_groundControl = configuration.groundControl;
+    m_airControl = configuration.airControl;
 
     auto assets = GetAssets();
     for (auto &asset : assets)
     {
         if (auto a = asset.lock())
         {
-            a->GetBody()->SetGravityScale(settings.gravityModifier);
-            a->GetBody()->SetLinearDamping(settings.dampingModifier);
-
-            for (auto f = a->GetBody()->GetFixtureList(); f; f = f->GetNext())
-            {
-                f->SetFriction(f->GetFriction() * settings.frictionModifier);
-            }
+            a->GetBody()->SetGravityScale(configuration.gravityModifier);
+            a->GetBody()->SetLinearDamping(configuration.dampingModifier);
         }
     }
 }

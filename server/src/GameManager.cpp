@@ -12,7 +12,7 @@ GameManager::GameManager(std::weak_ptr<b2World> world)
 {
     if (m_levelManager.LoadPlaylist("data/levels"))
     {
-        m_playerManager.SetSettings(m_levelManager.GetSettings());
+        NextLevel(GetCurrentGameModeWish());
     }
 }
 
@@ -41,9 +41,23 @@ bool GameManager::Finished() const
     return m_currentGameMode == nullptr || m_currentGameMode->Finished();
 }
 
-std::pair<int, int> GameManager::GetOptimalSpawn() const
+std::pair<int, int> GameManager::GetOptimalSpawn(const Player *player) const
 {
     auto spawns = m_levelManager.GetSpawns();
+    auto redSpawns = m_levelManager.GetRedSpawns();
+    auto blueSpawns = m_levelManager.GetBlueSpawns();
+
+    if (m_currentGameModeConfiguration.teams && redSpawns.empty() == false && blueSpawns.empty() == false)
+    {
+        if (player->GetTeam() == Team::Red)
+        {
+            spawns = redSpawns;
+        }
+        else
+        {
+            spawns = blueSpawns;
+        }
+    }
 
     std::map<std::pair<int, int>, float> spawnDistances;
     for (const auto &s : spawns)
@@ -114,11 +128,12 @@ GameModeWish GameManager::GetCurrentGameModeWish() const
     return m_currentGameModeWish;
 }
 
-void GameManager::SetGameMode(GameModeType type, const GameModeConfiguration &configuration)
+void GameManager::SetGameMode(GameModeType type, const GameModeConfiguration &configuration,
+                              const std::weak_ptr<Level> level)
 {
     if (type == GameModeType::Custom)
     {
-        m_currentGameMode = std::make_unique<GameMode>(m_playerManager, configuration);
+        m_currentGameMode = std::make_unique<GameMode>(m_playerManager, configuration, level);
         if (m_currentGameMode->IsValid() == false)
         {
             m_currentGameMode = std::make_unique<GameModeSandbox>(m_playerManager);
@@ -147,8 +162,6 @@ void GameManager::NextLevel(GameModeWish wish)
 {
     if (m_levelManager.NextLevel())
     {
-        m_playerManager.SetSettings(m_levelManager.GetSettings());
-
         std::vector<GameModeConfiguration> configurations;
         if (wish == GameModeWish::Team)
         {
@@ -180,6 +193,9 @@ void GameManager::NextLevel(GameModeWish wish)
         std::mt19937 gen(rd());
         std::uniform_int_distribution<> dist(0, configurations.size() - 1);
 
-        SetGameMode(GameModeType::Custom, configurations[dist(gen)]);
+        m_currentGameModeConfiguration = configurations[dist(gen)];
+
+        m_playerManager.SetGameModeConfiguration(m_currentGameModeConfiguration);
+        SetGameMode(GameModeType::Custom, m_currentGameModeConfiguration, m_levelManager.GetCurrentLevel());
     }
 }

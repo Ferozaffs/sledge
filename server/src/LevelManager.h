@@ -26,7 +26,10 @@ class LevelManager
 
     std::vector<std::weak_ptr<Asset>> GetAssets(bool allAssets = false);
 
+    const std::weak_ptr<Level> GetCurrentLevel() const;
     std::vector<std::pair<int, int>> GetSpawns() const;
+    std::vector<std::pair<int, int>> GetRedSpawns() const;
+    std::vector<std::pair<int, int>> GetBlueSpawns() const;
     GameSettings GetSettings() const;
 
   private:
@@ -34,7 +37,7 @@ class LevelManager
 
     std::weak_ptr<b2World> m_world;
 
-    std::unique_ptr<Level> m_currentLevel;
+    std::shared_ptr<Level> m_currentLevel;
 
     std::vector<std::pair<std::string, std::string>> m_playlist;
     unsigned int m_currentLevelIndex;

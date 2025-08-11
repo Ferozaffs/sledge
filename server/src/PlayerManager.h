@@ -33,7 +33,7 @@ class PlayerManager
 
     std::vector<std::weak_ptr<Asset>> GetAssets() const;
 
-    void SetSettings(const GameSettings &settings);
+    void SetGameModeConfiguration(const GameModeConfiguration &configuration);
 
     signed int GetScore() const;
     void ClearScore();
@@ -47,7 +47,7 @@ class PlayerManager
     float m_restartTimer;
     signed int m_totalScore;
 
-    GameSettings m_levelSettings;
+    GameModeConfiguration m_gameModeConfiguration;
 };
 
 } // namespace Gameplay

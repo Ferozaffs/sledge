@@ -36,7 +36,7 @@ class GameManager
 
     bool Finished() const;
 
-    std::pair<int, int> GetOptimalSpawn() const;
+    std::pair<int, int> GetOptimalSpawn(const Player* player) const;
 
     std::vector<std::weak_ptr<Asset>> GetAssets(bool allAssets = false);
 
@@ -44,7 +44,7 @@ class GameManager
     std::unordered_map<int, int> GetScoreMap() const;
 
     GameModeWish GetCurrentGameModeWish() const;
-    void SetGameMode(GameModeType type, const GameModeConfiguration &configuration);
+    void SetGameMode(GameModeType type, const GameModeConfiguration &configuration, const std::weak_ptr<Level> level);
 
     std::weak_ptr<Player> AddPlayer();
 
@@ -53,6 +53,7 @@ class GameManager
   private:
     std::unique_ptr<IGameMode> m_currentGameMode;
     GameModeWish m_currentGameModeWish;
+    GameModeConfiguration m_currentGameModeConfiguration;
     PlayerManager m_playerManager;
     LevelManager m_levelManager;
 };

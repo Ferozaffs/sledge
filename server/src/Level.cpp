@@ -60,15 +60,14 @@ void Level::Update(float deltaTime)
 
 void Level::SetDefault()
 {
-    m_settings.invincibility = false;
-    m_settings.gravityModifier = 1.0f;
-    m_settings.dampingModifier = 0.0f;
-    m_settings.frictionModifier = 1.0f;
-    m_settings.airControl = PlayerControl::Semi;
-    m_settings.groundControl = PlayerControl::Full;
-    m_settings.autoDecorate = true;
 
     GameModeConfiguration gameModeConfiguration;
+    gameModeConfiguration.invincibility = false;
+    gameModeConfiguration.gravityModifier = 1.0f;
+    gameModeConfiguration.dampingModifier = 0.0f;
+    gameModeConfiguration.frictionModifier = 1.0f;
+    gameModeConfiguration.airControl = PlayerControl::Semi;
+    gameModeConfiguration.groundControl = PlayerControl::Full;
     gameModeConfiguration.scoringType = ScoringType::LastStanding;
     gameModeConfiguration.respawnsEnabled = false;
     gameModeConfiguration.teams = false;
@@ -89,15 +88,15 @@ void Level::SetDefault()
     staticBlock.allowPickup = false;
 
     BlockConfiguration toughBlock;
-    staticBlock.blockCode = 0x000000;
-    staticBlock.assetName = "block_tough";
-    staticBlock.type = BlockType::Dynamic;
-    staticBlock.collision = true;
-    staticBlock.destructable = false;
-    staticBlock.density = 1.0f;
-    staticBlock.friction = 0.1f;
-    staticBlock.toughness = 1.0f;
-    staticBlock.allowPickup = false;
+    toughBlock.blockCode = 0x7F7F7F;
+    toughBlock.assetName = "block_tough";
+    toughBlock.type = BlockType::Dynamic;
+    toughBlock.collision = true;
+    toughBlock.destructable = false;
+    toughBlock.density = 1.0f;
+    toughBlock.friction = 0.1f;
+    toughBlock.toughness = 1.0f;
+    toughBlock.allowPickup = false;
 
     BlockConfiguration weakBlock;
     weakBlock.blockCode = 0xB97A57;
@@ -119,6 +118,8 @@ void Level::SetDefault()
                              {toughBlock.blockCode, toughBlock},
                              {weakBlock.blockCode, weakBlock},
                              {spawnBlock.blockCode, spawnBlock}};
+
+    m_settings.autoDecorate = true;
 }
 
 bool Level::IsValid()
@@ -136,9 +137,49 @@ const std::map<std::pair<int, int>, std::shared_ptr<LevelBlock>> &Level::GetBloc
     return m_blocks;
 }
 
+std::vector<std::shared_ptr<LevelBlock>> Gameplay::Level::GetBlocks(unsigned int code)
+{
+    std::vector<std::shared_ptr<LevelBlock>> blocks;
+    for (auto &block : m_blocks)
+    {
+        blocks.emplace_back(block.second);
+    }
+
+    return blocks;
+}
+
+unsigned int Gameplay::Level::GetNumBlocks() const
+{
+    return m_blocks.size();
+}
+
+unsigned int Level::GetNumBlocks(unsigned int code) const
+{
+    unsigned int count = 0;
+    for (const auto &block : m_blocks)
+    {
+        if (block.second->GetCode() == code)
+        {
+            count++;
+        }
+    }
+
+    return count;
+}
+
 const std::vector<std::pair<int, int>> &Level::GetSpawns() const
 {
     return m_spawns;
+}
+
+const std::vector<std::pair<int, int>> &Level::GetRedSpawns() const
+{
+    return m_redSpawns;
+}
+
+const std::vector<std::pair<int, int>> &Level::GetBlueSpawns() const
+{
+    return m_blueSpawns;
 }
 
 bool Level::LoadLevel(const std::string &levelFilename)
@@ -201,7 +242,18 @@ bool Level::BuildLevel(std::vector<std::vector<uint8_t>> rows)
             {
                 if (it->second.type == BlockType::Spawn)
                 {
-                    m_spawns.emplace_back(std::make_pair(col, row));
+                    if (it->second.spawnType == AffectedPlayers::Red)
+                    {
+                        m_redSpawns.emplace_back(std::make_pair(col, row));
+                    }
+                    else if (it->second.spawnType == AffectedPlayers::Blue)
+                    {
+                        m_blueSpawns.emplace_back(std::make_pair(col, row));
+                    }
+                    else
+                    {
+                        m_spawns.emplace_back(std::make_pair(col, row));
+                    }
                 }
                 else
                 {
@@ -235,7 +287,10 @@ bool Level::Decorate()
     std::set<std::pair<int, int>> coords;
     for (const auto &block : m_blocks)
     {
-        coords.insert(block.first);
+        if (block.second->HasCollision())
+        {
+            coords.insert(block.first);
+        }
     }
 
     constexpr float decorChance = 0.75f;
@@ -270,7 +325,7 @@ bool Level::CreateFloorDecor(std::pair<int, int> coord)
     BlockConfiguration decorBlock;
     decorBlock.blockCode = 0xABCD1234;
     decorBlock.assetName = "block_floor_decor_" + std::to_string((rand() % numDecor) + 1);
-    decorBlock.type = BlockType::Dynamic;
+    decorBlock.type = BlockType::Decor;
     decorBlock.collision = true;
     decorBlock.destructable = true;
     decorBlock.density = 1.0f;
@@ -288,7 +343,7 @@ bool Level::CreateRoofDecor(std::pair<int, int> coord)
     BlockConfiguration decorBlock;
     decorBlock.blockCode = 0xABCD1234;
     decorBlock.assetName = "block_roof_decor_" + std::to_string((rand() % numDecor) + 1);
-    decorBlock.type = BlockType::Dynamic;
+    decorBlock.type = BlockType::Decor;
     decorBlock.collision = true;
     decorBlock.destructable = true;
     decorBlock.density = 1.0f;
@@ -314,37 +369,38 @@ bool Level::LoadSettings(const std::string &settingsFilename)
     {
         nlohmann::json j = nlohmann::json::parse(file);
 
-        if (j.contains("invincibility"))
-        {
-            m_settings.invincibility = j["invincibility"];
-        }
-        if (j.contains("gravityModifier"))
-        {
-            m_settings.gravityModifier = j["gravityModifier"];
-        }
-        if (j.contains("dampingModifier"))
-        {
-            m_settings.dampingModifier = j["dampingModifier"];
-        }
-        if (j.contains("frictionModifier"))
-        {
-            m_settings.frictionModifier = j["frictionModifier"];
-        }
-        if (j.contains("airControl"))
-        {
-            m_settings.airControl = static_cast<PlayerControl>(j["airControl"].get<unsigned int>());
-        }
-        if (j.contains("groundControl"))
-        {
-            m_settings.groundControl = static_cast<PlayerControl>(j["groundControl"].get<unsigned int>());
-        }
-
         if (j.contains("gameModeConfigurations") && j["gameModeConfigurations"].is_array())
         {
             m_settings.gameModeConfigurations.clear();
             for (const auto &mode : j["gameModeConfigurations"])
             {
                 Gameplay::GameModeConfiguration config{};
+
+                if (mode.contains("invincibility"))
+                {
+                    config.invincibility = mode["invincibility"];
+                }
+                if (mode.contains("gravityModifier"))
+                {
+                    config.gravityModifier = mode["gravityModifier"];
+                }
+                if (mode.contains("dampingModifier"))
+                {
+                    config.dampingModifier = mode["dampingModifier"];
+                }
+                if (mode.contains("frictionModifier"))
+                {
+                    config.frictionModifier = mode["frictionModifier"];
+                }
+                if (mode.contains("airControl"))
+                {
+                    config.airControl = static_cast<PlayerControl>(mode["airControl"].get<unsigned int>());
+                }
+                if (mode.contains("groundControl"))
+                {
+                    config.groundControl = static_cast<PlayerControl>(mode["groundControl"].get<unsigned int>());
+                }
+
                 config.teams = mode["teams"];
                 config.respawnsEnabled = mode["respawnsEnabled"];
                 config.respawnTime = mode["respawnTime"];

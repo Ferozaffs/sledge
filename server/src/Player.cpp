@@ -57,12 +57,12 @@ void Player::Update(float deltaTime)
     }
 }
 
-void Player::UpdateSettings(const GameSettings &settings)
+void Player::SetGameModeConfiguration(const GameModeConfiguration &configuration)
 {
-    m_levelSettings = settings;
+    m_gameModeConfiguration = configuration;
     if (m_avatar != nullptr)
     {
-        m_avatar->UpdateSettings(settings);
+        m_avatar->UpdateSettings(m_gameModeConfiguration);
     }
 }
 
@@ -139,6 +139,11 @@ bool Player::IsDead() const
     return m_avatar == nullptr || m_avatar->IsDead();
 }
 
+Team Player::GetTeam() const
+{
+    return m_teamTint == 0xAA0000 ? Team::Red : Team::Blue;
+}
+
 unsigned int Player::GetTeamTint() const
 {
     return m_teamTint;
@@ -151,13 +156,13 @@ void Player::SetTeamColors(bool useTeamColors)
 
 void Player::SpawnAvatar(std::weak_ptr<b2World> world)
 {
-    auto spawn = m_gameManager.GetOptimalSpawn();
+    auto spawn = m_gameManager.GetOptimalSpawn(this);
     b2Vec2 spawnVec;
     spawnVec.x = 2.0f * static_cast<float>(spawn.first);
     spawnVec.y = 2.0f * static_cast<float>(spawn.second);
 
     m_avatar = std::make_unique<Avatar>(world, spawnVec, m_tint, m_usingTeamColors == true ? m_teamTint : 0, m_winner);
-    m_avatar->UpdateSettings(m_levelSettings);
+    m_avatar->UpdateSettings(m_gameModeConfiguration);
 
     m_winner = false;
 }

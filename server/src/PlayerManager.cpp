@@ -80,7 +80,7 @@ std::weak_ptr<Player> PlayerManager::CreatePlayer()
 
     m_players.emplace_back(std::make_shared<Player>(
         m_gameManager, *this, m_world, tintList[(m_playersSpawned++ % (tintList.size() - 2)) + 2], tintList[team]));
-    m_players.back()->UpdateSettings(m_levelSettings);
+    m_players.back()->SetGameModeConfiguration(m_gameModeConfiguration);
 
     return m_players.back();
 }
@@ -173,12 +173,12 @@ std::vector<std::weak_ptr<Asset>> PlayerManager::GetAssets() const
     return assets;
 }
 
-void PlayerManager::SetSettings(const GameSettings &settings)
+void PlayerManager::SetGameModeConfiguration(const GameModeConfiguration &configuration)
 {
-    m_levelSettings = settings;
+    m_gameModeConfiguration = configuration;
     for (const auto &player : m_players)
     {
-        player->UpdateSettings(settings);
+        player->SetGameModeConfiguration(configuration);
     }
 }
 

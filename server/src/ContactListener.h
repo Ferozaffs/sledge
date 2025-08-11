@@ -39,7 +39,7 @@ class ContactListener : public b2ContactListener
         if (userDataRaw && userDataRaw->type == BodyType::LevelBlock)
         {
             Gameplay::LevelBlock *block = static_cast<Gameplay::LevelBlock *>(userDataRaw->object);
-            block->OnContact(bodyB, fixtureB, isBegin);
+            block->OnContact(bodyA, fixtureB, isBegin);
         }
     }
 };

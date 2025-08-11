@@ -23,7 +23,12 @@ class Level
 
     const GameSettings &GetSettings() const;
     const std::map<std::pair<int, int>, std::shared_ptr<LevelBlock>> &GetBlocks() const;
+    std::vector<std::shared_ptr<LevelBlock>> GetBlocks(unsigned int code);
+    unsigned int GetNumBlocks() const;
+    unsigned int GetNumBlocks(unsigned int code) const;
     const std::vector<std::pair<int, int>> &GetSpawns() const;
+    const std::vector<std::pair<int, int>> &GetRedSpawns() const;
+    const std::vector<std::pair<int, int>> &GetBlueSpawns() const;
 
   private:
     void SetDefault();
@@ -43,6 +48,8 @@ class Level
     std::map<unsigned int, BlockConfiguration> m_blockConfigurations;
     std::map<std::pair<int, int>, std::shared_ptr<LevelBlock>> m_blocks;
     std::vector<std::pair<int, int>> m_spawns;
+    std::vector<std::pair<int, int>> m_redSpawns;
+    std::vector<std::pair<int, int>> m_blueSpawns;
 };
 
 } // namespace Gameplay
