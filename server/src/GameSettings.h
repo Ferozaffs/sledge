@@ -76,6 +76,7 @@ enum class BlockType : unsigned int
     Static,
     Dynamic,
     Spawn,
+    Zone,
     Decor,
 };
 

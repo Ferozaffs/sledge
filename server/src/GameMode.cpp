@@ -57,6 +57,7 @@ GameMode::GameMode(PlayerManager &playerManager, const GameModeConfiguration &co
                 zoneData.pointTimer = objective.scoreTickRate;
                 for (auto &block : l->GetBlocks(objective.objectCode))
                 {
+                    block->SetVisibility(true);
                     if (auto a = block->GetAsset().lock())
                     {
                         zoneData.minX = std::min(zoneData.minX, a->GetX());

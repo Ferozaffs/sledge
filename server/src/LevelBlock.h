@@ -28,8 +28,10 @@ class LevelBlock
     void OnContact(b2Body *otherBody, b2Fixture *otherFixture, bool contact);
 
     unsigned int GetCode() const;
-    bool HasCollision();
+    bool HasCollision() const;
+    bool IsVisible() const;
 
+    void SetVisibility(bool visibility);
     void SetDestoryCallback(std::function<void(LevelBlock *)> callback)
     {
         m_destroyCallback = std::move(callback);
@@ -45,6 +47,7 @@ class LevelBlock
     std::shared_ptr<Asset> m_asset;
     BlockConfiguration m_configuration;
     float m_health;
+    bool m_visbility;
 
     std::function<void(LevelBlock *)> m_destroyCallback;
 };

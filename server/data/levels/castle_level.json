@@ -141,10 +141,10 @@
       "toughness": 0,
       "allowPickup": false
     },
-        {
+    {
       "blockCode": 16737894,
-      "assetName": "",
-      "type": 0,
+      "assetName": "koth_zone_blue",
+      "type": 3,
       "spawnType": 0,
       "collision": false,
       "destructable": false,
@@ -153,10 +153,10 @@
       "toughness": 0,
       "allowPickup": false
     },
-        {
+    {
       "blockCode": 6711039,
-      "assetName": "",
-      "type": 0,
+      "assetName": "koth_zone_red",
+      "type": 3,
       "spawnType": 0,
       "collision": false,
       "destructable": false,
@@ -165,10 +165,10 @@
       "toughness": 0,
       "allowPickup": false
     },
-        {
+    {
       "blockCode": 6750054,
-      "assetName": "",
-      "type": 0,
+      "assetName": "koth_zone",
+      "type": 3,
       "spawnType": 0,
       "collision": false,
       "destructable": false,

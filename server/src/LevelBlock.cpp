@@ -8,7 +8,7 @@
 using namespace Gameplay;
 
 LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const BlockConfiguration &configuration)
-    : m_configuration(configuration), m_originalX(x), m_originalY(y)
+    : m_configuration(configuration), m_originalX(x), m_originalY(y), m_visbility(true)
 {
     m_health = std::max(0.000001f, m_configuration.toughness);
 
@@ -35,6 +35,10 @@ LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const BlockCo
             fixtureDef.filter.maskBits = 0xFFFF;
             fixtureDef.filter.maskBits &= ~(static_cast<unsigned int>(CollisionFilter::Avatar_Body) |
                                             static_cast<unsigned int>(CollisionFilter::Avatar_Legs));
+        }
+        else if (m_configuration.type == BlockType::Zone)
+        {
+            m_visbility = false;
         }
 
         m_asset->GetBody()->CreateFixture(&fixtureDef);
@@ -162,7 +166,17 @@ unsigned int LevelBlock::GetCode() const
     return m_configuration.blockCode;
 }
 
-bool LevelBlock::HasCollision()
+bool LevelBlock::IsVisible() const
+{
+    return m_visbility;
+}
+
+bool LevelBlock::HasCollision() const
 {
     return m_configuration.collision;
+}
+
+void LevelBlock::SetVisibility(bool visibility)
+{
+    m_visbility = visibility;
 }

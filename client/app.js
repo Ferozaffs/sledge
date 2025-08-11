@@ -69,6 +69,9 @@ async function preload() {
     { alias: "avatar_legs", src: "./assets/avatar_legs.png" },
     { alias: "weapon_shaft", src: "./assets/weapon_shaft.png" },
     { alias: "weapon_head", src: "./assets/weapon_head.png" },
+    { alias: "koth_zone", src: "./assets/koth_zone.png" },
+    { alias: "koth_zone_red", src: "./assets/koth_zone_red.png" },
+    { alias: "koth_zone_blue", src: "./assets/koth_zone_blue.png" },
   ];
 
   await PIXI.Assets.load(assets);

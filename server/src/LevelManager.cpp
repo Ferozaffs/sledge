@@ -87,11 +87,14 @@ std::vector<std::weak_ptr<Asset>> LevelManager::GetAssets(bool allAssets)
     {
         for (const auto &block : m_currentLevel->GetBlocks())
         {
-            if (auto b = block.second->GetAsset().lock())
+            if (block.second->IsVisible())
             {
-                if (allAssets || m_reloaded || block.second->InMotion() || b->ShouldSendFull())
+                if (auto b = block.second->GetAsset().lock())
                 {
-                    assets.emplace_back(b);
+                    if (allAssets || m_reloaded || block.second->InMotion() || b->ShouldSendFull())
+                    {
+                        assets.emplace_back(b);
+                    }
                 }
             }
         }
