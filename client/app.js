@@ -153,7 +153,7 @@ export async function updateScore(bytes, offset, size) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  const count = size / 8;
+  const count = size / 6;
   for (let i = 0; i < count; i++) {
     let id = BYTEREADER.readUInt32(bytes, offset);
     offset += 4;
@@ -161,6 +161,22 @@ export async function updateScore(bytes, offset, size) {
     offset += 2;
 
     ASSETS.setScore(id, score);
+  }
+}
+
+export async function updatePoints(bytes, offset, size) {
+  while (!initialized) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  const count = size / 8;
+  for (let i = 0; i < count; i++) {
+    let id = BYTEREADER.readUInt32(bytes, offset);
+    offset += 4;
+    let point = BYTEREADER.readFloat32(bytes, offset);
+    offset += 4;
+
+    ASSETS.setPoints(id, point);
   }
 }
 

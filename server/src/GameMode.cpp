@@ -10,10 +10,18 @@ using namespace Gameplay;
 
 GameMode::GameMode(PlayerManager &playerManager, const GameModeConfiguration &configuration,
                    const std::weak_ptr<Level> level)
-    : m_playerManager(playerManager), m_configuration(configuration), m_level(level), m_redPoints(0), m_bluePoints(0),
-      m_pointsReached(false), m_countDown(5.0f), m_valid(true), m_previousNumPlayersAlive(0),
+    : m_playerManager(playerManager), m_configuration(configuration), m_level(level), m_redPoints(0.0f),
+      m_bluePoints(0.0f), m_pointsReached(false), m_countDown(5.0f), m_valid(true), m_previousNumPlayersAlive(0),
       m_previousNumPlayersTeamBlueAlive(0), m_previousNumPlayersTeamRedAlive(0)
 {
+    if (m_configuration.scoringType == ScoringType::LastStanding)
+    {
+        m_redPoints = 0.0f;
+        m_bluePoints = 0.0f;
+    }
+
+    m_configuration.pointsToWin = m_configuration.pointsToWin * m_playerManager.GetNumPlayers();
+
     if (m_configuration.teams)
     {
         m_previousNumPlayersTeamRedAlive = m_playerManager.GetRedPlayers().size();
@@ -25,18 +33,21 @@ GameMode::GameMode(PlayerManager &playerManager, const GameModeConfiguration &co
     }
     else
     {
-        m_previousNumPlayersAlive = m_playerManager.GetRedPlayers().size();
+        m_previousNumPlayersAlive = m_playerManager.GetNumPlayers();
         if (m_previousNumPlayersAlive <= 1)
         {
             m_valid = false;
         }
     }
 
-    auto players = m_playerManager.GetPlayersDead();
+    auto players = m_playerManager.GetPlayers();
     for (const auto &player : players)
     {
-        player->SetTeamColors(m_configuration.teams);
         player->Respawn(0.0);
+        if (m_configuration.scoringType == ScoringType::LastStanding)
+        {
+            m_playerPoints[player] = -1.0f;
+        }
     }
 
     if (auto l = m_level.lock())
@@ -130,11 +141,11 @@ void GameMode::UpdateDeathPoints(float deltaTime)
 
         if (numRedPlayersAlive < m_previousNumPlayersTeamRedAlive)
         {
-            m_bluePoints++;
+            m_bluePoints += 1.0f;
         }
         if (numBluePlayersAlive < m_previousNumPlayersTeamBlueAlive)
         {
-            m_redPoints++;
+            m_redPoints += 1.0f;
         }
 
         m_previousNumPlayersTeamRedAlive = numRedPlayersAlive;
@@ -148,7 +159,7 @@ void GameMode::UpdateDeathPoints(float deltaTime)
         {
             for (const auto &player : playersAlive)
             {
-                m_playerPoints[player]++;
+                m_playerPoints[player] += 1.0f;
             }
         }
 
@@ -237,16 +248,16 @@ void GameMode::UpdateZoneObjectivePoints(float deltaTime)
 
                 if (scoreRed)
                 {
-                    m_redPoints++;
+                    m_redPoints += 1.0f;
                 }
                 if (scoreBlue)
                 {
-                    m_bluePoints++;
+                    m_bluePoints += 1.0f;
                 }
 
                 for (const auto &player : playersToScore)
                 {
-                    m_playerPoints[player]++;
+                    m_playerPoints[player] += 1.0f;
                 }
             }
         }
@@ -341,9 +352,57 @@ void GameMode::OnObjectiveDestroyed(LevelBlock *block)
     }
 }
 
+std::unordered_map<int, float> GameMode::GetPointsMap() const
+{
+
+    std::unordered_map<int, float> pointsMap;
+
+    if (m_configuration.scoringType == ScoringType::LastStanding)
+    {
+        for (const auto &player : m_playerManager.GetPlayers())
+        {
+            pointsMap[player->GetMainAssetId()] = -1.0f;
+        }
+    }
+    else
+    {
+        if (m_configuration.teams)
+        {
+            for (const auto &player : m_playerManager.GetPlayers())
+            {
+                pointsMap[player->GetMainAssetId()] =
+                    (player->GetTeam() == Team::Red ? m_redPoints : m_bluePoints) / m_configuration.pointsToWin;
+            }
+        }
+        else
+        {
+            for (const auto &player : m_playerManager.GetPlayers())
+            {
+                if (m_playerPoints.find(player) != m_playerPoints.end())
+                {
+                    pointsMap[player->GetMainAssetId()] = m_playerPoints.at(player) / m_configuration.pointsToWin;
+                }
+            }
+        }
+    }
+
+    return pointsMap;
+}
+
 GameModeType GameMode::GetType() const
 {
     return GameModeType::Custom;
+}
+
+signed int GameMode::GetPoints() const
+{
+    float playerPoints = 0.0f;
+    for (const auto &points : m_playerPoints)
+    {
+        playerPoints += points.second;
+    }
+
+    return static_cast<unsigned int>(m_redPoints + m_bluePoints + playerPoints);
 }
 
 bool GameMode::Finished() const

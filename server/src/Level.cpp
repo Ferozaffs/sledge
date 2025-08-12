@@ -142,7 +142,10 @@ std::vector<std::shared_ptr<LevelBlock>> Gameplay::Level::GetBlocks(unsigned int
     std::vector<std::shared_ptr<LevelBlock>> blocks;
     for (auto &block : m_blocks)
     {
-        blocks.emplace_back(block.second);
+        if (block.second->GetCode() == code)
+        {
+            blocks.emplace_back(block.second);
+        }
     }
 
     return blocks;

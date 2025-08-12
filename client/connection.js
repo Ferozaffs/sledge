@@ -70,7 +70,6 @@ export function connectToServer(rn, url) {
             default:
               console.log("SERVER - Unknown");
           }
-          console.log("SERVER - " + message.status);
           break;
         case 2:
           let assetSize = readUInt32(bytes, 1);
@@ -93,6 +92,10 @@ export function connectToServer(rn, url) {
         case 3:
           let scoreSize = readUInt32(bytes, 1);
           updateScore(bytes, 5, scoreSize);
+          break;
+        case 4:
+          let pointsSize = readUInt32(bytes, 1);
+          updatePoints(bytes, 5, pointsSize);
           break;
         default:
           console.error("Unknown message type:", type);
@@ -147,4 +150,8 @@ function updateAsset(bytes, offset, size) {
 
 function updateScore(bytes, offset, size) {
   APP.updateScore(bytes, offset, size);
+}
+
+function updatePoints(bytes, offset, size) {
+  APP.updatePoints(bytes, offset, size);
 }

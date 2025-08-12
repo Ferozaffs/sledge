@@ -68,6 +68,22 @@ size_t Packet::GameScore::Fill(std::vector<unsigned char> &outData) const
     return size;
 }
 
+size_t Packet::GamePoints::Fill(std::vector<unsigned char> &outData) const
+{
+    auto append = [&](const void *data, size_t size) -> size_t {
+        const unsigned char *bytes = static_cast<const unsigned char *>(data);
+        outData.insert(outData.end(), bytes, bytes + size);
+        return size;
+    };
+
+    size_t size = 0;
+
+    size += append(&id, sizeof(id));
+    size += append(&fraction, sizeof(fraction));
+
+    return size;
+}
+
 size_t Packet::GetSize() const
 {
     return (sizeof(unsigned char) + sizeof(unsigned int) + m_size);
@@ -107,6 +123,18 @@ Packet Packet::CreateScorePacket(const std::vector<GameScore> scores)
     for (const auto &score : scores)
     {
         packet.m_size += score.Fill(packet.m_data);
+    }
+
+    return std::move(packet);
+}
+
+Packet Packet::CreatePointsPacket(const std::vector<GamePoints> points)
+{
+    auto packet = Packet(Type::Points);
+    packet.m_data.reserve(points.size() * sizeof(GamePoints));
+    for (const auto &points : points)
+    {
+        packet.m_size += points.Fill(packet.m_data);
     }
 
     return std::move(packet);

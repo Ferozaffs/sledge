@@ -29,6 +29,16 @@ GameModeType GameModeSandbox::GetType() const
     return GameModeType::Sandbox;
 }
 
+signed int GameModeSandbox::GetPoints() const
+{
+    return -1;
+}
+
+std::unordered_map<int, float> Gameplay::GameModeSandbox::GetPointsMap() const
+{
+    return std::unordered_map<int, float>();
+}
+
 bool GameModeSandbox::Finished() const
 {
     return false;

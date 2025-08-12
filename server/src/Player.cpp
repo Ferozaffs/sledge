@@ -60,6 +60,7 @@ void Player::Update(float deltaTime)
 void Player::SetGameModeConfiguration(const GameModeConfiguration &configuration)
 {
     m_gameModeConfiguration = configuration;
+    SetTeamColors(m_gameModeConfiguration.teams);
     if (m_avatar != nullptr)
     {
         m_avatar->UpdateSettings(m_gameModeConfiguration);

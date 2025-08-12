@@ -54,7 +54,7 @@
       "respawnsEnabled": true,
       "respawnTime": 3.0,
       "scoringType": 1,
-      "pointsToWin": 25
+      "pointsToWin": 10
     },
     {
       "name": "King of the hill",
@@ -93,7 +93,7 @@
       "respawnsEnabled": true,
       "respawnTime": 3.0,
       "scoringType": 2,
-      "pointsToWin": 100,
+      "pointsToWin": 15,
       "scoreObjective": [
         {
           "objectCode": 16737894,

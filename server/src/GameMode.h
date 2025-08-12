@@ -23,6 +23,8 @@ class GameMode : public IGameMode
     bool Finished() const override;
     bool IsValid() const override;
     GameModeType GetType() const override;
+    signed int GetPoints() const override;
+    std::unordered_map<int, float> GetPointsMap() const override;
 
     void OnObjectiveDestroyed(LevelBlock *block);
 
@@ -71,9 +73,9 @@ class GameMode : public IGameMode
     std::vector<GameScoreObjective> m_destructionObjectives;
 
     bool m_pointsReached;
-    std::map<const std::shared_ptr<Player>, unsigned int> m_playerPoints;
-    unsigned int m_redPoints;
-    unsigned int m_bluePoints;
+    std::map<const std::shared_ptr<Player>, float> m_playerPoints;
+    float m_redPoints;
+    float m_bluePoints;
 
     float m_countDown;
 };

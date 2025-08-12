@@ -50,6 +50,11 @@ void ConnectionManager::Update(float deltaTime)
             SendScore();
             m_cachedScore = m_gameManager.GetScore();
         }
+        if (playerJoined == false || m_gameManager.GetPoints() != m_cachedPoints)
+        {
+            SendPoints();
+            m_cachedPoints = m_gameManager.GetPoints();
+        }
 
         RemoveAssets();
     }
@@ -136,6 +141,28 @@ void ConnectionManager::SendScore() const
     if (scores.empty() == false)
     {
         WebSocketHelper::GetInstance().SendAll(Packet::CreateScorePacket(scores));
+    }
+    WebSocketHelper::connectionMutex.unlock();
+}
+
+void ConnectionManager::SendPoints() const
+{
+    std::vector<Packet::GamePoints> points;
+
+    const auto &pointsMap = m_gameManager.GetPointsMap();
+    for (const auto &point : pointsMap)
+    {
+        auto gs = Packet::GamePoints();
+        gs.id = point.first;
+        gs.fraction = point.second;
+
+        points.emplace_back(gs);
+    }
+
+    WebSocketHelper::connectionMutex.lock();
+    if (points.empty() == false)
+    {
+        WebSocketHelper::GetInstance().SendAll(Packet::CreatePointsPacket(points));
     }
     WebSocketHelper::connectionMutex.unlock();
 }

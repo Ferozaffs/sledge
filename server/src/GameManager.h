@@ -42,6 +42,8 @@ class GameManager
 
     int GetScore() const;
     std::unordered_map<int, int> GetScoreMap() const;
+    signed int GetPoints() const;
+    std::unordered_map<int, float> GetPointsMap() const;
 
     GameModeWish GetCurrentGameModeWish() const;
     void SetGameMode(GameModeType type, const GameModeConfiguration &configuration, const std::weak_ptr<Level> level);

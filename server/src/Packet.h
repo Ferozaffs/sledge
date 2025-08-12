@@ -16,6 +16,7 @@ class Packet
         Status = 1,
         Asset = 2,
         Score = 3,
+        Points = 4,
     };
 
     enum class Error : unsigned char
@@ -63,6 +64,15 @@ class Packet
         size_t Fill(std::vector<unsigned char> &outData) const;
     };
 
+    struct GamePoints
+    {
+        int id;
+        float fraction;
+
+      public:
+        size_t Fill(std::vector<unsigned char> &outData) const;
+    };
+
     Packet(Type type, unsigned int size = 0);
     ~Packet();
 
@@ -72,6 +82,7 @@ class Packet
     static Packet CreateStatusPacket(Status status);
     static Packet CreateAssetPacket(AssetCommand command, const std::vector<GameAsset> assets);
     static Packet CreateScorePacket(const std::vector<GameScore> scores);
+    static Packet CreatePointsPacket(const std::vector<GamePoints> points);
 
     Type m_type;
     unsigned int m_size;

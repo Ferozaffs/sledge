@@ -15,6 +15,8 @@ class GameModeSandbox : public IGameMode
     bool Finished() const override;
     bool IsValid() const override;
     GameModeType GetType() const override;
+    signed int GetPoints() const override;
+    std::unordered_map<int, float> GetPointsMap() const override;
 
   private:
     PlayerManager &m_playerManager;

@@ -123,6 +123,16 @@ std::unordered_map<int, int> GameManager::GetScoreMap() const
     return scoreMap;
 }
 
+signed int GameManager::GetPoints() const
+{
+    return m_currentGameMode->GetPoints();
+}
+
+std::unordered_map<int, float> GameManager::GetPointsMap() const
+{
+    return m_currentGameMode->GetPointsMap();
+}
+
 GameModeWish GameManager::GetCurrentGameModeWish() const
 {
     return m_currentGameModeWish;
