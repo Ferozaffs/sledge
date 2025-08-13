@@ -72,14 +72,14 @@ bool LevelBlock::Update(float deltaTime)
     {
         for (auto body : m_contacts)
         {
-            if (body == false)
+            if (body == nullptr)
                 continue;
 
             auto velocity = body->GetLinearVelocity();
             float impact = velocity.Length() * body->GetMass() * deltaTime;
 
             auto fixture = body->GetFixtureList();
-            if (fixture == false)
+            if (fixture == nullptr)
                 continue;
 
             auto category = fixture->GetFilterData().categoryBits;
