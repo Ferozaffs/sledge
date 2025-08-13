@@ -10,3 +10,5 @@ build
 go.work
 go.work.sum
 .env
+/docker-compose-host-azure.yml
+/docker-compose-standalone-azure.yml

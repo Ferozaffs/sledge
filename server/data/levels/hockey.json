@@ -1,0 +1,140 @@
+{
+  "gameModeConfigurations": [
+    {
+      "name": "Hockey",
+      "invincibility": false,
+      "gravityModifier": 0.0,
+      "dampingModifier": 0.01,
+      "frictionModifier": 0.1,
+      "airControl": 2,
+      "groundControl": 2,
+      "controlModifier": 2.0,
+      "teams": true,
+      "respawnsEnabled": true,
+      "respawnTime": 3.0,
+      "scoringType": 2,
+      "pointsToWin": 5,
+      "scalePointsToPlayers": false,
+      "scoreObjective": [
+        {
+          "objectCode": 16737894,
+          "triggerCode": 6750054,
+          "objectiveType": 0,
+          "triggerType": 1,
+          "affectedPlayers": 1,
+          "scoreTickRate": 0.0,
+          "resetObject": true
+        },
+        {
+          "objectCode": 6711039,
+          "triggerCode": 6750054,
+          "objectiveType": 0,
+          "triggerType": 1,
+          "affectedPlayers": 2,
+          "scoreTickRate": 0.0,
+          "resetObject": true
+        }
+      ]
+    }
+  ],
+  "blockConfigurations": [
+    {
+      "blockCode": 3552903,
+      "assetName": "",
+      "type": 2,
+      "spawnType": 1,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 0,
+      "allowPickup": false
+    },
+    {
+      "blockCode": 9714491,
+      "assetName": "",
+      "type": 2,
+      "spawnType": 2,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 0,
+      "allowPickup": false
+    },
+    {
+      "blockCode": 16737894,
+      "assetName": "koth_zone_blue",
+      "type": 3,
+      "spawnType": 0,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 0,
+      "allowPickup": false
+    },
+    {
+      "blockCode": 6711039,
+      "assetName": "koth_zone_red",
+      "type": 3,
+      "spawnType": 0,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 0,
+      "allowPickup": false
+    },
+    {
+      "blockCode": 6750054,
+      "assetName": "koth_zone",
+      "type": 1,
+      "spawnType": 0,
+      "collision": true,
+      "destructable": false,
+      "density": 1.0,
+      "friction": 0.0,
+      "toughness": 0.0,
+      "restitution": 0.9,
+      "allowPickup": false
+    },
+    {
+      "blockCode": 16744231,
+      "assetName": "solid_red",
+      "type": 0,
+      "spawnType": 0,
+      "collision": true,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 999,
+      "allowPickup": false
+    },
+    {
+      "blockCode": 16756425,
+      "assetName": "soft_pink",
+      "type": 0,
+      "spawnType": 0,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 999,
+      "allowPickup": false
+    },
+    {
+      "blockCode": 10082794,
+      "assetName": "soft_blue",
+      "type": 0,
+      "spawnType": 0,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 999,
+      "allowPickup": false
+    }    
+  ],
+  "autoDecorate": false
+}

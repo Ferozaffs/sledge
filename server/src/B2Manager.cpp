@@ -1,4 +1,6 @@
 #include "B2Manager.h"
+#include "ContactListener.h"
+#include "GameSettings.h"
 #ifdef WIN32
 #include "Debugger.h"
 #endif
@@ -31,6 +33,12 @@ B2Manager::B2Manager() : m_accumelatedTime(0.0f)
 {
     b2Vec2 gravity(0.0f, -9.81f);
     m_world = std::make_shared<b2World>(gravity);
+    m_contactListener = std::make_unique<ContactListener>();
+    m_world->SetContactListener(m_contactListener.get());
+}
+
+B2Manager::~B2Manager()
+{
 }
 
 void B2Manager::Update(float deltaTime)

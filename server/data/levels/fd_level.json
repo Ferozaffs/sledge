@@ -1,0 +1,109 @@
+{
+  "gameModeConfigurations": [
+    {
+      "name": "Last man standing",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "controlModifier": 1.0,
+      "teams": false,
+      "respawnsEnabled": false,
+      "respawnTime": 0,
+      "scoringType": 0,
+      "pointsToWin": 0,
+      "scalePointsToPlayers": true
+    },
+    {
+      "name": "Team last man standing",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "controlModifier": 1.0,
+      "teams": true,
+      "respawnsEnabled": false,
+      "respawnTime": 0,
+      "scoringType": 0,
+      "pointsToWin": 0,
+      "scalePointsToPlayers": true
+    },
+    {
+      "name": "Deathmatch",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "controlModifier": 1.0,
+      "teams": false,
+      "respawnsEnabled": true,
+      "respawnTime": 3.0,
+      "scoringType": 1,
+      "pointsToWin": 10,
+      "scalePointsToPlayers": true
+    },
+    {
+      "name": "Team deathmatch",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "controlModifier": 1.0,
+      "teams": true,
+      "respawnsEnabled": true,
+      "respawnTime": 3.0,
+      "scoringType": 1,
+      "pointsToWin": 10,
+      "scalePointsToPlayers": true
+    },
+    {
+      "name": "King of the hill",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "controlModifier": 1.0,
+      "teams": false,
+      "respawnsEnabled": true,
+      "respawnTime": 3.0,
+      "scoringType": 2,
+      "pointsToWin": 15,
+      "scalePointsToPlayers": true,
+      "scoreObjective": [
+        {
+          "objectCode": 6750054,
+          "triggerCode": 2882343476,
+          "objectiveType": 0,
+          "triggerType": 0,
+          "affectedPlayers": 0,
+          "scoreTickRate": 2.0,
+          "resetObject": false
+        }
+    ]
+    }
+  ],
+  "blockConfigurations": [
+    {
+      "blockCode": 6750054,
+      "assetName": "koth_zone",
+      "type": 3,
+      "spawnType": 0,
+      "collision": false,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 0,
+      "allowPickup": false
+    }
+]
+}

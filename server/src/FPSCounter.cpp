@@ -19,7 +19,7 @@ void FPSCounter::Frame()
 
 void FPSCounter::PrintFrameData()
 {
-    if (frameTimes.empty())
+    if (frameTimes.empty() == true)
     {
         printf("No frames recorded in the last minute.\n");
         return;

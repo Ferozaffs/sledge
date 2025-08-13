@@ -34,7 +34,7 @@ const roomhealth int = 3
 func CreateRoom() (room, error) {
 	roomName := GetRandomName(3)
 
-	cmd := exec.Command("docker", "run", "--name", roomName, "-p", strconv.Itoa(port)+":9002", "-d", "sledge/room:latest")
+	cmd := exec.Command("docker", "run", "--name", roomName, "--cpus=1.0", "-p", strconv.Itoa(port)+":9002", "-d", "sledge/room:latest")
 
 	_, err := cmd.CombinedOutput()
 	if err != nil {

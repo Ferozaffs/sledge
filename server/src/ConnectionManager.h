@@ -29,6 +29,7 @@ class ConnectionManager
   private:
     void SendAssets(std::vector<std::weak_ptr<Gameplay::Asset>> assets, bool playerJoined);
     void SendScore() const;
+    void SendPoints() const;
 
     void RemoveAssets();
 
@@ -36,6 +37,7 @@ class ConnectionManager
 
     float m_tickCounter;
     signed int m_cachedScore;
+    signed int m_cachedPoints;
 };
 
 } // namespace Network

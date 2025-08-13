@@ -13,17 +13,15 @@ std::vector<unsigned int> tintList = {
 };
 
 PlayerManager::PlayerManager(GameManager &gameManager, std::weak_ptr<b2World> world)
-    : m_world(world), m_gameManager(gameManager), m_playersSpawned(0), m_restartTimer(5.0f), m_totalScore(0),
-      m_redScore(0), m_blueScore(0)
+    : m_world(world), m_gameManager(gameManager), m_playersSpawned(0), m_restartTimer(5.0f), m_totalScore(0)
 {
 }
 
 void PlayerManager::Update(float deltaTime)
 {
-    unsigned int wishingBrawl = 0;
-    unsigned int wishingTeamBrawl = 0;
+    unsigned int wishingNewSolo = 0;
+    unsigned int wishingNewTeams = 0;
 
-    m_totalScore = m_redScore + m_blueScore;
     for (auto it = m_players.begin(); it != m_players.end();)
     {
         if ((*it)->m_pendingRemove)
@@ -35,13 +33,13 @@ void PlayerManager::Update(float deltaTime)
             (*it)->Update(deltaTime);
             m_totalScore += (*it)->GetScore();
 
-            if ((*it)->GetGameModeWish() == GameModeType::Brawl)
+            if ((*it)->GetGameModeWish() == GameModeWish::Solo)
             {
-                ++wishingBrawl;
+                ++wishingNewSolo;
             }
-            else if ((*it)->GetGameModeWish() == GameModeType::TeamBrawl)
+            else if ((*it)->GetGameModeWish() == GameModeWish::Team)
             {
-                ++wishingTeamBrawl;
+                ++wishingNewTeams;
             }
 
             it++;
@@ -49,19 +47,19 @@ void PlayerManager::Update(float deltaTime)
     }
 
     unsigned int halfPlayers = std::ceil(m_players.size() / 2.0f);
-    if (wishingBrawl >= halfPlayers || wishingTeamBrawl >= halfPlayers)
+    if (wishingNewSolo >= halfPlayers || wishingNewTeams >= halfPlayers)
     {
         m_restartTimer -= deltaTime;
         if (m_restartTimer <= 0.0f)
         {
             ClearScore();
-            if (wishingBrawl >= halfPlayers)
+            if (wishingNewSolo >= halfPlayers)
             {
-                m_gameManager.NextLevelWish(GameModeType::Brawl);
+                m_gameManager.NextLevel(GameModeWish::Solo);
             }
-            else if (wishingTeamBrawl >= halfPlayers)
+            else if (wishingNewTeams >= halfPlayers)
             {
-                m_gameManager.NextLevelWish(GameModeType::TeamBrawl);
+                m_gameManager.NextLevel(GameModeWish::Team);
             }
             m_restartTimer = 10.0f;
         }
@@ -82,6 +80,7 @@ std::weak_ptr<Player> PlayerManager::CreatePlayer()
 
     m_players.emplace_back(std::make_shared<Player>(
         m_gameManager, *this, m_world, tintList[(m_playersSpawned++ % (tintList.size() - 2)) + 2], tintList[team]));
+    m_players.back()->SetGameModeConfiguration(m_gameModeConfiguration);
 
     return m_players.back();
 }
@@ -174,31 +173,22 @@ std::vector<std::weak_ptr<Asset>> PlayerManager::GetAssets() const
     return assets;
 }
 
+void PlayerManager::SetGameModeConfiguration(const GameModeConfiguration &configuration)
+{
+    m_gameModeConfiguration = configuration;
+    for (const auto &player : m_players)
+    {
+        player->SetGameModeConfiguration(configuration);
+    }
+}
+
 signed int PlayerManager::GetScore() const
 {
     return m_totalScore;
 }
 
-signed int PlayerManager::GetTeamScore(unsigned int teamTint) const
-{
-    return tintList[0] == teamTint ? m_redScore : m_blueScore;
-}
-
-void PlayerManager::ScoreRed(signed int score)
-{
-    m_redScore += score;
-}
-
-void PlayerManager::ScoreBlue(signed int score)
-{
-    m_blueScore += score;
-}
-
 void PlayerManager::ClearScore()
 {
-    m_redScore = 0;
-    m_blueScore = 0;
-
     for (const auto &player : m_players)
     {
         player->ClearScore();

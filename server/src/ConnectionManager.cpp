@@ -1,20 +1,11 @@
 #include "ConnectionManager.h"
 #include "Asset.h"
 #include "GameManager.h"
+#include "Packet.h"
 #include "WebsocketHelper.h"
-
-#include <nlohmann/json.hpp>
-
-#include <functional>
-#include <map>
-#include <mutex>
-#include <string>
 
 using namespace Network;
 using namespace Gameplay;
-
-using json = nlohmann::json;
-using namespace nlohmann::literals;
 
 std::vector<int> ConnectionManager::m_assetsToRemove;
 std::mutex ConnectionManager::removalMutex;
@@ -46,6 +37,7 @@ void ConnectionManager::Update(float deltaTime)
         WebSocketHelper::GetInstance().InsertPlayerHandle(player);
         playerJoined = true;
     }
+    WebSocketHelper::connectionMutex.unlock();
 
     if (tick == true || playerJoined)
     {
@@ -58,11 +50,14 @@ void ConnectionManager::Update(float deltaTime)
             SendScore();
             m_cachedScore = m_gameManager.GetScore();
         }
+        if (playerJoined == false || m_gameManager.GetPoints() != m_cachedPoints)
+        {
+            SendPoints();
+            m_cachedPoints = m_gameManager.GetPoints();
+        }
 
         RemoveAssets();
     }
-
-    WebSocketHelper::connectionMutex.unlock();
 }
 
 void ConnectionManager::RemoveAsset(int id)
@@ -74,14 +69,13 @@ void ConnectionManager::RemoveAsset(int id)
 
 void ConnectionManager::SendAssets(std::vector<std::weak_ptr<Asset>> assets, bool playerJoined)
 {
-    if (assets.empty())
+    if (assets.empty() == true)
     {
         return;
     }
 
-    json j = {{"type", "updateData"}};
-
-    json assetArray = json::array();
+    std::vector<Packet::GameAsset> assetCreation;
+    std::vector<Packet::GameAsset> assetUpdate;
 
     for (const auto &asset : assets)
     {
@@ -89,54 +83,88 @@ void ConnectionManager::SendAssets(std::vector<std::weak_ptr<Asset>> assets, boo
         {
             if (a->ShouldSendFull() == true || playerJoined)
             {
-                json assetData = {
-                    {"id", a->GetId()},       {"alias", a->GetAlias()}, {"x", a->GetX()},     {"y", a->GetY()},
-                    {"sizeX", a->GetSizeX()}, {"sizeY", a->GetSizeY()}, {"rot", a->GetRot()}, {"tint", a->GetTint()},
-                };
+                auto ga = Packet::GameAsset();
+                ga.id = a->GetId();
+                ga.x = a->GetX();
+                ga.y = a->GetY();
+                ga.rot = a->GetRot();
+                ga.sizeX = a->GetSizeX();
+                ga.sizeY = a->GetSizeY();
+                ga.tint = a->GetTint();
+                ga.aliasLength = a->GetAlias().size();
+                ga.alias = a->GetAlias();
 
-                assetArray.push_back(assetData);
+                assetCreation.emplace_back(ga);
             }
-            else
+            else if (a->ShouldUpdate())
             {
-                json assetData = {
-                    {"id", a->GetId()},
-                    {"x", a->GetX()},
-                    {"y", a->GetY()},
-                    {"rot", a->GetRot()},
-                };
+                auto ga = Packet::GameAsset();
+                ga.id = a->GetId();
+                ga.x = a->GetX();
+                ga.y = a->GetY();
+                ga.rot = a->GetRot();
 
-                assetArray.push_back(assetData);
+                assetUpdate.emplace_back(ga);
             }
 
             a->Sent();
         }
     }
 
-    j["assets"] = assetArray;
-
-    WebSocketHelper::GetInstance().SendAll(j.dump());
+    WebSocketHelper::connectionMutex.lock();
+    if (assetCreation.empty() == false)
+    {
+        WebSocketHelper::GetInstance().SendAll(Packet::CreateAssetPacket(Packet::AssetCommand::Create, assetCreation));
+    }
+    if (assetUpdate.empty() == false)
+    {
+        WebSocketHelper::GetInstance().SendAll(Packet::CreateAssetPacket(Packet::AssetCommand::Update, assetUpdate));
+    }
+    WebSocketHelper::connectionMutex.unlock();
 }
 
 void ConnectionManager::SendScore() const
 {
-    json j = {{"type", "scoreData"}};
-
-    json assetArray = json::array();
+    std::vector<Packet::GameScore> scores;
 
     const auto &scoreMap = m_gameManager.GetScoreMap();
     for (const auto &score : scoreMap)
     {
-        json assetData = {
-            {"id", score.first},
-            {"score", score.second},
-        };
+        auto gs = Packet::GameScore();
+        gs.id = score.first;
+        gs.score = score.second;
 
-        assetArray.push_back(assetData);
+        scores.emplace_back(gs);
     }
 
-    j["assets"] = assetArray;
+    WebSocketHelper::connectionMutex.lock();
+    if (scores.empty() == false)
+    {
+        WebSocketHelper::GetInstance().SendAll(Packet::CreateScorePacket(scores));
+    }
+    WebSocketHelper::connectionMutex.unlock();
+}
 
-    WebSocketHelper::GetInstance().SendAll(j.dump());
+void ConnectionManager::SendPoints() const
+{
+    std::vector<Packet::GamePoints> points;
+
+    const auto &pointsMap = m_gameManager.GetPointsMap();
+    for (const auto &point : pointsMap)
+    {
+        auto gs = Packet::GamePoints();
+        gs.id = point.first;
+        gs.fraction = point.second;
+
+        points.emplace_back(gs);
+    }
+
+    WebSocketHelper::connectionMutex.lock();
+    if (points.empty() == false)
+    {
+        WebSocketHelper::GetInstance().SendAll(Packet::CreatePointsPacket(points));
+    }
+    WebSocketHelper::connectionMutex.unlock();
 }
 
 void ConnectionManager::RemoveAssets()
@@ -146,20 +174,22 @@ void ConnectionManager::RemoveAssets()
         return;
     }
 
-    json j = {{"type", "removeData"}};
-
-    json assetArray = json::array();
+    std::vector<Packet::GameAsset> assets;
 
     removalMutex.lock();
     for (auto const &id : m_assetsToRemove)
     {
-        json assetData = {{"id", id}};
-        assetArray.push_back(assetData);
+        auto ga = Packet::GameAsset();
+        ga.id = id;
+        assets.emplace_back(ga);
     }
     m_assetsToRemove.clear();
     removalMutex.unlock();
 
-    j["assets"] = assetArray;
-
-    WebSocketHelper::GetInstance().SendAll(j.dump());
+    WebSocketHelper::connectionMutex.lock();
+    if (assets.empty() == false)
+    {
+        WebSocketHelper::GetInstance().SendAll(Packet::CreateAssetPacket(Packet::AssetCommand::Remove, assets));
+    }
+    WebSocketHelper::connectionMutex.unlock();
 }

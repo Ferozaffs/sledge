@@ -132,7 +132,7 @@ Debugger::Debugger()
 {
     glfwSetErrorCallback(ErrorCallback);
 
-    if (!glfwInit())
+    if (glfwInit() == false)
         exit(EXIT_FAILURE);
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -165,7 +165,6 @@ Debugger::~Debugger()
     glfwDestroyWindow(m_window);
 
     glfwTerminate();
-    exit(EXIT_SUCCESS);
 }
 
 void Debugger::AddShape(const mat4x4 &pose, ShapeType type)

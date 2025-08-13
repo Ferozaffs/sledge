@@ -1,4 +1,5 @@
 #pragma once
+#include "GameSettings.h"
 #include <atomic>
 #include <memory>
 #include <vector>
@@ -11,7 +12,7 @@ class Avatar;
 class Asset;
 class GameManager;
 class PlayerManager;
-enum class GameModeType;
+enum class GameModeWish;
 
 class Player
 {
@@ -24,6 +25,7 @@ class Player
     const float GetY() const;
 
     void Update(float deltaTime);
+    void SetGameModeConfiguration(const GameModeConfiguration &configuration);
     void Respawn(float time);
 
     void SetInputs(float sledgeInput, float moveInput, float jumpInput);
@@ -36,9 +38,10 @@ class Player
     void ClearScore();
     void SetWinner();
 
-    GameModeType GetGameModeWish() const;
+    GameModeWish GetGameModeWish() const;
     bool IsDead() const;
 
+    Team GetTeam() const;
     unsigned int GetTeamTint() const;
     void SetTeamColors(bool useTeamColors);
 
@@ -62,7 +65,8 @@ class Player
     signed int m_score;
     bool m_winner;
     bool m_usingTeamColors;
-    GameModeType m_gameModeWish;
+    GameModeWish m_gameModeWish;
+    GameModeConfiguration m_gameModeConfiguration;
 };
 
 } // namespace Gameplay

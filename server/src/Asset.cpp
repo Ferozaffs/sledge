@@ -12,6 +12,7 @@ Asset::Asset(b2Body *body, const std::string &alias)
     : m_body(body), m_alias(alias), m_sizeX(0.0f), m_sizeY(0.0f), m_tint(0xFFFFFF), m_sendFull(true)
 {
     m_id = distribution(rng);
+    m_previousTransform = std::make_unique<b2Transform>();
 }
 
 Asset::~Asset()
@@ -102,6 +103,27 @@ void Asset::UpdateSize()
 bool Asset::ShouldSendFull()
 {
     return m_sendFull;
+}
+
+bool Asset::ShouldUpdate()
+{
+    bool shouldUpdate = false;
+    if (abs(GetX() - m_previousTransform->p.x) > b2_epsilon)
+    {
+        shouldUpdate = true;
+    }
+    else if (abs(GetY() - m_previousTransform->p.y) > b2_epsilon)
+    {
+        shouldUpdate = true;
+    }
+    else if (abs(GetRot() - m_previousTransform->q.GetAngle()) > b2_epsilon)
+    {
+        shouldUpdate = true;
+    }
+
+    *m_previousTransform = m_body->GetTransform();
+
+    return shouldUpdate;
 }
 
 void Asset::Sent()

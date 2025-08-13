@@ -1,10 +1,12 @@
 #pragma once
+#include "GameSettings.h"
 #include <box2d/box2d.h>
 #include <memory>
 #include <vector>
 
 namespace Gameplay
 {
+struct GameSettings;
 class Weapon;
 class Asset;
 
@@ -16,6 +18,7 @@ class Avatar
     ~Avatar();
 
     void Update(const float &deltaTime, const float &sledgeInput, const float &jumpInput, const float &moveInput);
+    void UpdateSettings(const GameModeConfiguration &configuration);
 
     unsigned int GetBodyId() const;
     const b2Vec2 &GetPosition() const;
@@ -40,6 +43,7 @@ class Avatar
     void BreakHelm();
     void AssignWeapon();
 
+    bool m_invincibility;
     float m_invincibilityTimer;
     unsigned int m_health;
     bool m_dead;
@@ -55,6 +59,10 @@ class Avatar
     b2Joint *m_legsJoint;
     b2RevoluteJoint *m_shaftJoint;
     std::unique_ptr<Weapon> m_weapon;
+
+    PlayerControl m_groundControl;
+    PlayerControl m_airControl;
+    float m_controlModifier;
 };
 
 } // namespace Gameplay

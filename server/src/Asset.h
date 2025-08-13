@@ -3,6 +3,7 @@
 #include <string>
 
 class b2Body;
+class b2Transform;
 
 namespace Gameplay
 {
@@ -28,11 +29,13 @@ class Asset
     void UpdateSize();
 
     bool ShouldSendFull();
+    bool ShouldUpdate();
     void Sent();
 
   private:
     int m_id;
     b2Body *m_body;
+    std::unique_ptr<b2Transform> m_previousTransform;
     std::string m_alias;
     unsigned int m_tint;
     float m_sizeX;

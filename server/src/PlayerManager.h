@@ -1,4 +1,5 @@
 #pragma once
+#include "GameSettings.h"
 #include <memory>
 #include <vector>
 
@@ -9,6 +10,7 @@ namespace Gameplay
 class Player;
 class Asset;
 class GameManager;
+struct GameSettings;
 
 class PlayerManager
 {
@@ -31,10 +33,9 @@ class PlayerManager
 
     std::vector<std::weak_ptr<Asset>> GetAssets() const;
 
+    void SetGameModeConfiguration(const GameModeConfiguration &configuration);
+
     signed int GetScore() const;
-    signed int GetTeamScore(unsigned int teamTint) const;
-    void ScoreRed(signed int score);
-    void ScoreBlue(signed int score);
     void ClearScore();
 
   private:
@@ -45,8 +46,8 @@ class PlayerManager
     unsigned int m_playersSpawned;
     float m_restartTimer;
     signed int m_totalScore;
-    signed int m_redScore;
-    signed int m_blueScore;
+
+    GameModeConfiguration m_gameModeConfiguration;
 };
 
 } // namespace Gameplay

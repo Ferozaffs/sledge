@@ -1,0 +1,36 @@
+{
+  "gameModeConfigurations": [
+    {
+      "name": "Last man standing",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "controlModifier": 1.0,
+      "teams": false,
+      "respawnsEnabled": false,
+      "respawnTime": 0,
+      "scoringType": 0,
+      "pointsToWin": 0,
+      "scalePointsToPlayers": true
+    },
+    {
+      "name": "Team last man standing",
+      "invincibility": false,
+      "gravityModifier": 1.0,
+      "dampingModifier": 0.0,
+      "frictionModifier": 1.0,
+      "airControl": 1,
+      "groundControl": 2,
+      "controlModifier": 1.0,
+      "teams": true,
+      "respawnsEnabled": false,
+      "respawnTime": 0,
+      "scoringType": 0,
+      "pointsToWin": 0,
+      "scalePointsToPlayers": true
+    }
+  ]
+}

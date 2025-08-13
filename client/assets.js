@@ -41,7 +41,9 @@ function add(id, alias, sizeX, sizeY, tint) {
     },
     rot: 0,
     sprite: PIXI.Sprite.from(alias),
-    text: undefined,
+    scoreText: undefined,
+    pointsBarBg: undefined,
+    pointsBarFg: undefined,
   };
 
   asset.sprite.anchor.set(0.5);
@@ -53,7 +55,7 @@ function add(id, alias, sizeX, sizeY, tint) {
   return asset;
 }
 
-export function update(id, alias, x, y, sizeX, sizeY, rot, tint) {
+export function create(id, alias, x, y, sizeX, sizeY, rot, tint) {
   let foundObject = assets.find((obj) => obj.id === id);
 
   if (foundObject === undefined) {
@@ -74,15 +76,34 @@ export function update(id, alias, x, y, sizeX, sizeY, rot, tint) {
   foundObject.sprite.rotation = -rot;
 }
 
+export function update(id, x, y, rot) {
+  let foundObject = assets.find((obj) => obj.id === id);
+
+  foundObject.smoothX = foundObject.x = x;
+  foundObject.smoothY = foundObject.y = y;
+  foundObject.sprite.rotation = -rot;
+}
+
 export function remove(id) {
   const foundObject = assets.find((obj) => obj.id === id);
 
   if (foundObject !== undefined) {
     assetContainer.removeChild(foundObject.sprite);
     foundObject.sprite.destroy();
-    if (foundObject.text !== undefined) {
-      assetContainer.removeChild(foundObject.text);
-      foundObject.text.destroy();
+    if (foundObject.scoreText !== undefined) {
+      assetContainer.removeChild(foundObject.scoreText);
+      foundObject.scoreText.destroy();
+      foundObject.scoreText = undefined;
+    }
+    if (foundObject.pointsBarBg !== undefined) {
+      assetContainer.removeChild(foundObject.pointsBarBg);
+      foundObject.pointsBarBg.destroy();
+      foundObject.pointsBarBg = undefined;
+    }
+    if (foundObject.pointsBarFg !== undefined) {
+      assetContainer.removeChild(foundObject.pointsBarFg);
+      foundObject.pointsBarFg.destroy();
+      foundObject.pointsBarFg = undefined;
     }
 
     assets = assets.filter((obj) => obj.id !== id);
@@ -160,10 +181,20 @@ export function adjustAssetsView(scaleFactor, width, height) {
     asset.sprite.width = asset.size.x * scaleFactor;
     asset.sprite.height = asset.size.y * scaleFactor;
 
-    if (asset.text !== undefined) {
-      asset.text.x = asset.sprite.x - 1 * scaleFactor;
-      asset.text.y = asset.sprite.y - 10 * scaleFactor;
-      asset.text.style.fontSize = 3 * scaleFactor;
+    if (asset.scoreText !== undefined) {
+      asset.scoreText.x = asset.sprite.x - 1 * scaleFactor;
+      asset.scoreText.y = asset.sprite.y - 10 * scaleFactor;
+      asset.scoreText.style.fontSize = 3 * scaleFactor;
+    }
+
+    if (asset.pointsBarBg !== undefined) {
+      asset.pointsBarBg.x = asset.sprite.x + 2 * scaleFactor;
+      asset.pointsBarBg.y = asset.sprite.y - 9 * scaleFactor;
+    }
+
+    if (asset.pointsBarFg !== undefined) {
+      asset.pointsBarFg.x = asset.sprite.x + 2 * scaleFactor;
+      asset.pointsBarFg.y = asset.sprite.y - 9 * scaleFactor;
     }
   });
 }
@@ -172,8 +203,8 @@ export function setScore(id, score) {
   let foundObject = assets.find((obj) => obj.id === id);
 
   if (foundObject !== undefined) {
-    if (foundObject.text === undefined) {
-      foundObject.text = new PIXI.Text({
+    if (foundObject.scoreText === undefined) {
+      foundObject.scoreText = new PIXI.Text({
         text: "",
         style: {
           fontFamily: "ChakraPetch",
@@ -186,9 +217,37 @@ export function setScore(id, score) {
         },
       });
 
-      assetContainer.addChild(foundObject.text);
+      assetContainer.addChild(foundObject.scoreText);
     }
 
-    foundObject.text.text = score;
+    foundObject.scoreText.text = score;
+  }
+}
+
+export function setPoints(id, points) {
+  let foundObject = assets.find((obj) => obj.id === id);
+
+  if (foundObject !== undefined) {
+    if (foundObject.pointsBarBg === undefined && points >= 0.0) {
+      foundObject.pointsBarBg = new PIXI.Graphics()
+        .rect(0, 0, 2, 20)
+        .fill("#ffd500");
+      foundObject.pointsBarFg = new PIXI.Graphics()
+        .rect(0, 0, 2, 20)
+        .fill("#000000");
+
+      assetContainer.addChild(foundObject.pointsBarBg);
+      assetContainer.addChild(foundObject.pointsBarFg);
+      console.log(id);
+    } else if (points < 0.0) {
+      assetContainer.removeChild(foundObject.pointsBarBg);
+      foundObject.pointsBarBg.destroy();
+      foundObject.pointsBarBg = undefined;
+      assetContainer.removeChild(foundObject.pointsBarFg);
+      foundObject.pointsBarFg.destroy();
+      foundObject.pointsBarFg = undefined;
+    }
+
+    foundObject.pointsBarFg.scale.y = 1.0 - points;
   }
 }
