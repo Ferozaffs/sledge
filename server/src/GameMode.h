@@ -1,6 +1,7 @@
 #pragma once
 #include "GameSettings.h"
 #include "IGameMode.h"
+#include <cfloat>
 #include <map>
 #include <memory>
 #include <vector>
