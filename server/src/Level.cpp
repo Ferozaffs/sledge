@@ -1,10 +1,10 @@
 #include "Level.h"
 #include "LevelBlock.h"
 
+#include <cfloat>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <random>
-#include <set>
 
 using namespace Gameplay;
 
