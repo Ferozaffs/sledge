@@ -10,7 +10,7 @@ Avatar::Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned in
                bool winner)
     : m_world(world), m_invincibilityTimer(2.0f), m_dead(false), m_shaftJoint(nullptr), m_health(3),
       m_crownJoint(nullptr), m_invincibility(false), m_groundControl(PlayerControl::Full),
-      m_airControl(PlayerControl::Semi)
+      m_airControl(PlayerControl::Semi), m_controlModifier(1.0f)
 {
     static const b2Vec2 bodySize(2.0f, 2.0f);
     static const b2Vec2 legsSize(1.5f, 0.5f);
@@ -210,10 +210,13 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
         float verticalMovement = 0.0f;
         if (m_airControl != PlayerControl::Off && hasGroundContact == false)
         {
-            horizontalMovement = 30000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
+            horizontalMovement =
+                30000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f / m_controlModifier)));
             if (m_airControl == PlayerControl::Full)
             {
-                verticalMovement = 20000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().y * 0.05f)));
+                verticalMovement =
+                    20000.0f *
+                    std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().y * 0.05f / m_controlModifier)));
             }
         }
 
@@ -227,9 +230,9 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
             horizontalMovement = 180000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
         }
 
-        GetBody()->ApplyForce(
-            b2Vec2(horizontalMovement * moveInput * deltaTime, verticalMovement * jumpInput * deltaTime),
-            GetBody()->GetTransform().p, true);
+        GetBody()->ApplyForce(b2Vec2(horizontalMovement * moveInput * deltaTime * m_controlModifier,
+                                     verticalMovement * jumpInput * deltaTime * m_controlModifier),
+                              GetBody()->GetTransform().p, true);
     }
 }
 
@@ -238,6 +241,7 @@ void Avatar::UpdateSettings(const GameModeConfiguration &configuration)
     m_invincibility = configuration.invincibility;
     m_groundControl = configuration.groundControl;
     m_airControl = configuration.airControl;
+    m_controlModifier = configuration.controlModifier;
 
     auto assets = GetAssets();
     for (auto &asset : assets)

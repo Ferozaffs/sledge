@@ -206,6 +206,7 @@ void GameManager::NextLevel(GameModeWish wish)
         m_currentGameModeConfiguration = configurations[dist(gen)];
 
         m_playerManager.SetGameModeConfiguration(m_currentGameModeConfiguration);
+        m_levelManager.SetGameModeConfiguration(m_currentGameModeConfiguration);
         SetGameMode(GameModeType::Custom, m_currentGameModeConfiguration, m_levelManager.GetCurrentLevel());
     }
 }

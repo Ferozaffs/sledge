@@ -62,6 +62,7 @@ class Avatar
 
     PlayerControl m_groundControl;
     PlayerControl m_airControl;
+    float m_controlModifier;
 };
 
 } // namespace Gameplay

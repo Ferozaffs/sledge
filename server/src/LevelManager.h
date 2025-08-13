@@ -1,4 +1,5 @@
 #pragma once
+#include "GameSettings.h"
 #include <map>
 #include <memory>
 #include <string>
@@ -10,7 +11,6 @@ namespace Gameplay
 {
 class Asset;
 class Level;
-struct GameSettings;
 class GameManager;
 
 class LevelManager
@@ -31,6 +31,8 @@ class LevelManager
     std::vector<std::pair<int, int>> GetRedSpawns() const;
     std::vector<std::pair<int, int>> GetBlueSpawns() const;
     GameSettings GetSettings() const;
+
+    void SetGameModeConfiguration(const GameModeConfiguration &configuration);
 
   private:
     bool LoadLevel(const std::pair<std::string, std::string> &files);

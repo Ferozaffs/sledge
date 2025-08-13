@@ -61,12 +61,14 @@ struct GameModeConfiguration
     float frictionModifier;
     PlayerControl airControl;
     PlayerControl groundControl;
+    float controlModifier;
 
     bool teams;
     bool respawnsEnabled;
     float respawnTime;
     ScoringType scoringType;
     int pointsToWin;
+    bool scalePointsToPlayers;
 
     std::vector<GameScoreObjective> scoreObjectives;
 };
@@ -88,9 +90,10 @@ struct BlockConfiguration
     AffectedPlayers spawnType;
     bool collision;
     bool destructable;
-    float density;
-    float friction;
-    float toughness;
+    float density = 1.0f;
+    float friction = 0.1f;
+    float toughness = 0.0f;
+    float restitution = 0.1f;
     bool allowPickup;
 };
 

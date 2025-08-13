@@ -30,6 +30,8 @@ class Level
     const std::vector<std::pair<int, int>> &GetRedSpawns() const;
     const std::vector<std::pair<int, int>> &GetBlueSpawns() const;
 
+    void SetGameModeConfiguration(const GameModeConfiguration& configuration);
+
   private:
     void SetDefault();
 

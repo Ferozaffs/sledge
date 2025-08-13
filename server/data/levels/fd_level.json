@@ -90,93 +90,9 @@
           "resetObject": false
         }
     ]
-    },
-    {
-      "name": "Team king of the hill",
-      "invincibility": false,
-      "gravityModifier": 1.0,
-      "dampingModifier": 0.0,
-      "frictionModifier": 1.0,
-      "airControl": 1,
-      "groundControl": 2,
-      "controlModifier": 1.0,
-      "teams": true,
-      "respawnsEnabled": true,
-      "respawnTime": 3.0,
-      "scoringType": 2,
-      "pointsToWin": 15,
-      "scalePointsToPlayers": true,
-      "scoreObjective": [
-        {
-          "objectCode": 16737894,
-          "triggerCode": 0,
-          "objectiveType": 0,
-          "triggerType": 0,
-          "affectedPlayers": 1,
-          "scoreTickRate": 2.0,
-          "resetObject": false
-        },
-        {
-          "objectCode": 6711039,
-          "triggerCode": 0,
-          "objectiveType": 0,
-          "triggerType": 0,
-          "affectedPlayers": 2,
-          "scoreTickRate": 2.0,
-          "resetObject": false
-        }
-      ]
     }
   ],
   "blockConfigurations": [
-    {
-      "blockCode": 3552903,
-      "assetName": "",
-      "type": 2,
-      "spawnType": 1,
-      "collision": false,
-      "destructable": false,
-      "density": 0.0,
-      "friction": 0.0,
-      "toughness": 0,
-      "allowPickup": false
-    },
-    {
-      "blockCode": 9714491,
-      "assetName": "",
-      "type": 2,
-      "spawnType": 2,
-      "collision": false,
-      "destructable": false,
-      "density": 0.0,
-      "friction": 0.0,
-      "toughness": 0,
-      "allowPickup": false
-    },
-    {
-      "blockCode": 16737894,
-      "assetName": "koth_zone_blue",
-      "type": 3,
-      "spawnType": 0,
-      "collision": false,
-      "destructable": false,
-      "density": 0.0,
-      "friction": 0.0,
-      "toughness": 0,
-      "allowPickup": false
-    },
-    {
-      "blockCode": 6711039,
-      "assetName": "koth_zone_red",
-      "type": 3,
-      "spawnType": 0,
-      "collision": false,
-      "destructable": false,
-      "density": 0.0,
-      "friction": 0.0,
-      "toughness": 0,
-      "allowPickup": false
-    },
     {
       "blockCode": 6750054,
       "assetName": "koth_zone",

@@ -130,6 +130,13 @@ GameSettings LevelManager::GetSettings() const
     return m_currentLevel != nullptr ? m_currentLevel->GetSettings() : GameSettings();
 }
 
+void LevelManager::SetGameModeConfiguration(const GameModeConfiguration& configuration)
+{
+    if (m_currentLevel) {
+        m_currentLevel->SetGameModeConfiguration(configuration);
+    }
+}
+
 bool LevelManager::LoadLevel(const std::pair<std::string, std::string> &files)
 {
     m_currentLevel = std::make_shared<Level>(m_world, files);

@@ -31,6 +31,7 @@ class LevelBlock
     bool HasCollision() const;
     bool IsVisible() const;
 
+    void SetGameModeConfiguration(const GameModeConfiguration &configuration);
     void SetVisibility(bool visibility);
     void SetDestoryCallback(std::function<void(LevelBlock *)> callback)
     {
@@ -40,12 +41,13 @@ class LevelBlock
   private:
     void ConvertToDynamic();
 
-    int m_originalX;
-    int m_originalY;
+    float m_originalX;
+    float m_originalY;
 
     std::unordered_set<b2Body *> m_contacts;
     std::shared_ptr<Asset> m_asset;
     BlockConfiguration m_configuration;
+    GameModeConfiguration m_gameModeConfiguration;
     float m_health;
     bool m_visbility;
 

@@ -66,6 +66,7 @@ void Level::SetDefault()
     gameModeConfiguration.gravityModifier = 1.0f;
     gameModeConfiguration.dampingModifier = 0.0f;
     gameModeConfiguration.frictionModifier = 1.0f;
+    gameModeConfiguration.controlModifier = 1.0f;
     gameModeConfiguration.airControl = PlayerControl::Semi;
     gameModeConfiguration.groundControl = PlayerControl::Full;
     gameModeConfiguration.scoringType = ScoringType::LastStanding;
@@ -183,6 +184,14 @@ const std::vector<std::pair<int, int>> &Level::GetRedSpawns() const
 const std::vector<std::pair<int, int>> &Level::GetBlueSpawns() const
 {
     return m_blueSpawns;
+}
+
+void Level::SetGameModeConfiguration(const GameModeConfiguration &configuration)
+{
+    for (auto &block : m_blocks)
+    {
+        block.second->SetGameModeConfiguration(configuration);
+    }
 }
 
 bool Level::LoadLevel(const std::string &levelFilename)
@@ -403,12 +412,17 @@ bool Level::LoadSettings(const std::string &settingsFilename)
                 {
                     config.groundControl = static_cast<PlayerControl>(mode["groundControl"].get<unsigned int>());
                 }
+                if (mode.contains("controlModifier"))
+                {
+                    config.controlModifier = mode["controlModifier"];
+                }
 
                 config.teams = mode["teams"];
                 config.respawnsEnabled = mode["respawnsEnabled"];
                 config.respawnTime = mode["respawnTime"];
                 config.scoringType = static_cast<Gameplay::ScoringType>(mode["scoringType"].get<unsigned int>());
                 config.pointsToWin = mode["pointsToWin"];
+                config.scalePointsToPlayers = mode["scalePointsToPlayers"];
 
                 if (mode.contains("scoreObjective") && mode["scoreObjective"].is_array())
                 {
@@ -451,6 +465,10 @@ bool Level::LoadSettings(const std::string &settingsFilename)
                 block.density = blockConfiguration["density"];
                 block.friction = blockConfiguration["friction"];
                 block.toughness = blockConfiguration["toughness"];
+                if (blockConfiguration.contains("restitution"))
+                {
+                    block.restitution = blockConfiguration["restitution"];
+                }
                 block.allowPickup = blockConfiguration["allowPickup"];
 
                 m_settings.blockConfigurations.push_back(block);

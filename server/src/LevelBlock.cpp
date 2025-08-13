@@ -8,7 +8,7 @@
 using namespace Gameplay;
 
 LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const BlockConfiguration &configuration)
-    : m_configuration(configuration), m_originalX(x), m_originalY(y), m_visbility(true)
+    : m_configuration(configuration), m_visbility(true)
 {
     m_health = std::max(0.000001f, m_configuration.toughness);
 
@@ -16,6 +16,8 @@ LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const BlockCo
     {
         b2BodyDef blockDef;
         blockDef.position.Set(2.0f * static_cast<float>(x), 2.0f * static_cast<float>(y));
+        m_originalX = blockDef.position.x;
+        m_originalY = blockDef.position.y;
         blockDef.enabled = m_configuration.collision;
         m_asset = std::make_shared<Asset>(w->CreateBody(&blockDef), m_configuration.assetName);
         Physics::PhysicsObjectUserData *data = new Physics::PhysicsObjectUserData{Physics::BodyType::LevelBlock, this};
@@ -28,6 +30,11 @@ LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const BlockCo
         fixtureDef.shape = &block;
         fixtureDef.friction = configuration.friction;
         fixtureDef.density = configuration.density;
+        fixtureDef.restitution = configuration.restitution;
+        if (m_configuration.type == BlockType::Dynamic)
+        {
+            fixtureDef.restitutionThreshold = 0.0001f;
+        }
 
         if (m_configuration.type == BlockType::Decor)
         {
@@ -113,6 +120,9 @@ bool LevelBlock::Update(float deltaTime)
 void LevelBlock::Reset()
 {
     m_asset->GetBody()->SetTransform(b2Vec2(m_originalX, m_originalY), 0.0f);
+    auto vel = m_asset->GetBody()->GetLinearVelocity();
+    vel *= 0.001f;
+    m_asset->GetBody()->SetLinearVelocity(vel);
 }
 
 std::weak_ptr<Asset> LevelBlock::GetAsset() const
@@ -134,7 +144,7 @@ void LevelBlock::ConvertToDynamic()
 
     b2BodyDef blockDef;
     blockDef.type = b2_dynamicBody;
-    blockDef.gravityScale = 1.0f;
+    blockDef.gravityScale = m_gameModeConfiguration.gravityModifier;
     blockDef.position.Set(x, y);
     m_asset = std::make_shared<Asset>(world->CreateBody(&blockDef), alias);
     b2PolygonShape block;
@@ -174,6 +184,12 @@ bool LevelBlock::IsVisible() const
 bool LevelBlock::HasCollision() const
 {
     return m_configuration.collision;
+}
+
+void LevelBlock::SetGameModeConfiguration(const GameModeConfiguration &configuration)
+{
+    m_asset->GetBody()->SetGravityScale(configuration.gravityModifier);
+    m_asset->GetBody()->SetLinearDamping(configuration.dampingModifier);
 }
 
 void LevelBlock::SetVisibility(bool visibility)
