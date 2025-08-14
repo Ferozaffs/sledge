@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,10 +18,6 @@ type requestMessage struct {
 	Type string `json:"type"`
 }
 
-type roomResponse struct {
-	Status string `json:"status"`
-}
-
 type room struct {
 	Name   string
 	Port   int
@@ -30,6 +28,37 @@ var activeRooms []room
 var port int = 56000
 
 const roomhealth int = 3
+
+func readStatusPacket(message []byte) (int, error) {
+	buf := bytes.NewReader(message)
+
+	var packetType uint8
+	err := binary.Read(buf, binary.LittleEndian, &packetType)
+	if err != nil {
+		return 0, fmt.Errorf("read type: %w", err)
+	}
+
+	var size uint32
+	err = binary.Read(buf, binary.LittleEndian, &size)
+	if err != nil {
+		return 0, fmt.Errorf("read size: %w", err)
+	}
+
+	data := make([]byte, size)
+	if _, err := buf.Read(data); err != nil {
+		return 0, fmt.Errorf("read data: %w", err)
+	}
+
+	fmt.Printf("Packet Type: %d, Size: %d, Data: %v\n", packetType, size, data)
+
+	if packetType == 1 && len(data) >= 1 {
+		if data[0] != 1 {
+			return 1, nil
+		}
+	}
+
+	return 0, nil
+}
 
 func CreateRoom() (room, error) {
 	roomName := GetRandomName(3)
@@ -67,7 +96,7 @@ func UpdateRooms() {
 		status, err := checkRoomHealth(activeRooms[idx].Port)
 
 		fmt.Printf("Room: %s\tStatus: %s\n", activeRooms[idx].Name, status)
-		if status != "good" {
+		if status != 1 {
 			activeRooms[idx].Health--
 		}
 
@@ -93,7 +122,7 @@ func UpdateRooms() {
 
 }
 
-func checkRoomHealth(port int) (string, error) {
+func checkRoomHealth(port int) (int, error) {
 	host := "localhost:" + strconv.Itoa(port)
 	u := url.URL{Scheme: "ws", Host: host, Path: ""}
 	fmt.Println("Connecting to:", host, u.String())
@@ -101,7 +130,7 @@ func checkRoomHealth(port int) (string, error) {
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Println("dial:", err)
-		return "", err
+		return 0, err
 	}
 	defer func() {
 		err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Client closing connection"))
@@ -120,36 +149,35 @@ func checkRoomHealth(port int) (string, error) {
 	messageBytes, err := json.Marshal(requestMessage)
 	if err != nil {
 		log.Println("json:", err)
-		return "", err
+		return 0, err
 	}
 
 	err = c.WriteMessage(websocket.TextMessage, messageBytes)
 	if err != nil {
 		log.Println("write:", err)
-		return "", err
+		return 0, err
 	}
 
 	_, message, err := c.ReadMessage()
 	if err != nil {
 		log.Println("read:", err)
-		return "", err
+		return 0, err
 	}
 
-	var status roomResponse
-	err = json.Unmarshal(message, &status)
+	status, err := readStatusPacket(message)
 	if err != nil {
 		log.Println("json unmarshal:", err)
-		return "", err
+		return 0, err
 	}
 
-	return status.Status, nil
+	return status, nil
 }
 
 func closeRoom(r *room) error {
 	fmt.Println("Closing room:", r.Name)
 
 	cmd := exec.Command("docker", "rm", "-f", r.Name)
-	
+
 	_, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error:", err)
