@@ -52,7 +52,7 @@ func readStatusPacket(message []byte) (int, error) {
 	fmt.Printf("Packet Type: %d, Size: %d, Data: %v\n", packetType, size, data)
 
 	if packetType == 1 && len(data) >= 1 {
-		if data[0] != 1 {
+		if data[0] == 1 {
 			return 1, nil
 		}
 	}
@@ -95,7 +95,7 @@ func UpdateRooms() {
 	for idx := range activeRooms {
 		status, err := checkRoomHealth(activeRooms[idx].Port)
 
-		fmt.Printf("Room: %s\tStatus: %s\n", activeRooms[idx].Name, status)
+		fmt.Printf("Room: %s\tStatus: %d\n", activeRooms[idx].Name, status)
 		if status != 1 {
 			activeRooms[idx].Health--
 		}
@@ -166,7 +166,7 @@ func checkRoomHealth(port int) (int, error) {
 
 	status, err := readStatusPacket(message)
 	if err != nil {
-		log.Println("json unmarshal:", err)
+		log.Println("packet read failed:", err)
 		return 0, err
 	}
 
