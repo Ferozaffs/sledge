@@ -45,7 +45,7 @@
       "respawnsEnabled": true,
       "respawnTime": 3.0,
       "scoringType": 1,
-      "pointsToWin": 10,
+      "pointsToWin": 5,
       "scalePointsToPlayers": true
     },
     {
@@ -61,7 +61,7 @@
       "respawnsEnabled": true,
       "respawnTime": 3.0,
       "scoringType": 1,
-      "pointsToWin": 10,
+      "pointsToWin": 5,
       "scalePointsToPlayers": true
     },
     {
@@ -77,7 +77,7 @@
       "respawnsEnabled": true,
       "respawnTime": 3.0,
       "scoringType": 2,
-      "pointsToWin": 15,
+      "pointsToWin": 10,
       "scalePointsToPlayers": true,
       "scoreObjective": [
         {

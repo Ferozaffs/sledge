@@ -1,4 +1,5 @@
 #pragma once
+#include "B2Filters.h"
 #include <memory>
 
 class b2World;
@@ -13,17 +14,6 @@ class Debugger;
 namespace Physics
 {
 class ContactListener;
-
-enum class BodyType
-{
-    LevelBlock,
-};
-
-struct PhysicsObjectUserData
-{
-    BodyType type;
-    void *object;
-};
 
 class B2Manager
 {

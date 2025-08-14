@@ -93,7 +93,7 @@ struct BlockConfiguration
     float density = 1.0f;
     float friction = 0.1f;
     float toughness = 0.0f;
-    float restitution = 0.1f;
+    float restitution = 0.05f;
     bool allowPickup;
 };
 

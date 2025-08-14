@@ -22,6 +22,7 @@ class PlayerManager
 
     std::weak_ptr<Player> CreatePlayer();
     std::shared_ptr<Player> GetPlayer(size_t index) const;
+    std::shared_ptr<Player> GetPlayerFromAvatarId(signed int id) const;
 
     size_t GetNumPlayers() const;
     const std::vector<std::shared_ptr<Player>> &GetPlayers() const;

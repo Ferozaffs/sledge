@@ -40,6 +40,7 @@ class Player
 
     GameModeWish GetGameModeWish() const;
     bool IsDead() const;
+    signed int CollectKiller();
 
     Team GetTeam() const;
     unsigned int GetTeamTint() const;

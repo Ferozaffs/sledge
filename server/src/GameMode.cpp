@@ -153,17 +153,21 @@ void GameMode::UpdateDeathPoints(float deltaTime)
     }
     else
     {
-        const auto &playersAlive = m_playerManager.GetPlayersAlive();
-
-        if (playersAlive.size() < m_previousNumPlayersAlive)
+        for (const auto &player : m_playerManager.GetPlayers())
         {
-            for (const auto &player : playersAlive)
+            if (player->IsDead())
             {
-                m_playerPoints[player] += 1.0f;
+                auto id = player->CollectKiller();
+                if (id != -1)
+                {
+                    auto player = m_playerManager.GetPlayerFromAvatarId(id);
+                    if (player)
+                    {
+                        m_playerPoints[player] += 1.0f;
+                    }
+                }
             }
         }
-
-        m_previousNumPlayersAlive = playersAlive.size();
     }
 }
 

@@ -19,8 +19,9 @@ LevelBlock::LevelBlock(std::weak_ptr<b2World> world, int x, int y, const BlockCo
         m_originalX = blockDef.position.x;
         m_originalY = blockDef.position.y;
         blockDef.enabled = m_configuration.collision;
+        blockDef.gravityScale = 1.0f;
         m_asset = std::make_shared<Asset>(w->CreateBody(&blockDef), m_configuration.assetName);
-        Physics::PhysicsObjectUserData *data = new Physics::PhysicsObjectUserData{Physics::BodyType::LevelBlock, this};
+        PhysicsObjectUserData *data = new PhysicsObjectUserData{BodyType::LevelBlock, this};
         m_asset->GetBody()->GetUserData().pointer = reinterpret_cast<uintptr_t>(data);
 
         b2PolygonShape block;
@@ -145,6 +146,7 @@ void LevelBlock::ConvertToDynamic()
     b2BodyDef blockDef;
     blockDef.type = b2_dynamicBody;
     blockDef.gravityScale = m_gameModeConfiguration.gravityModifier;
+    blockDef.linearDamping = m_gameModeConfiguration.dampingModifier;
     blockDef.position.Set(x, y);
     m_asset = std::make_shared<Asset>(world->CreateBody(&blockDef), alias);
     b2PolygonShape block;
@@ -154,6 +156,7 @@ void LevelBlock::ConvertToDynamic()
     fixtureDef.shape = &block;
     fixtureDef.density = m_configuration.density;
     fixtureDef.friction = m_configuration.friction;
+    fixtureDef.restitution = m_configuration.restitution;
 
     m_asset->GetBody()->CreateFixture(&fixtureDef);
     m_asset->UpdateSize();
@@ -188,6 +191,7 @@ bool LevelBlock::HasCollision() const
 
 void LevelBlock::SetGameModeConfiguration(const GameModeConfiguration &configuration)
 {
+    m_gameModeConfiguration = configuration;
     m_asset->GetBody()->SetGravityScale(configuration.gravityModifier);
     m_asset->GetBody()->SetLinearDamping(configuration.dampingModifier);
 }

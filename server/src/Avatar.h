@@ -1,5 +1,7 @@
 #pragma once
+#include "B2Filters.h"
 #include "GameSettings.h"
+#include <boost/uuid/uuid.hpp>
 #include <box2d/box2d.h>
 #include <memory>
 #include <vector>
@@ -21,6 +23,7 @@ class Avatar
     void UpdateSettings(const GameModeConfiguration &configuration);
 
     unsigned int GetBodyId() const;
+    signed int GetKillerId() const;
     const b2Vec2 &GetPosition() const;
     const float GetX() const;
     const float GetY() const;
@@ -34,6 +37,8 @@ class Avatar
     void Kill();
     bool IsDead() const;
 
+    void SetKillerId(signed int opponentId);
+
   private:
     b2Body *GetBody() const;
     b2Body *GetHead() const;
@@ -42,6 +47,8 @@ class Avatar
     void BreakCrown();
     void BreakHelm();
     void AssignWeapon();
+
+    signed int m_killerId;
 
     bool m_invincibility;
     float m_invincibilityTimer;
@@ -63,6 +70,8 @@ class Avatar
     PlayerControl m_groundControl;
     PlayerControl m_airControl;
     float m_controlModifier;
+
+    PhysicsObjectUserData m_userData;
 };
 
 } // namespace Gameplay

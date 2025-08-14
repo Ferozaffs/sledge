@@ -73,6 +73,8 @@ async function preload() {
     { alias: "koth_zone_red", src: "./assets/koth_zone_red.png" },
     { alias: "koth_zone_blue", src: "./assets/koth_zone_blue.png" },
     { alias: "solid_red", src: "./assets/solid_red.png" },
+    { alias: "solid_gray", src: "./assets/solid_gray.png" },
+    { alias: "solid_black_round", src: "./assets/solid_black_round.png" },
     { alias: "soft_pink", src: "./assets/soft_pink.png" },
     { alias: "soft_blue", src: "./assets/soft_blue.png" },
   ];

@@ -86,6 +86,7 @@ void Level::SetDefault()
     staticBlock.destructable = false;
     staticBlock.density = 1.0f;
     staticBlock.friction = 0.1f;
+    staticBlock.restitution = 0.05f;
     staticBlock.toughness = FLT_MAX;
     staticBlock.allowPickup = false;
 
@@ -98,6 +99,7 @@ void Level::SetDefault()
     toughBlock.density = 1.0f;
     toughBlock.friction = 0.1f;
     toughBlock.toughness = 1.0f;
+    toughBlock.restitution = 0.05f;
     toughBlock.allowPickup = false;
 
     BlockConfiguration weakBlock;
@@ -109,6 +111,7 @@ void Level::SetDefault()
     weakBlock.density = 1.0f;
     weakBlock.friction = 0.1f;
     weakBlock.toughness = 0.2f;
+    weakBlock.restitution = 0.05f;
     weakBlock.allowPickup = false;
 
     BlockConfiguration spawnBlock;
@@ -343,6 +346,7 @@ bool Level::CreateFloorDecor(std::pair<int, int> coord)
     decorBlock.destructable = true;
     decorBlock.density = 1.0f;
     decorBlock.friction = 0.1f;
+    decorBlock.restitution = 0.1f;
     decorBlock.toughness = 0.0f;
     decorBlock.allowPickup = false;
 
@@ -361,6 +365,7 @@ bool Level::CreateRoofDecor(std::pair<int, int> coord)
     decorBlock.destructable = true;
     decorBlock.density = 1.0f;
     decorBlock.friction = 0.1f;
+    decorBlock.restitution = 0.1f;
     decorBlock.toughness = 0.0f;
     decorBlock.allowPickup = false;
 

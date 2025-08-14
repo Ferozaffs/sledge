@@ -140,6 +140,17 @@ bool Player::IsDead() const
     return m_avatar == nullptr || m_avatar->IsDead();
 }
 
+signed int Player::CollectKiller()
+{
+    if (m_avatar != nullptr)
+    {
+        auto id = m_avatar->GetKillerId();
+        m_avatar->SetKillerId(-1);
+        return id;
+    }
+    return -1;
+}
+
 Team Player::GetTeam() const
 {
     return m_teamTint == 0xAA0000 ? Team::Red : Team::Blue;

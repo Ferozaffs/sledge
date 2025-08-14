@@ -1,3 +1,4 @@
+#pragma once
 enum class CollisionFilter : int
 {
     Avatar_Head = 0x8000,
@@ -8,4 +9,16 @@ enum class CollisionFilter : int
     Weapon_Shaft = 0x0100,
 
     Block_Decor = 0x0080,
+};
+
+enum class BodyType
+{
+    LevelBlock,
+    Avatar,
+};
+
+struct PhysicsObjectUserData
+{
+    BodyType type;
+    void *object;
 };

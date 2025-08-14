@@ -95,6 +95,19 @@ std::shared_ptr<Player> PlayerManager::GetPlayer(size_t index) const
     return nullptr;
 }
 
+std::shared_ptr<Player> PlayerManager::GetPlayerFromAvatarId(signed int id) const
+{
+    for (const auto &player : m_players)
+    {
+        if (player->GetMainAssetId() == id)
+        {
+            return player;
+        }
+    }
+
+    return nullptr;
+}
+
 size_t PlayerManager::GetNumPlayers() const
 {
     return m_players.size();

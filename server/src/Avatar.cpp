@@ -10,7 +10,7 @@ Avatar::Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned in
                bool winner)
     : m_world(world), m_invincibilityTimer(2.0f), m_dead(false), m_shaftJoint(nullptr), m_health(3),
       m_crownJoint(nullptr), m_invincibility(false), m_groundControl(PlayerControl::Full),
-      m_airControl(PlayerControl::Semi), m_controlModifier(1.0f)
+      m_airControl(PlayerControl::Semi), m_controlModifier(1.0f), m_killerId(-1)
 {
     static const b2Vec2 bodySize(2.0f, 2.0f);
     static const b2Vec2 legsSize(1.5f, 0.5f);
@@ -32,6 +32,7 @@ Avatar::Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned in
         bodyDef.gravityScale = gravityScale;
         m_bodyAsset = std::make_shared<Asset>(w->CreateBody(&bodyDef), "avatar_body");
         m_bodyAsset->SetTint(teamTint != 0 ? teamTint : tint);
+        m_bodyAsset->GetBody()->GetUserData().pointer = reinterpret_cast<uintptr_t>(&m_userData);
 
         b2PolygonShape dynamicBox;
         dynamicBox.SetAsBox(bodySize.x, bodySize.y);
@@ -50,6 +51,7 @@ Avatar::Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned in
         bodyDef.position = spawnPos;
         bodyDef.position.y -= (bodySize.y + legsSize.y);
         m_legsAsset = std::make_shared<Asset>(w->CreateBody(&bodyDef), "avatar_legs");
+        m_legsAsset->GetBody()->GetUserData().pointer = reinterpret_cast<uintptr_t>(&m_userData);
 
         dynamicBox.SetAsBox(legsSize.x, legsSize.y);
         fixtureDef.friction = LegsFriction;
@@ -68,10 +70,11 @@ Avatar::Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned in
         bodyDef.position = spawnPos;
         bodyDef.position.y += bodySize.y + headSize.y;
         bodyDef.fixedRotation = false;
-        bodyDef.gravityScale = 1.0f;
+        bodyDef.gravityScale = gravityScale;
         m_headAsset[m_health - 1] =
             std::make_shared<Asset>(w->CreateBody(&bodyDef), "avatar_head_" + std::to_string(m_health));
         m_headAsset[m_health - 1]->SetTint(0x7F7F7F);
+        m_headAsset[m_health - 1]->GetBody()->GetUserData().pointer = reinterpret_cast<uintptr_t>(&m_userData);
 
         dynamicBox.SetAsBox(headSize.x, headSize.y);
         fixtureDef.friction = AvatarFriction;
@@ -91,8 +94,9 @@ Avatar::Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned in
             bodyDef.type = b2_dynamicBody;
             bodyDef.position.y += headSize.y + headSize.y;
             bodyDef.fixedRotation = false;
-            bodyDef.gravityScale = 1.0f;
+            bodyDef.gravityScale = gravityScale;
             m_crownAsset = std::make_shared<Asset>(w->CreateBody(&bodyDef), "avatar_crown");
+            m_crownAsset->GetBody()->GetUserData().pointer = reinterpret_cast<uintptr_t>(&m_userData);
 
             dynamicBox.SetAsBox(headSize.x, headSize.y);
             fixtureDef.filter.maskBits = 0;
@@ -110,6 +114,7 @@ Avatar::Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned in
         bodyDef.fixedRotation = false;
         m_shaftAsset = std::make_shared<Asset>(w->CreateBody(&bodyDef), "weapon_shaft");
         m_shaftAsset->SetTint(teamTint != 0 ? tint : 0xEFC067);
+        m_shaftAsset->GetBody()->GetUserData().pointer = reinterpret_cast<uintptr_t>(&m_userData);
 
         dynamicBox.SetAsBox(shaftSize.x, shaftSize.y);
 
@@ -127,6 +132,9 @@ Avatar::Avatar(std::weak_ptr<b2World> world, const b2Vec2 &spawnPos, unsigned in
 
         AssignWeapon();
     }
+
+    m_userData.type = BodyType::Avatar;
+    m_userData.object = this;
 }
 
 Avatar::~Avatar()
@@ -137,6 +145,10 @@ Avatar::~Avatar()
 void Avatar::AssignWeapon()
 {
     m_weapon = Weapon::GetWeaponFromPool(m_world, *this);
+    for (auto &asset : m_weapon->GetAssets())
+    {
+        asset->GetBody()->GetUserData().pointer = reinterpret_cast<uintptr_t>(&m_userData);
+    }
 
     b2RevoluteJointDef jd;
     jd.Initialize(GetBody(), GetShaft(), GetPosition());
@@ -159,10 +171,24 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
         if (contact->GetFixtureA()->GetBody() == GetHead())
         {
             vel = contact->GetFixtureB()->GetBody()->GetLinearVelocity().Length();
+            auto userData = contact->GetFixtureB()->GetBody()->GetUserData();
+            if (userData.pointer != 0 &&
+                reinterpret_cast<PhysicsObjectUserData *>(userData.pointer)->type == BodyType::Avatar)
+            {
+                auto data = reinterpret_cast<PhysicsObjectUserData *>(userData.pointer);
+                m_killerId = reinterpret_cast<Avatar *>(data->object)->GetBodyId();
+            }
         }
         else
         {
             vel = contact->GetFixtureA()->GetBody()->GetLinearVelocity().Length();
+            auto userData = contact->GetFixtureB()->GetBody()->GetUserData();
+            if (userData.pointer != 0 &&
+                reinterpret_cast<PhysicsObjectUserData *>(userData.pointer)->type == BodyType::Avatar)
+            {
+                auto data = reinterpret_cast<PhysicsObjectUserData *>(userData.pointer);
+                m_killerId = reinterpret_cast<Avatar *>(data->object)->GetBodyId();
+            }
         }
 
         constexpr float killThreshold = 1.0f;
@@ -208,15 +234,30 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
 
         float horizontalMovement = 0.0f;
         float verticalMovement = 0.0f;
+
+        float horizontalNegationBoost = 1.0f;
+        float verticalNegationBoost = 1.0f;
+        if ((GetBody()->GetLinearVelocity().x > 0.0f && moveInput < 0.0f) ||
+            (GetBody()->GetLinearVelocity().x < 0.0f && moveInput > 0.0f))
+        {
+            horizontalNegationBoost *= m_controlModifier;
+        }
+        if ((GetBody()->GetLinearVelocity().y > 0.0f && jumpInput < 0.0f) ||
+            (GetBody()->GetLinearVelocity().y < 0.0f && jumpInput > 0.0f))
+        {
+            verticalNegationBoost *= m_controlModifier;
+        }
+
         if (m_airControl != PlayerControl::Off && hasGroundContact == false)
         {
             horizontalMovement =
-                30000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f / m_controlModifier)));
+                30000.0f * std::max(0.0f, (1.0f * horizontalNegationBoost -
+                                           abs(GetBody()->GetLinearVelocity().x * 0.05f / m_controlModifier)));
             if (m_airControl == PlayerControl::Full)
             {
                 verticalMovement =
-                    20000.0f *
-                    std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().y * 0.05f / m_controlModifier)));
+                    20000.0f * std::max(0.0f, (1.0f * verticalNegationBoost -
+                                               abs(GetBody()->GetLinearVelocity().y * 0.05f / m_controlModifier)));
             }
         }
 
@@ -227,7 +268,9 @@ void Avatar::Update(const float &deltaTime, const float &sledgeInput, const floa
             {
                 GetBody()->ApplyLinearImpulse(b2Vec2(0.0f, 300.0f), GetBody()->GetTransform().p, true);
             }
-            horizontalMovement = 180000.0f * std::max(0.0f, (1.0f - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
+            horizontalMovement =
+                180000.0f *
+                std::max(0.0f, (1.0f * horizontalNegationBoost - abs(GetBody()->GetLinearVelocity().x * 0.05f)));
         }
 
         GetBody()->ApplyForce(b2Vec2(horizontalMovement * moveInput * deltaTime * m_controlModifier,
@@ -248,8 +291,8 @@ void Avatar::UpdateSettings(const GameModeConfiguration &configuration)
     {
         if (auto a = asset.lock())
         {
-            a->GetBody()->SetGravityScale(configuration.gravityModifier);
-            a->GetBody()->SetLinearDamping(configuration.dampingModifier);
+            a->GetBody()->SetGravityScale(a->GetBody()->GetGravityScale() * configuration.gravityModifier);
+            a->GetBody()->SetLinearDamping(a->GetBody()->GetLinearDamping() * configuration.dampingModifier);
         }
     }
 }
@@ -257,6 +300,16 @@ void Avatar::UpdateSettings(const GameModeConfiguration &configuration)
 unsigned int Avatar::GetBodyId() const
 {
     return m_bodyAsset->GetId();
+}
+
+signed int Avatar::GetKillerId() const
+{
+    return m_killerId;
+}
+
+void Avatar::SetKillerId(signed int opponentId)
+{
+    m_killerId = opponentId;
 }
 
 b2Body *Avatar::GetBody() const
@@ -405,10 +458,11 @@ void Avatar::BreakHelm()
     bodyDef.position = m_headAsset[m_health]->GetBody()->GetTransform().p;
     bodyDef.position.y -= 0.05f;
     bodyDef.fixedRotation = false;
-    bodyDef.gravityScale = 1.0f;
+    bodyDef.gravityScale = 2.0f;
     m_headAsset[m_health - 1] =
         std::make_shared<Asset>(GetBody()->GetWorld()->CreateBody(&bodyDef), "avatar_head_" + std::to_string(m_health));
     m_headAsset[m_health - 1]->SetTint(m_headAsset[m_health]->GetTint());
+    m_headAsset[m_health - 1]->GetBody()->GetUserData().pointer = reinterpret_cast<uintptr_t>(&m_userData);
 
     b2PolygonShape dynamicBox;
     dynamicBox.SetAsBox(m_headAsset[m_health]->GetSizeX() * 0.45f, m_headAsset[m_health]->GetSizeY() * 0.45f);

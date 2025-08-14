@@ -88,7 +88,7 @@
     },
     {
       "blockCode": 6750054,
-      "assetName": "koth_zone",
+      "assetName": "solid_black_round",
       "type": 1,
       "spawnType": 0,
       "collision": true,
@@ -96,7 +96,19 @@
       "density": 1.0,
       "friction": 0.0,
       "toughness": 0.0,
-      "restitution": 0.9,
+      "restitution": 0.3,
+      "allowPickup": false
+    },
+    {
+      "blockCode": 0,
+      "assetName": "solid_gray",
+      "type": 0,
+      "spawnType": 0,
+      "collision": true,
+      "destructable": false,
+      "density": 0.0,
+      "friction": 0.0,
+      "toughness": 999,
       "allowPickup": false
     },
     {
