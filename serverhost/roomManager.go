@@ -30,9 +30,18 @@ var port int = 56000
 
 const roomhealth int = 3
 
+func reverseBytes(b []byte) []byte {
+	reversed := make([]byte, len(b))
+	for i := range b {
+		reversed[i] = b[len(b)-1-i]
+	}
+	return reversed
+}
+
 func readStatusPacket(message []byte) (int, error) {
-	buf := bytes.NewReader(message)
-	fmt.Printf("Packet bytes: %v", message)
+	reversedMsg := reverseBytes(message)
+	buf := bytes.NewReader(reversedMsg)
+	fmt.Printf("Packet bytes: %v", reversedMsg)
 
 	var packetType uint8
 	err := binary.Read(buf, binary.LittleEndian, &packetType)
@@ -165,21 +174,21 @@ func checkRoomHealth(port int) (int, error) {
 		return 0, err
 	}
 
-	fmt.Printf("Sending request")
+	fmt.Println("Sending request")
 	err = c.WriteMessage(websocket.TextMessage, messageBytes)
 	if err != nil {
 		log.Println("write:", err)
 		return 0, err
 	}
 
-	fmt.Printf("Reading response")
+	fmt.Println("Reading response")
 	_, message, err := c.ReadMessage()
 	if err != nil {
 		log.Println("read:", err)
 		return 0, err
 	}
 
-	fmt.Printf("Parsing packet")
+	fmt.Println("Parsing packet")
 	status, err := readStatusPacket(message)
 	if err != nil {
 		log.Println("packet read failed:", err)
