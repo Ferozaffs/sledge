@@ -29,18 +29,7 @@ WebSocketHelper &WebSocketHelper::GetInstance()
 
 void WebSocketHelper::SendAll(const Packet &packet)
 {
-    std::vector<unsigned char> buffer;
-    buffer.reserve(1 + 4 + packet.m_data.size());
-
-    buffer.emplace_back(static_cast<unsigned char>(packet.m_type));
-
-    unsigned int size = static_cast<unsigned int>(packet.m_size);
-    for (size_t i = 0; i < sizeof(size); ++i)
-    {
-        buffer.emplace_back((size >> (i * 8)) & 0xFF);
-    }
-
-    buffer.insert(buffer.end(), packet.m_data.begin(), packet.m_data.end());
+    auto buffer = packet.Serialize();
 
     for (const auto &connection : m_connections)
     {
@@ -114,7 +103,8 @@ void WebSocketHelper::OnMessage(ws_server *s, websocketpp::connection_hdl handle
             if (j["type"] == "conreq")
             {
                 auto packet = Packet::CreateStatusPacket(Packet::Status::PendingConnection);
-                s->send(handle, static_cast<void *>(&packet), packet.GetSize(), websocketpp::frame::opcode::binary);
+                auto buffer = packet.Serialize();
+                s->send(handle, buffer.data(), buffer.size(), websocketpp::frame::opcode::binary);
 
                 m_instance->CompleteConnection(s->get_con_from_hdl(handle));
             }
@@ -127,7 +117,9 @@ void WebSocketHelper::OnMessage(ws_server *s, websocketpp::connection_hdl handle
 
                 auto packet =
                     Packet::CreateStatusPacket(numConnection > 0 ? Packet::Status::Good : Packet::Status::Empty);
-                s->send(handle, static_cast<void *>(&packet), packet.GetSize(), websocketpp::frame::opcode::binary);
+
+                auto buffer = packet.Serialize();
+                s->send(handle, buffer.data(), buffer.size(), websocketpp::frame::opcode::binary);
             }
             else if (j["type"] == "input")
             {
@@ -137,7 +129,8 @@ void WebSocketHelper::OnMessage(ws_server *s, websocketpp::connection_hdl handle
         else
         {
             auto packet = Packet::CreateErrorPacket(Packet::Error::UnknownRequest);
-            s->send(handle, static_cast<void *>(&packet), packet.GetSize(), websocketpp::frame::opcode::binary);
+            auto buffer = packet.Serialize();
+            s->send(handle, buffer.data(), buffer.size(), websocketpp::frame::opcode::binary);
         }
     }
     catch (nlohmann::json::parse_error &e)

@@ -84,6 +84,8 @@ class Packet
     static Packet CreateScorePacket(const std::vector<GameScore> scores);
     static Packet CreatePointsPacket(const std::vector<GamePoints> points);
 
+    std::vector<unsigned char> Serialize() const;
+
     Type m_type;
     unsigned int m_size;
     std::vector<unsigned char> m_data;

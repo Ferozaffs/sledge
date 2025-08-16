@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -30,18 +31,8 @@ var port int = 56000
 
 const roomhealth int = 3
 
-func reverseBytes(b []byte) []byte {
-	reversed := make([]byte, len(b))
-	for i := range b {
-		reversed[i] = b[len(b)-1-i]
-	}
-	return reversed
-}
-
 func readStatusPacket(message []byte) (int, error) {
-	reversedMsg := reverseBytes(message)
-	buf := bytes.NewReader(reversedMsg)
-	fmt.Printf("Packet bytes: %v", reversedMsg)
+	buf := bytes.NewReader(message)
 
 	var packetType uint8
 	err := binary.Read(buf, binary.LittleEndian, &packetType)
@@ -63,8 +54,6 @@ func readStatusPacket(message []byte) (int, error) {
 	if size > 1 {
 		return 0, fmt.Errorf("packet size too large: %d", size)
 	}
-
-	fmt.Printf("Packet Type: %d, Size: %d, Data: %d\n", packetType, size, data[0])
 
 	if packetType == 1 && len(data) >= 1 {
 		if data[0] == 1 {
@@ -105,6 +94,9 @@ func GetRoomPort(name string) (int, error) {
 }
 
 func UpdateRooms() {
+
+	roomtest := room{"test", 9002, roomhealth}
+	activeRooms = append(activeRooms, roomtest)
 
 	var removal []string
 	for idx := range activeRooms {
@@ -160,6 +152,9 @@ func checkRoomHealth(port int) (int, error) {
 		if err != nil {
 			log.Println("write close:", err)
 		}
+
+		c.SetReadDeadline(time.Now().Add(time.Second))
+		_, _, _ = c.ReadMessage()
 
 		c.Close()
 	}()

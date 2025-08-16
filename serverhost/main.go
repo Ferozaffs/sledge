@@ -132,7 +132,7 @@ func main() {
 		http.ListenAndServe(":5501", RateLimitMiddleware(getLimit, time.Minute)(mux))
 	}()
 
-	ticker := time.NewTicker(2 * time.Minute)
+	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 
 	for range ticker.C {

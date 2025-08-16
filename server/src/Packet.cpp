@@ -139,3 +139,20 @@ Packet Packet::CreatePointsPacket(const std::vector<GamePoints> points)
 
     return std::move(packet);
 }
+
+std::vector<unsigned char> Packet::Serialize() const
+{
+    std::vector<unsigned char> buf;
+    buf.reserve(1 + 4 + m_data.size());
+
+    buf.push_back(static_cast<unsigned char>(m_type));
+
+    buf.push_back(static_cast<unsigned char>(m_size & 0xFF));
+    buf.push_back(static_cast<unsigned char>((m_size >> 8) & 0xFF));
+    buf.push_back(static_cast<unsigned char>((m_size >> 16) & 0xFF));
+    buf.push_back(static_cast<unsigned char>((m_size >> 24) & 0xFF));
+
+    buf.insert(buf.end(), m_data.begin(), m_data.end());
+
+    return buf;
+}
