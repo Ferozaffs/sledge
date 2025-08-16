@@ -32,6 +32,7 @@ const roomhealth int = 3
 
 func readStatusPacket(message []byte) (int, error) {
 	buf := bytes.NewReader(message)
+	fmt.Printf("Packet bytes: %v", message)
 
 	var packetType uint8
 	err := binary.Read(buf, binary.LittleEndian, &packetType)
@@ -50,7 +51,11 @@ func readStatusPacket(message []byte) (int, error) {
 		return 0, fmt.Errorf("read data: %w", err)
 	}
 
-	fmt.Printf("Packet Type: %d, Size: %d, Data: %v\n", packetType, size, data)
+	if size > 1 {
+		return 0, fmt.Errorf("packet size too large: %d", size)
+	}
+
+	fmt.Printf("Packet Type: %d, Size: %d, Data: %d\n", packetType, size, data[0])
 
 	if packetType == 1 && len(data) >= 1 {
 		if data[0] == 1 {
