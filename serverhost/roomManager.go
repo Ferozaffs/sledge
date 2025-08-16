@@ -94,10 +94,6 @@ func GetRoomPort(name string) (int, error) {
 }
 
 func UpdateRooms() {
-
-	roomtest := room{"test", 9002, roomhealth}
-	activeRooms = append(activeRooms, roomtest)
-
 	var removal []string
 	for idx := range activeRooms {
 		status, err := checkRoomHealth(activeRooms[idx].Port)
