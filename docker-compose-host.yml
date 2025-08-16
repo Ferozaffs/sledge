@@ -13,3 +13,7 @@ services:
         limits:
           cpus: '0.1'
           memory: 100M
+    environment:
+      - APP_HOST=host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

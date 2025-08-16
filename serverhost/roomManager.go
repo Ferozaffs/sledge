@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"os/exec"
 	"strconv"
 
@@ -122,8 +123,15 @@ func UpdateRooms() {
 
 }
 
+func getHost(port int) string {
+	if host := os.Getenv("APP_HOST"); host != "" {
+		return host + ":" + strconv.Itoa(port)
+	}
+	return "localhost:" + strconv.Itoa(port)
+}
+
 func checkRoomHealth(port int) (int, error) {
-	host := "localhost:" + strconv.Itoa(port)
+	host := getHost(port)
 	u := url.URL{Scheme: "ws", Host: host, Path: ""}
 	fmt.Println("Connecting to:", host, u.String())
 
@@ -152,18 +160,21 @@ func checkRoomHealth(port int) (int, error) {
 		return 0, err
 	}
 
+	fmt.Printf("Sending request")
 	err = c.WriteMessage(websocket.TextMessage, messageBytes)
 	if err != nil {
 		log.Println("write:", err)
 		return 0, err
 	}
 
+	fmt.Printf("Reading response")
 	_, message, err := c.ReadMessage()
 	if err != nil {
 		log.Println("read:", err)
 		return 0, err
 	}
 
+	fmt.Printf("Parsing packet")
 	status, err := readStatusPacket(message)
 	if err != nil {
 		log.Println("packet read failed:", err)
